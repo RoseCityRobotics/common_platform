@@ -3,9 +3,9 @@
 import os
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import IncludeLaunchDescription
+from launch.actions import IncludeLaunchDescription, GroupAction
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch_ros.actions import Node
+from launch_ros.actions import Node, PushRosNamespace
 
 def generate_launch_description():
     package_name = 'common_platform'
@@ -38,8 +38,19 @@ def generate_launch_description():
         output='screen'
     )
     
-    return LaunchDescription([
+    actions = [
         rsp,
         joint_state_publisher,
         rviz
-    ])
+    ]
+
+    ns = os.environ.get('ROS_NAMESPACE', '').strip()
+    if ns:
+        return LaunchDescription([
+            GroupAction([
+                PushRosNamespace(ns),
+                *actions
+            ])
+        ])
+    else:
+        return LaunchDescription(actions)

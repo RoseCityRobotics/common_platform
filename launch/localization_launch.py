@@ -17,9 +17,9 @@ import os
 from ament_index_python.packages import get_package_share_directory
 
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, SetEnvironmentVariable
+from launch.actions import DeclareLaunchArgument, SetEnvironmentVariable, GroupAction
 from launch.substitutions import LaunchConfiguration
-from launch_ros.actions import Node
+from launch_ros.actions import Node, PushRosNamespace
 from nav2_common.launch import RewrittenYaml
 
 
@@ -54,12 +54,12 @@ def generate_launch_description():
         param_rewrites=param_substitutions,
         convert_types=True)
 
-    return LaunchDescription([
+    actions = [
         # Set env var to print messages to stdout immediately
         SetEnvironmentVariable('RCUTILS_LOGGING_BUFFERED_STREAM', '1'),
 
         DeclareLaunchArgument(
-            'namespace', default_value='',
+            'namespace', default_value=os.environ.get('ROS_NAMESPACE', ''),
             description='Top-level namespace'),
 
         DeclareLaunchArgument(
@@ -79,7 +79,9 @@ def generate_launch_description():
             'params_file',
             default_value=os.path.join(bringup_dir, 'config', 'nav2_params.yaml'),
             description='Full path to the ROS2 parameters file to use'),
+    ]
 
+    nav2_nodes = [
         Node(
             package='nav2_map_server',
             executable='map_server',
@@ -104,4 +106,12 @@ def generate_launch_description():
             parameters=[{'use_sim_time': use_sim_time},
                         {'autostart': autostart},
                         {'node_names': lifecycle_nodes}])
-    ])
+    ]
+
+    ns = os.environ.get('ROS_NAMESPACE', '').strip()
+    if ns:
+        actions.append(GroupAction([PushRosNamespace(ns), *nav2_nodes]))
+    else:
+        actions.extend(nav2_nodes)
+
+    return LaunchDescription(actions)

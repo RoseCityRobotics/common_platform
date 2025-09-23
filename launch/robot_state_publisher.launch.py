@@ -1,7 +1,8 @@
 import os
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch_ros.actions import Node
+from launch.actions import GroupAction
+from launch_ros.actions import Node, PushRosNamespace
 import xacro
 
 
@@ -27,6 +28,15 @@ def generate_launch_description():
 
 
     # Run the node
-    return LaunchDescription([
-        node_robot_state_publisher
-    ])
+    ns = os.environ.get('ROS_NAMESPACE', '').strip()
+    if ns:
+        return LaunchDescription([
+            GroupAction([
+                PushRosNamespace(ns),
+                node_robot_state_publisher
+            ])
+        ])
+    else:
+        return LaunchDescription([
+            node_robot_state_publisher
+        ])

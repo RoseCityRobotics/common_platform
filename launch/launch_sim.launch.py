@@ -4,10 +4,10 @@ from ament_index_python.packages import get_package_share_directory
 
 
 from launch import LaunchDescription
-from launch.actions import IncludeLaunchDescription
+from launch.actions import IncludeLaunchDescription, GroupAction
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 
-from launch_ros.actions import Node
+from launch_ros.actions import Node, PushRosNamespace
 
 
 
@@ -87,12 +87,27 @@ def generate_launch_description():
 
 
     # Launch them all!
-    return LaunchDescription([
-        rsp,
-        joystick,
-        twist_mux,
-        gazebo,
-        spawn_entity,
-        diff_drive_spawner,
-        joint_broad_spawner
-    ])
+    ns = os.environ.get('ROS_NAMESPACE', '').strip()
+    if ns:
+        return LaunchDescription([
+            GroupAction([
+                PushRosNamespace(ns),
+                rsp,
+                joystick,
+                twist_mux,
+                gazebo,
+                spawn_entity,
+                diff_drive_spawner,
+                joint_broad_spawner
+            ])
+        ])
+    else:
+        return LaunchDescription([
+            rsp,
+            joystick,
+            twist_mux,
+            gazebo,
+            spawn_entity,
+            diff_drive_spawner,
+            joint_broad_spawner
+        ])

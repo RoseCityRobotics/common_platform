@@ -1,5 +1,6 @@
 from launch import LaunchDescription
-from launch_ros.actions import Node
+from launch_ros.actions import Node, PushRosNamespace
+from launch.actions import GroupAction
 from launch.substitutions import LaunchConfiguration
 from launch.actions import DeclareLaunchArgument
 
@@ -34,12 +35,27 @@ def generate_launch_description():
     #      )
 
 
-    return LaunchDescription([
-        DeclareLaunchArgument(
-            'use_sim_time',
-            default_value='false',
-            description='Use sim time if true'),
-        joy_node,
-        teleop_node,
-        # twist_stamper       
-    ])
+    ns = os.environ.get('ROS_NAMESPACE', '').strip()
+    if ns:
+        return LaunchDescription([
+            DeclareLaunchArgument(
+                'use_sim_time',
+                default_value='false',
+                description='Use sim time if true'),
+            GroupAction([
+                PushRosNamespace(ns),
+                joy_node,
+                teleop_node,
+                # twist_stamper
+            ])
+        ])
+    else:
+        return LaunchDescription([
+            DeclareLaunchArgument(
+                'use_sim_time',
+                default_value='false',
+                description='Use sim time if true'),
+            joy_node,
+            teleop_node,
+            # twist_stamper
+        ])

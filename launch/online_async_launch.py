@@ -1,10 +1,10 @@
 import os
 
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, LogInfo
+from launch.actions import DeclareLaunchArgument, LogInfo, GroupAction
 from launch.conditions import UnlessCondition
 from launch.substitutions import LaunchConfiguration, PythonExpression
-from launch_ros.actions import Node
+from launch_ros.actions import Node, PushRosNamespace
 from ament_index_python.packages import get_package_share_directory
 from nav2_common.launch import HasNodeParams
 
@@ -54,6 +54,14 @@ def generate_launch_description():
     ld.add_action(declare_use_sim_time_argument)
     ld.add_action(declare_params_file_cmd)
     ld.add_action(log_param_change)
-    ld.add_action(start_async_slam_toolbox_node)
+
+    ns = os.environ.get('ROS_NAMESPACE', '').strip()
+    if ns:
+        ld.add_action(GroupAction([
+            PushRosNamespace(ns),
+            start_async_slam_toolbox_node
+        ]))
+    else:
+        ld.add_action(start_async_slam_toolbox_node)
 
     return ld

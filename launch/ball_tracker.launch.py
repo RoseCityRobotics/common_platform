@@ -1,11 +1,12 @@
 import os
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import IncludeLaunchDescription
+from launch.actions import IncludeLaunchDescription, GroupAction
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
 from launch.substitutions import PythonExpression
 from launch.actions import DeclareLaunchArgument
+from launch_ros.actions import PushRosNamespace
 
 
 def generate_launch_description():
@@ -27,7 +28,17 @@ def generate_launch_description():
                                     'cmd_vel_topic': '/cmd_vel_tracker',
                                     'enable_3d_tracker': 'true'}.items())
 
-    return LaunchDescription([
-        sim_mode_dec,
-        tracker_launch,
-    ])
+    ns = os.environ.get('ROS_NAMESPACE', '').strip()
+    if ns:
+        return LaunchDescription([
+            sim_mode_dec,
+            GroupAction([
+                PushRosNamespace(ns),
+                tracker_launch,
+            ])
+        ])
+    else:
+        return LaunchDescription([
+            sim_mode_dec,
+            tracker_launch,
+        ])
