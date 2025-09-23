@@ -1,4 +1,6 @@
 
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
     <xacro:unless value="$(arg sim_mode)">
         <ros2_control name="RealRobot" type="system">
             <hardware>
@@ -60,3 +62,5 @@
             <parameters>$(find common_platform)/config/gaz_ros2_ctl_use_sim.yaml</parameters>
         </plugin>
     </gazebo>
+
+</robot>
