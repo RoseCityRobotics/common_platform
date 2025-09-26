@@ -23,7 +23,13 @@ def generate_launch_description():
     robot_description_config = Command(['xacro ', xacro_file, ' use_ros2_control:=', use_ros2_control, ' sim_mode:=', use_sim_time])
     
     # Create a robot_state_publisher node
-    params = {'robot_description': robot_description_config, 'use_sim_time': use_sim_time}
+    ns_env = os.environ.get('ROS_NAMESPACE', '').strip('/')
+    frame_prefix = f"/{ns_env}/" if ns_env else ''
+    params = {
+        'robot_description': robot_description_config,
+        'use_sim_time': use_sim_time,
+        'frame_prefix': frame_prefix
+    }
     node_robot_state_publisher = Node(
         package='robot_state_publisher',
         executable='robot_state_publisher',

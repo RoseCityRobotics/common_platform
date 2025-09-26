@@ -19,11 +19,14 @@ def generate_launch_description():
 
 
     # Configure the node
+    ns_env = os.environ.get('ROS_NAMESPACE', '').strip('/')
+    frame_prefix = f"/{ns_env}/" if ns_env else ''
+
     node_robot_state_publisher = Node(
         package='robot_state_publisher',
         executable='robot_state_publisher',
         output='screen',
-        parameters=[{'robot_description': robot_description_raw}] # add other parameters here if required
+        parameters=[{'robot_description': robot_description_raw, 'frame_prefix': frame_prefix}]
     )
 
 
