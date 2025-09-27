@@ -279,7 +279,8 @@ Arduino provides an official `arduino-cli` tool.
 3. **Add Teensy board support:**
    ```bash
    arduino-cli core update-index
-   arduino-cli core install teensy:avr
+
+   arduino-cli core install teensy:avr --additional-urls https://www.pjrc.com/teensy/package_teensy_index.json”
    ```
 
 4. **Compile and upload:**
