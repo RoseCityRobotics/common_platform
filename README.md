@@ -25,7 +25,7 @@
   <h3 align="center">Portland Area Robotics Society -- Common Robotics Platform</h3>
 
   <p align="center">
-    Build and master the Common Robotics Platform with Portland Area Robotics Society 
+    Build and master the Common Robotics Platform with Portland Area Robotics Society
     <br />
     <a href="https://parts-common-platform.readthedocs.io/en/latest/"><strong>Explore the docs »</strong></a>
     <br />
@@ -78,7 +78,7 @@
 </p>
 <br>
 
-Our project centers around the innovative construction and programming of a versatile robot using the robust Pololu Romi Chassis Kit as its foundation. At the heart of our design is a custom carrier PCB, which integrates seamlessly with the chassis, ensuring a compact and efficient layout. 
+Our project centers around the innovative construction and programming of a versatile robot using the robust Pololu Romi Chassis Kit as its foundation. At the heart of our design is a custom carrier PCB, which integrates seamlessly with the chassis, ensuring a compact and efficient layout.
 
 <br>
 <p align="center">
@@ -88,7 +88,7 @@ Our project centers around the innovative construction and programming of a vers
 <br>
 <br>
 
-Key components of our build include two TB9051FTG Single Brushed DC Motor Driver Carriers for precise motion control, and a Pololu 5V, 2.5A Step-Down Voltage Regulator D24V22F5 to ensure stable power supply. Navigation and orientation are handled by the sophisticated MPU-9250 9DOF Module, a nine-axis sensor that offers unparalleled accuracy in movement tracking. Additional hardware includes a set of Romi Encoders, a Romi Chassis Caster for stable maneuverability, and a powerful Teensy 4.0 microcontroller for robust processing capabilities. We've also incorporated an SPDT slide switch and two IRFU5505PBF transistors, supported by a suite of nine resistors of varying values to fine-tune our circuitry. 
+Key components of our build include two TB9051FTG Single Brushed DC Motor Driver Carriers for precise motion control, and a Pololu 5V, 2.5A Step-Down Voltage Regulator D24V22F5 to ensure stable power supply. Navigation and orientation are handled by the sophisticated MPU-9250 9DOF Module, a nine-axis sensor that offers unparalleled accuracy in movement tracking. Additional hardware includes a set of Romi Encoders, a Romi Chassis Caster for stable maneuverability, and a powerful Teensy 4.0 microcontroller for robust processing capabilities. We've also incorporated an SPDT slide switch and two IRFU5505PBF transistors, supported by a suite of nine resistors of varying values to fine-tune our circuitry.
 
 <br>
 <p align="center">
@@ -170,8 +170,90 @@ _For detailed instructions, please refer to the [Documentation](https://parts-co
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+### Direct connection to Raspberry Pi
+Connect your micro HDMI cable to your Pi and monitor and a keyboard into the USB-a port.
 
+### Ubuntu Login on Raspberry Pi
+user: `rcr`
+password: `siliconforest`
 
+### Accessing the Pi remotely via ssh
+Both the external device and the robot must both be on the same wifi for ssh to work. Use the static IP address of your Pi to ssh, the command will look something like `ssh@192.168.1.n` where `n` is your id, for example `ssh@192.168.1.9`.
+
+### Host settings
+The host has been preset for you as rcr00_ with your specific id. To update the hostname:
+
+1. Update the hostname for the robot:
+   ```bash
+   sudo nano /etc/hostname
+   ```
+   Change `rcr001` to `rcr00n` (replace n with the number)
+
+2. Update the hosts file:
+   ```bash
+   sudo nano /etc/hosts
+   ```
+   Change `rcr001` to `rcr00n`
+
+3. Set the hostname:
+   ```bash
+   sudo hostnamectl set-hostname rcr00n
+   ```
+
+4. Reboot to make sure the changes have taken effect:
+   ```bash
+   sudo reboot
+   ```
+
+### Network Configuration
+
+Set custom IP address and setup networking:
+
+1. Edit the netplan configuration:
+   ```bash
+   sudo nano /etc/netplan/50-cloud-init.yaml
+   ```
+
+2. Add the following configuration (replace `n` with your robot number):
+   ```yaml
+   network:
+     version: 2
+     wifis:
+       wlan0:
+         optional: true
+         dhcp4: no
+         addresses:
+           - 192.168.1.n/24
+         routes:
+           - to: default
+             via: 192.168.1.1
+         nameservers:
+           addresses: [8.8.8.8, 1.1.1.1]
+         access-points:
+           "robot_overlord_wifi":
+             password: "siliconforest"
+           "RoseCityRobotics":
+             password: "QW260go80.."
+   ```
+   **Note:** `n` = the robot number
+
+3. Apply the network configuration:
+   ```bash
+   sudo netplan apply
+   ```
+
+### Testing SSH Connection
+
+1. **On the Pi:** Make sure the IP address is assigned
+   ```bash
+   hostname -I
+   ```
+
+2. **On the other computer:** Connect via SSH
+   ```bash
+   ssh rcr@192.168.1.n
+   ```
+   Replace `n` with your robot number.
 
 ## Usage
 
