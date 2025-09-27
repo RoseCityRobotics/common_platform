@@ -288,7 +288,7 @@ Arduino provides an official `arduino-cli` tool.
    If you need to add custom packages or types, or customize any internal parameter of the micro-ROS stack, you will need to recompile this library from source code:
 
    ```bash
-   docker pull microros/micro_ros_static_library_builder:kilted
+   sudo docker pull microros/micro_ros_static_library_builder:kilted
    ```
 
    ```bash
