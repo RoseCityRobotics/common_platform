@@ -255,6 +255,51 @@ Set custom IP address and setup networking:
    ```
    Replace `n` with your robot number.
 
+### Teensy Programming
+
+You can compile and upload Arduino code for a Teensy entirely from the Ubuntu command line, without using the Arduino IDE GUI. There are a couple of different approaches depending on what tooling you want:
+
+#### Method 1: Using Arduino CLI
+
+Arduino provides an official `arduino-cli` tool.
+
+1. **Install Arduino CLI:**
+   ```bash
+   # Install Arduino CLI
+   curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh
+   mv bin/arduino-cli ~/.local/bin/
+   ```
+
+2. **Configure Arduino CLI:**
+   ```bash
+   # Configure
+   arduino-cli config init
+   ```
+
+3. **Add Teensy board support:**
+   ```bash
+   arduino-cli core update-index
+   arduino-cli core install teensy:avr
+   ```
+
+4. **Compile and upload:**
+   ```bash
+   # Compile
+   arduino-cli compile --fqbn teensy:avr:teensy40 path/to/sketch
+
+   # Upload
+   arduino-cli upload -p /dev/ttyACM0 --fqbn teensy:avr:teensy40 path/to/sketch
+   ```
+
+**Pros and Cons:**
+- 👉 **Pros:** Official Arduino tool, integrates with Arduino library manager
+- 👉 **Cons:** Teensy support sometimes lags behind — you may need to install Paul Stoffregen's Teensyduino core manually
+
+#### Setting up micro-ROS for Teensy
+
+For micro-ROS support, you'll need to build the precompiled library using Docker commands. Follow the instructions here:
+
+📖 **Reference:** [micro-ROS Arduino - How to build the precompiled library](https://github.com/micro-ROS/micro_ros_arduino?tab=readme-ov-file#how-to-build-the-precompiled-library)
 ## Usage
 
 This section provides practical examples of how to use the PARTS Common Robotics Platform effectively. We'll start with a basic test to ensure your setup is functioning correctly.
