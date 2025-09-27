@@ -283,14 +283,7 @@ Arduino provides an official `arduino-cli` tool.
    arduino-cli core install teensy:avr --additional-urls https://www.pjrc.com/teensy/package_teensy_index.json
    ```
 
-4. **Compile and upload:**
-   ```bash
-   arduino-cli compile --fqbn teensy:avr:teensy40 path/to/sketch
-
-   arduino-cli upload -p /dev/ttyACM0 --fqbn teensy:avr:teensy40 path/to/sketch
-   ```
-
-5. **Build the precompiled library:**
+4. **Build the precompiled library:**
 
    If you need to add custom packages or types, or customize any internal parameter of the micro-ROS stack, you will need to recompile this library from source code:
 
@@ -309,6 +302,13 @@ Arduino provides an official `arduino-cli` tool.
    ```bash
    # Build for specific target (optional)
    docker run -it --rm -v $(pwd):/project --env MICROROS_LIBRARY_FOLDER=extras microros/micro_ros_static_library_builder:kilted -p teensy4
+
+4. **Compile and upload:**
+   ```bash
+   arduino-cli compile --fqbn teensy:avr:teensy40 path/to/sketch
+
+   arduino-cli upload -p /dev/ttyACM0 --fqbn teensy:avr:teensy40 ~/repos/common_platform/firmware/closed_loop/closed_loop.ino
+   ```
 
 **Pros and Cons:**
 - 👉 **Pros:** Official Arduino tool, integrates with Arduino library manager
