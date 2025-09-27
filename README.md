@@ -267,6 +267,8 @@ Arduino provides an official `arduino-cli` tool.
    ```bash
    # Install Arduino CLI
    curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh
+   ```
+   ```
    mv bin/arduino-cli ~/.local/bin/
    ```
 
