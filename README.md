@@ -295,7 +295,7 @@ Arduino provides an official `arduino-cli` tool.
    git clone https://github.com/micro-ROS/micro_ros_arduino
    ```
 
-   A specific single target can be built using the `-p <LIBRARY_TARGET>` argument:
+   A specific single target can be built using the `-p <LIBRARY_TARGET>` argument. Run this command from inside the `micro-ROS/micro_ros_arduino` repository.
 
    ```bash
    sudo docker run -it --rm -v $(pwd):/project --env MICROROS_LIBRARY_FOLDER=extras microros/micro_ros_static_library_builder:kilted -p teensy4
