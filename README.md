@@ -288,20 +288,17 @@ Arduino provides an official `arduino-cli` tool.
    If you need to add custom packages or types, or customize any internal parameter of the micro-ROS stack, you will need to recompile this library from source code:
 
    ```bash
-   # Pull the Docker image
    docker pull microros/micro_ros_static_library_builder:kilted
    ```
 
    ```bash
-   # Clone the micro-ROS Arduino repository
    git clone https://github.com/micro-ROS/micro_ros_arduino
    ```
 
    Optionally, a specific single target can be built using the `-p <LIBRARY_TARGET>` argument:
 
    ```bash
-   # Build for specific target (optional)
-   docker run -it --rm -v $(pwd):/project --env MICROROS_LIBRARY_FOLDER=extras microros/micro_ros_static_library_builder:kilted -p teensy4
+   sudo docker run -it --rm -v $(pwd):/project --env MICROROS_LIBRARY_FOLDER=extras microros/micro_ros_static_library_builder:kilted -p teensy4
 
 4. **Compile and upload:**
    ```bash
