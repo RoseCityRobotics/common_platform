@@ -313,7 +313,7 @@ Arduino provides an official `arduino-cli` tool.
 
 #### Setting up micro-ROS for Teensy
 
-For micro-ROS support, you'll need to build the precompiled library using Docker commands. Follow the instructions here:
+In step 4 above, we've outlined building the precompiled library using Docker commands. For more information, follow the info here:
 
 📖 **Reference:** [micro-ROS Arduino - How to build the precompiled library](https://github.com/micro-ROS/micro_ros_arduino?tab=readme-ov-file#how-to-build-the-precompiled-library)
 ## Usage
