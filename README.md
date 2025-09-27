@@ -265,7 +265,6 @@ Arduino provides an official `arduino-cli` tool.
 
 1. **Install Arduino CLI:**
    ```bash
-   # Install Arduino CLI
    curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh
    ```
    ```
@@ -274,7 +273,6 @@ Arduino provides an official `arduino-cli` tool.
 
 2. **Configure Arduino CLI:**
    ```bash
-   # Configure
    arduino-cli config init
    ```
 
@@ -286,10 +284,8 @@ Arduino provides an official `arduino-cli` tool.
 
 4. **Compile and upload:**
    ```bash
-   # Compile
    arduino-cli compile --fqbn teensy:avr:teensy40 path/to/sketch
 
-   # Upload
    arduino-cli upload -p /dev/ttyACM0 --fqbn teensy:avr:teensy40 path/to/sketch
    ```
 
