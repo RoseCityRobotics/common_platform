@@ -156,15 +156,37 @@ The Pololu Romi Chassis forms the physical structure of your robot.
 
 - Follow the [Romi Chassis Assembly Guide](https://www.pololu.com/docs/0J68/4) for detailed instructions on assembling the chassis.
 
-#### 4. Install Arduino IDE
-The Arduino Integrated Development Environment (IDE) is essential for programming your robot.
+#### 4. Transfer micro-ROS Arduino Library to Raspberry Pi
 
-- Download and install the [Arduino IDE](https://www.arduino.cc/en/Main/Software) suitable for your operating system.
+From host:
+```bash
+scp firmware/libraries/micro_ros_arduino.zip rcr@192.168.1.n:~
+ssh rcr@192.168.1.n
+```
 
-#### 5. Clone PARTS CRP Repository
-Get the latest codebase for the PARTS CRP project by cloning the repository.
+#### 5. Setup micro-ROS Library and Compile Firmware
 
-- Use Git to clone the repository or download it directly from the [PARTS CRP GitHub page](https://github.com/portlandrobotics/common_platform).
+From RPi:
+```bash
+cd
+mkdir -p Arduino/libraries/
+mv micro_ros_arduino.zip Arduino/libraries/
+cd ~/Arduino/libraries/
+sudo apt update
+sudo apt install unzip
+unzip micro_ros_arduino.zip
+
+cd ~/repos/common_platform/firmware/closed_loop/
+mkdir build
+cd build
+arduino-cli compile --fqbn teensy:avr:teensy40 --build-property build.usbtype=USB_DUAL_SERIAL --build-path . ../closed_loop.ino
+SERIAL_TEENSY_DEVICE=`find /dev/serial/by-id/ -name "usb-Teensyduino*if00"|head -1`
+echo "-> Performing soft resset (baud = 134 hack). $SERIAL_TEENSY_DEVICE" #ensure your Teensy is powered on by checking that $SERIAL_TEENSY_DEVICE is not empty
+stty -F $SERIAL_TEENSY_DEVICE 9600
+stty -F $SERIAL_TEENSY_DEVICE 134
+lsusb | grep Teensy; echo "-> Should be ready to program…" #look for Van Ooijen Technische Informatica Teensy Halfkay Bootloader in the output
+sudo teensy_loader_cli -v --mcu=TEENSY40 closed_loop.ino.hex
+```
 
 _For detailed instructions, please refer to the [Documentation](https://parts-common-platform.readthedocs.io/en/latest/)_
 
