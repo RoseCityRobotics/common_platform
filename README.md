@@ -133,17 +133,17 @@ This section provides practical examples of how to use the Common Robotics Platf
 2. **Expected Behavior:**
    Upon successful flashing, the robot should exhibit a simple behavior pattern: moving forward, pausing, and then moving backward.
 
-### 🍓 Direct Connection to Raspberry Pi
+### π Direct Connection to Raspberry Pi
 Connect your micro HDMI cable to your Pi and monitor, and a keyboard to the USB-A port.
 
-### 🍓 Ubuntu Login on Raspberry Pi
+### π Ubuntu Login on Raspberry Pi
 - **User:** `rcr`
 - **Password:** `siliconforest`
 
-### 🍓 Accessing the Pi Remotely via SSH
+### π Accessing the Pi Remotely via SSH
 Both the external device and the robot must be on the same WiFi for SSH to work. Use the static IP address of your Pi to SSH. The command will look something like `ssh rcr@192.168.1.n` where `n` is your ID, for example `ssh rcr@192.168.1.9`.
 
-### 🍓 Host Settings
+### π Host Settings
 The host has been preset for you as `rcr00_` with your specific ID. To update the hostname:
 
 1. Update the hostname for the robot:
@@ -168,7 +168,7 @@ The host has been preset for you as `rcr00_` with your specific ID. To update th
    sudo reboot
    ```
 
-### 🍓 Network Configuration
+### π Network Configuration
 
 Set custom IP address and set up networking:
 
@@ -205,7 +205,7 @@ Set custom IP address and set up networking:
    sudo netplan apply
    ```
 
-### 🍓 Testing SSH Connection
+### π Testing SSH Connection
 
 1. **🍓 On the Pi:** Make sure the IP address is assigned:
    ```bash
