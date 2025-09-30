@@ -349,7 +349,14 @@ See the [open issues](https://github.com/rosecityrobotics/common_platform/issues
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+### Thank you PARTS
 
+<img src="https://raw.githubusercontent.com/rosecityrobotics/common_platform/master/github/img/PARTS.png"
+     alt="Portland Area Robotics Society (P.A.R.T.S.)"
+     width="300">
+
+*Portland Area RoboTics Society (PARTS)*
+Our work is based on the [PARTS Common Platform](https://github.com/portlandrobotics/common_platform)
 
 <!-- CONTRIBUTING -->
 ## Contributing
