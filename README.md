@@ -25,16 +25,9 @@
   <h3 align="center">Portland Area Robotics Society -- Common Robotics Platform</h3>
 
   <p align="center">
-    Build and master the Common Robotics Platform with Portland Area Robotics Society
-    <br />
-    <a href="https://parts-common-platform.readthedocs.io/en/latest/"><strong>Explore the docs »</strong></a>
-    <br />
-    <br />
-    <a href="https://github.com/portlandrobotics/common_platform">View Demo</a>  <!-- TODO We need to add a demo video here -->
+    <a href="https://github.com/rosecityrobotics/common_platform/issues">Report Bug</a>
     ·
-    <a href="https://github.com/portlandrobotics/common_platform/issues">Report Bug</a>
-    ·
-    <a href="https://github.com/portlandrobotics/common_platform/issues">Request Feature</a>
+    <a href="https://github.com/rosecityrobotics/common_platform/issues">Request Feature</a>
   </p>
 </div>
 
@@ -274,7 +267,7 @@ The required micro-ROS Arduino library is available in the repository: [micro_ro
 
 **Why SCP:** Secure Copy Protocol (SCP) allows us to securely transfer files over SSH to the Raspberry Pi. This is more reliable than other methods and works well over network connections.
 
-From your development computer (host) in the commmon_platform directory:
+From your **development computer (host)** in the commmon_platform directory:
 
 First update your directory with the latest changes from the https://github.com/roseCityRobotics/common_platform repository.
 ```bash
