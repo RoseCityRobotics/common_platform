@@ -178,7 +178,7 @@ ssh rcr@192.168.1.n
 
 From the Raspberry Pi (RPi):
 
-1. Set up Arduino libraries directory:
+a. Set up Arduino libraries directory:
    ```bash
    cd
    mkdir -p Arduino/libraries/
@@ -186,38 +186,38 @@ From the Raspberry Pi (RPi):
    cd ~/Arduino/libraries/
    ```
 
-2. Install unzip and extract the micro-ROS library:
+b. Install unzip and extract the micro-ROS library:
    ```bash
    sudo apt update
    sudo apt install unzip
    unzip micro_ros_arduino.zip
    ```
 
-3. Navigate to firmware directory and create build folder:
+c. Navigate to firmware directory and create build folder:
    ```bash
    cd ~/repos/common_platform/firmware/closed_loop/
    mkdir build
    cd build
    ```
 
-4. Compile the firmware for Teensy 4.0:
+d. Compile the firmware for Teensy 4.0:
    ```bash
    arduino-cli compile --fqbn teensy:avr:teensy40 --build-property build.usbtype=USB_DUAL_SERIAL --build-path . ../closed_loop.ino
    ```
 
-5. Find the Teensy device:
+e. Find the Teensy device:
    ```bash
    SERIAL_TEENSY_DEVICE=`find /dev/serial/by-id/ -name "usb-Teensyduino*if00"|head -1`
    echo "-> Performing soft reset (baud = 134 hack). $SERIAL_TEENSY_DEVICE"
    ```
 
-6. Reset Teensy into programming mode:
+f. Reset Teensy into programming mode:
    ```bash
    stty -F $SERIAL_TEENSY_DEVICE 9600
    stty -F $SERIAL_TEENSY_DEVICE 134
    ```
 
-7. Verify Teensy is ready and upload firmware:
+g. Verify Teensy is ready and upload firmware:
    ```bash
    lsusb | grep Teensy; echo "-> Should be ready to program…"
    sudo teensy_loader_cli -v --mcu=TEENSY40 closed_loop.ino.hex
