@@ -286,6 +286,7 @@ From the Raspberry Pi (RPi):
 
 a. Set up Arduino libraries directory:
    ```bash
+   cd ~
    mkdir -p Arduino/libraries/
    mv micro_ros_arduino.zip Arduino/libraries/
    cd ~/Arduino/libraries/
