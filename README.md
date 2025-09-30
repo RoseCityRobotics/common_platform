@@ -262,7 +262,7 @@ Arduino provides an official `arduino-cli` tool. You can compile and upload Ardu
    arduino-cli core install teensy:avr --additional-urls https://www.pjrc.com/teensy/package_teensy_index.json
    ```
 
-#### 4. Transfer micro-ROS Arduino Library to Raspberry Pi
+4. Transfer micro-ROS Arduino Library to Raspberry Pi
 
 The required micro-ROS Arduino library is available in the repository: [micro_ros_arduino.zip](firmware/libraries/micro_ros_arduino.zip)
 
@@ -278,7 +278,7 @@ ssh rcr@192.168.1.n
 
 **Note:** Replace `n` with your specific IP address number (e.g., if your Pi's IP is 192.168.1.9, use `192.168.1.9`).
 
-#### 5. Setup micro-ROS Library and Compile Firmware
+5. Setup micro-ROS Library and Compile Firmware
 
 **What we're doing:** Now we're working directly on the Raspberry Pi to set up the micro-ROS library and compile the robot's firmware. The Raspberry Pi will handle the compilation process and then upload the compiled code to the Teensy microcontroller.
 
