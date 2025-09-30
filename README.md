@@ -314,7 +314,7 @@ Set custom IP address and setup networking:
 
 You can compile and upload Arduino code for a Teensy entirely from the Ubuntu command line, without using the Arduino IDE GUI. There are a couple of different approaches depending on what tooling you want:
 
-#### Method 1: Using Arduino CLI
+#### Use Arduino CLI
 
 Arduino provides an official `arduino-cli` tool.
 
