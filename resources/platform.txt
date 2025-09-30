@@ -1,6 +1,6 @@
 # https://www.pjrc.com/teensy/td_download.html
 # https://arduino.github.io/arduino-cli/latest/platform-specification/
-# https://arduino.github.io/arduino-cli/0.19/platform-specification/
+# https://arduino.github.io/arduino-cli/0.30/platform-specification/
 
 name=Teensyduino
 version=1.8.5
@@ -9,17 +9,26 @@ rewriting=disabled
 # Teensyduino Installer
 #compiler.path={runtime.hardware.path}/../tools/
 #teensytools.path={runtime.hardware.path}/../tools/
-compiler.libraries.ldflags=
 
 # Arduino Boards Manager
 compiler.path={runtime.tools.teensy-compile.path}/
 teensytools.path={runtime.tools.teensy-tools.path}/
 
 
+## Debugger - Experimental
+#debug.executable={build.path}/{build.project_name}.elf
+#debug.toolchain=gcc
+#debug.toolchain.path={compiler.path}{build.toolchain}
+#debug.toolchain.prefix=arm-none-eabi-
+#debug.server=openocd
+#debug.server.openocd.path={teensytools.path}tdebug
+#debug.server.openocd.scripts_dir=unused
+#debug.server.openocd.script=toolspath:{teensytools.path}:buildpath:{build.path}:name:{build.project_name}:board:{build.board}
 
 ## EEPROM Data
 compiler.objcopy.eep.flags=-O ihex -j .eeprom --set-section-flags=.eeprom=alloc,load --no-change-warnings --change-section-lma .eeprom=0
 compiler.elf2hex.flags=-O ihex -R .eeprom
+compiler.libraries.ldflags=
 
 ## Preprocessor Includes
 recipe.preproc.includes="{compiler.path}{build.toolchain}{build.command.g++}" -M -MG -MP -x c++ -w {build.flags.cpp} {build.flags.cpu} {build.flags.defs} -DARDUINO={runtime.ide.version} -DARDUINO_{build.board} -DF_CPU={build.fcpu} -D{build.usbtype} -DLAYOUT_{build.keylayout} {includes} "{source_file}"
@@ -48,7 +57,7 @@ recipe.S.o.pattern="{compiler.path}{build.toolchain}{build.command.gcc}" -c {bui
 recipe.ar.pattern="{compiler.path}{build.toolchain}{build.command.ar}" rcs "{archive_file_path}" "{object_file}"
 
 ## Link
-recipe.c.combine.pattern="{compiler.path}{build.toolchain}{build.command.linker}" {build.flags.optimize} {build.flags.ld} {build.flags.ldspecs} {build.flags.cpu} -o "{build.path}/{build.project_name}.elf" {object_files} "{build.path}/{archive_file}" {compiler.libraries.ldflags} "-L{build.path}" {build.flags.libs}
+recipe.c.combine.pattern="{compiler.path}{build.toolchain}{build.command.linker}" {build.flags.optimize} {build.flags.ld} {build.flags.ldspecs} {build.flags.cpu} -o "{build.path}/{build.project_name}.elf" {object_files} {compiler.libraries.ldflags} "{build.path}/{archive_file}" "-L{build.path}" {build.flags.libs}
 
 ## Patch ELF - TODO: not supported by modern Arduino...  :(
 recipe.elfpatch.pattern="{teensytools.path}/{build.elfpatch}" -mmcu={build.mcu} "{build.path}/{build.project_name}.elf" "{sketch_path}/disk"
@@ -71,7 +80,7 @@ recipe.hooks.postbuild.3.pattern="{teensytools.path}teensy_size" "{build.path}/{
 # objdump to create .lst file is VERY SLOW for huge files
 # https://forum.pjrc.com/threads/68121?p=288306&viewfull=1#post288306
 #
-# recipe.hooks.postbuild.4.pattern="{teensytools.path}stdout_redirect" "{build.path}/{build.project_name}.lst" "{compiler.path}{build.toolchain}{build.command.objdump}" -d -S -C "{build.path}/{build.project_name}.elf"
+recipe.hooks.postbuild.4.pattern="{teensytools.path}stdout_redirect" "{build.path}/{build.project_name}.lst" "{compiler.path}{build.toolchain}{build.command.objdump}" -d -S -C "{build.path}/{build.project_name}.elf"
 
 
 ## Compute size
