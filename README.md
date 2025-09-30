@@ -160,7 +160,11 @@ The Pololu Romi Chassis forms the physical structure of your robot.
 
 The required micro-ROS Arduino library is available in the repository: [micro_ros_arduino.zip](firmware/libraries/micro_ros_arduino.zip)
 
-From host:
+**What we're doing:** We need to transfer the micro-ROS library from your development computer (host) to the Raspberry Pi (RPi) that's connected to your robot. The Raspberry Pi serves as the main computer that will compile and upload firmware to the Teensy microcontroller.
+
+**Why SCP:** Secure Copy Protocol (SCP) allows us to securely transfer files over SSH to the Raspberry Pi. This is more reliable than other methods and works well over network connections.
+
+From your development computer (host):
 ```bash
 scp firmware/libraries/micro_ros_arduino.zip rcr@192.168.1.n:~
 ssh rcr@192.168.1.n
@@ -168,24 +172,38 @@ ssh rcr@192.168.1.n
 
 #### 5. Setup micro-ROS Library and Compile Firmware
 
-From RPi:
+**What we're doing:** Now we're working directly on the Raspberry Pi to set up the micro-ROS library and compile the robot's firmware. The Raspberry Pi will handle the compilation process and then upload the compiled code to the Teensy microcontroller.
+
+From the Raspberry Pi (RPi):
 ```bash
+# Navigate to home directory and set up Arduino libraries folder
 cd
 mkdir -p Arduino/libraries/
 mv micro_ros_arduino.zip Arduino/libraries/
 cd ~/Arduino/libraries/
+
+# Install unzip utility and extract the micro-ROS library
 sudo apt update
 sudo apt install unzip
 unzip micro_ros_arduino.zip
 
+# Navigate to the robot's firmware directory and create build folder
 cd ~/repos/common_platform/firmware/closed_loop/
 mkdir build
 cd build
+
+# Compile the firmware for Teensy 4.0 with dual serial USB support
 arduino-cli compile --fqbn teensy:avr:teensy40 --build-property build.usbtype=USB_DUAL_SERIAL --build-path . ../closed_loop.ino
+
+# Find the Teensy device and prepare it for programming
 SERIAL_TEENSY_DEVICE=`find /dev/serial/by-id/ -name "usb-Teensyduino*if00"|head -1`
-echo "-> Performing soft resset (baud = 134 hack). $SERIAL_TEENSY_DEVICE" #ensure your Teensy is powered on by checking that $SERIAL_TEENSY_DEVICE is not empty
+echo "-> Performing soft reset (baud = 134 hack). $SERIAL_TEENSY_DEVICE" #ensure your Teensy is powered on by checking that $SERIAL_TEENSY_DEVICE is not empty
+
+# Reset the Teensy into programming mode using the baud rate hack
 stty -F $SERIAL_TEENSY_DEVICE 9600
 stty -F $SERIAL_TEENSY_DEVICE 134
+
+# Verify Teensy is in bootloader mode and upload the firmware
 lsusb | grep Teensy; echo "-> Should be ready to program…" #look for Van Ooijen Technische Informatica Teensy Halfkay Bootloader in the output
 sudo teensy_loader_cli -v --mcu=TEENSY40 closed_loop.ino.hex
 ```
