@@ -223,8 +223,6 @@ g. Verify Teensy is ready and upload firmware:
    sudo teensy_loader_cli -v --mcu=TEENSY40 closed_loop.ino.hex
    ```
 
-_For detailed instructions, please refer to the [Documentation](https://parts-common-platform.readthedocs.io/en/latest/)_
-
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ### Direct connection to Raspberry Pi
