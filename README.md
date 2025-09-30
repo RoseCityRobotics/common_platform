@@ -274,13 +274,18 @@ The required micro-ROS Arduino library is available in the repository: [micro_ro
 
 **Why SCP:** Secure Copy Protocol (SCP) allows us to securely transfer files over SSH to the Raspberry Pi. This is more reliable than other methods and works well over network connections.
 
-From your development computer (host):
+From your development computer (host) in the commmon_platform directory:
+
+First update your directory with the latest changes from the https://github.com/roseCityRobotics/common_platform repository.
+```bash
+git pull origin main
+```
+
+From within the common_platform directory run this command **Note:** Replace `n` with your specific IP address number (e.g., if your Pi's IP is 192.168.1.9, use `192.168.1.9`).
 ```bash
 scp firmware/libraries/micro_ros_arduino.zip rcr@192.168.1.n:~
 ssh rcr@192.168.1.n
 ```
-
-**Note:** Replace `n` with your specific IP address number (e.g., if your Pi's IP is 192.168.1.9, use `192.168.1.9`).
 
 #### 5. Setup micro-ROS Library and Compile Firmware
 
