@@ -121,18 +121,6 @@ The Pololu Romi Chassis forms the physical structure of your robot.
 
 - Follow the [Romi Chassis Assembly Guide](https://www.pololu.com/docs/0J68/4) for detailed instructions on assembling the chassis.
 
-## Usage
-
-This section provides practical examples of how to use the Common Robotics Platform effectively. We'll start with a basic test to ensure your setup is functioning correctly.
-
-### Starting with the Basic Test
-
-1. **Flash the Teensy 4.0 Board:**
-   Begin by flashing the Teensy 4.0 board with the basic test code found in the repository at `/firmware/basic_test/basic_test.ino`. This initial test is crucial for validating your setup.
-
-2. **Expected Behavior:**
-   Upon successful flashing, the robot should exhibit a simple behavior pattern: moving forward, pausing, and then moving backward.
-
 ### <img src="github/img/raspberry-pi.png" alt="Raspberry Pi" width="20"> Direct Connection to Raspberry Pi
 Connect your micro HDMI cable to your Pi and monitor, and a keyboard to the USB-A port.
 
@@ -245,15 +233,15 @@ arduino-cli core install teensy:avr --additional-urls https://www.pjrc.com/teens
 
 #### 4. Transfer micro-ROS Arduino Library to Raspberry Pi
 
-The required micro-ROS Arduino library is available in the repository: [micro_ros_arduino.zip](firmware/libraries/micro_ros_arduino.zip)
+The required micro-ROS Arduino library is available in the repository: `firmware/libraries/micro_ros_arduino.zip` so we will  pull the repository to your development computer 🖥️ to access the file.
 
-**What we're doing:** We need to transfer the micro-ROS library from your development computer (host) to the Raspberry Pi (RPi) that's connected to your robot. The Raspberry Pi serves as the main computer that will compile and upload firmware to the Teensy microcontroller.
+**What we're doing:** We need to transfer the micro-ROS library from your development computer (host) 🖥️ to the Raspberry Pi (RPi) <img src="github/img/raspberry-pi.png" alt="Raspberry Pi" width="16"> that's connected to your robot. The Raspberry Pi serves as the main computer that will compile and upload firmware to the Teensy microcontroller.
 
 **Why SCP:** Secure Copy Protocol (SCP) allows us to securely transfer files over SSH to the Raspberry Pi. This is more reliable than other methods and works well over network connections.
 
 **🖥️ From your development computer (host)** in the common_platform directory:
 
-First update your directory with the latest changes from the https://github.com/roseCityRobotics/common_platform repository.
+First update your directory with the latest changes from the https://github.com/roseCityRobotics/common_platform repository including the .zip file you'll need next.
 ```bash
 git pull origin main
 ```
@@ -314,6 +302,20 @@ g. Verify Teensy is ready and upload firmware:
    lsusb | grep Teensy; echo "-> Should be ready to program…"
    sudo teensy_loader_cli -v --mcu=TEENSY40 closed_loop.ino.hex
    ```
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+## Usage
+
+This section provides practical examples of how to use the Common Robotics Platform effectively. We'll start with a basic test to ensure your setup is functioning correctly.
+
+### Starting with the Basic Test
+
+1. **Flash the Teensy 4.0 Board:**
+   Begin by flashing the Teensy 4.0 board with the basic test code found in the repository at `/firmware/basic_test/basic_test.ino`. This initial test is crucial for validating your setup.
+
+2. **Expected Behavior:**
+   Upon successful flashing, the robot should exhibit a simple behavior pattern: moving forward, pausing, and then moving backward.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
