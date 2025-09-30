@@ -366,11 +366,6 @@ Arduino provides an official `arduino-cli` tool.
 - 👉 **Pros:** Official Arduino tool, integrates with Arduino library manager
 - 👉 **Cons:** Teensy support sometimes lags behind — you may need to install Paul Stoffregen's Teensyduino core manually
 
-#### Setting up micro-ROS for Teensy
-
-In step 4 above, we've outlined building the precompiled library using Docker commands. For more information, follow the info here:
-
-📖 **Reference:** [micro-ROS Arduino - How to build the precompiled library](https://github.com/micro-ROS/micro_ros_arduino?tab=readme-ov-file#how-to-build-the-precompiled-library)
 ## Usage
 
 This section provides practical examples of how to use the PARTS Common Robotics Platform effectively. We'll start with a basic test to ensure your setup is functioning correctly.
