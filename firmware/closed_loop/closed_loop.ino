@@ -257,7 +257,7 @@ void parseCommand(const char *const cmd) {
       }
       break;
 
-    // Differential PID Tuning Commands (Non-ROS)
+    // Differential PID Tuning Commands (Non-ROS only)
     case 'P':
       {
         float value = (cmd[1] != '\0') ? atof(cmd + 1) : 0.0f;
@@ -289,6 +289,10 @@ void parseCommand(const char *const cmd) {
       }
       break;
 
+#endif  // !ROS Specific Commands
+
+    // --- Commands Available in Both ROS and Non-ROS Modes ---
+    
     // Motor Balance/Scaling Commands
     case 'B':  // Balance motors (scale factors)
       {
@@ -448,6 +452,7 @@ void parseCommand(const char *const cmd) {
       SERIAL_OUT.println("=== Available Commands ===");
       SERIAL_OUT.println("M - Toggle motor drive on/off");
       SERIAL_OUT.println("X - Reset all state");
+#if !ROS
       SERIAL_OUT.println("L<degrees> - Turn left");
       SERIAL_OUT.println("R<degrees> - Turn right");
       SERIAL_OUT.println("F<meters> - Move forward/backward");
@@ -455,6 +460,7 @@ void parseCommand(const char *const cmd) {
       SERIAL_OUT.println("P<value> - Set differential PID P");
       SERIAL_OUT.println("I<value> - Set differential PID I");
       SERIAL_OUT.println("D<value> - Set differential PID D");
+#endif
       SERIAL_OUT.println("B<scale> - Set left motor scale (0.5-2.0)");
       SERIAL_OUT.println("N<scale> - Set right motor scale (0.5-2.0)");
       SERIAL_OUT.println("Q<value> - Set left motor PID P");
@@ -472,8 +478,6 @@ void parseCommand(const char *const cmd) {
       SERIAL_OUT.println("H - Show this help");
       commandProcessed = true;
       break;
-
-#endif  // !ROS Specific Commands
 
     default:
       SERIAL_OUT.print("Error: Unknown command '");
