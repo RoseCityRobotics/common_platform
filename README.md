@@ -35,9 +35,7 @@
 
 <br>
 <p align="center">
-  <a href="https://www.pololu.com/category/203/romi-chassis-kits">
-    <img src="github/img/romi.png" alt="Romi Chassis">
-  </a>
+  <img src="github/img/side_image_lidar.jpg" alt="Side view with LiDAR sensor" width="500">
 </p>
 <br>
 
@@ -70,80 +68,6 @@ This project implements a complete robotics platform built on the Pololu Romi Ch
 The platform now features a complete ROS2 integration with micro-ROS running on the Teensy 4.0, enabling real-time communication between the Raspberry Pi and the robot's sensors and actuators. The system supports autonomous navigation, sensor fusion, and closed-loop control, making it an ideal platform for robotics education and development in the Portland Area Robotics Society.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-## Bill of Materials (BOM)
-
-**Total Estimated Cost:** ~$985 (including assembly and shipping)
-
-### Core Platform Components
-
-| Item | Description | Quantity | Unit Price | Total | Supplier |
-|:-----|:------------|:--------:|:----------:|:-----:|:---------|
-| [Romi Chassis Kit](https://www.pololu.com/category/203/romi-chassis-kits) | Primary chassis platform | 1 | $39.95 | $39.95 | Pololu |
-| [Romi Chassis Caster](https://www.pololu.com/product/3530) | Rear support caster wheel | 1 | $3.95 | $3.95 | Pololu |
-| [Romi Encoder Pair](https://www.pololu.com/product/3542) | Wheel encoder sensors | 1 | $9.95 | $9.95 | Pololu |
-
-### Motor Control & Power
-
-| Item | Description | Quantity | Unit Price | Total | Supplier |
-|:-----|:------------|:--------:|:----------:|:-----:|:---------|
-| [TB9051FTG Motor Driver](https://www.pololu.com/product/2997/resources) | Single brushed DC motor driver | 2 | $11.95 | $23.90 | Pololu |
-| [5V Step-Down Regulator](https://www.pololu.com/product/2858/resources) | Pololu D24V22F5 2.5A regulator | 1 | $8.95 | $8.95 | Pololu |
-| [SPDT Slide Switch](https://www.pololu.com/product/1408) | Power switches | 2 | $1.69 | $3.38 | Pololu |
-| [IRFU5505PBF MOSFET](https://www.digikey.com/product-detail/en/infineon-technologies/IRFU5505PBF/IRFU5505PBF-ND/812417) | Power switching transistor | 2 | $0.86 | $1.72 | Digikey |
-| [LiPo Battery](https://www.getfpv.com/lumenier-5200mah-4s-35c-lipo-battery.html) | 14.8V 5200mAh power source | 1 | $93.49 | $93.49 | GetFPV |
-
-### Computing & Processing
-
-| Item | Description | Quantity | Unit Price | Total | Supplier |
-|:-----|:------------|:--------:|:----------:|:-----:|:---------|
-| [Teensy 4.0](https://www.pjrc.com/store/teensy40.html) | Real-time motor control MCU | 1 | $23.80 | $23.80 | PJRC |
-| [Raspberry Pi 5 16GB](https://www.pishop.us/product/raspberry-pi-5-16gb/) | Main computer with cooler & PSU | 1 | $144.90 | $144.90 | PiShop |
-| [Raspberry Pi AI HAT+](https://www.pishop.us/product/raspberry-pi-ai-hat-26-tops/) | 26 TOPS AI acceleration | 1 | $119.95 | $119.95 | PiShop |
-
-### Sensors
-
-| Item | Description | Quantity | Unit Price | Total | Supplier |
-|:-----|:------------|:--------:|:----------:|:-----:|:---------|
-| [MPU-9250 IMU](https://www.amazon.com/HiLetgo-Gyroscope-Acceleration-Accelerator-Magnetometer/dp/B01I1J0Z7Y) | 9DOF inertial measurement unit | 1 | $14.99 | $14.99 | Amazon |
-| [Pi HQ Camera](https://www.pishop.us/product/imx219-83-stereo-camera-8mp-binocular-camera-module-depth-vision/) | High quality camera module | 1 | $53.95 | $53.95 | PiShop |
-| [RPLIDAR Model A1M8](https://www.amazon.com/Slamtec-RPLIDAR-Scanning-Avoidance-Navigation/dp/B07TJW5SXF) | 2D 360 Degree 12 Meters Scanning Radius LIDAR | 1 | $89.60 | $89.60 | Slamtech |
-
-### Custom PCB & Integration
-
-| Item | Description | Quantity | Unit Price | Total | Supplier |
-|:-----|:------------|:--------:|:----------:|:-----:|:---------|
-| Motor Control PCB | Custom PCB for Teensy & drivers | 1 | $40.00 | $40.00 | Custom |
-
-### Assembly Images
-
-*Mobile base platform - unassembled components*
-
-<img src="github/img/stack_platform_unassembled.jpg" alt="Mobile base platform" width="500">
-
-*Assembled chassis with controller*
-
-<img src="github/img/stack_with_controller.jpg" alt="Mobile base platform assembly" width="500">
-
-*Custom PCB showing integrated motor drivers and controller connections*
-
-<img src="github/img/stack_ports_plus_controller.jpg" alt="Custom PCB with ports and controller" width="500">
-
-*Completed chassis - top view with Raspberry Pi AI HAT+*
-
-<img src="github/img/stack_top.jpg" alt="Assembled Platform - Top View" width="500">
-
-*Raspberry Pi 5 with AI HAT+*
-
-<img src="github/img/raspberry_pi_ai.jpg" alt="Raspberry Pi 5 with AI HAT+" width="500">
-
-*Side view with LiDAR sensor mounted*
-
-<img src="github/img/side_image_lidar.jpg" alt="Side view with LiDAR sensor" width="500">
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
 
 ### Built With
 
@@ -196,6 +120,18 @@ Solder accessories like the Inertial Measurement Unit (IMU), ensuring proper ori
 The Pololu Romi Chassis forms the physical structure of your robot.
 
 - Follow the [Romi Chassis Assembly Guide](https://www.pololu.com/docs/0J68/4) for detailed instructions on assembling the chassis.
+
+## Usage
+
+This section provides practical examples of how to use the Common Robotics Platform effectively. We'll start with a basic test to ensure your setup is functioning correctly.
+
+### Starting with the Basic Test
+
+1. **Flash the Teensy 4.0 Board:**
+   Begin by flashing the Teensy 4.0 board with the basic test code found in the repository at `/firmware/basic_test/basic_test.ino`. This initial test is crucial for validating your setup.
+
+2. **Expected Behavior:**
+   Upon successful flashing, the robot should exhibit a simple behavior pattern: moving forward, pausing, and then moving backward.
 
 ### Direct Connection to Raspberry Pi
 Connect your micro HDMI cable to your Pi and monitor, and a keyboard to the USB-A port.
@@ -381,21 +317,35 @@ g. Verify Teensy is ready and upload firmware:
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-## Usage
+### Assembly Images
 
-This section provides practical examples of how to use the PARTS Common Robotics Platform effectively. We'll start with a basic test to ensure your setup is functioning correctly.
+*Mobile base platform - unassembled components*
 
-### Starting with the Basic Test
+<img src="github/img/stack_platform_unassembled.jpg" alt="Mobile base platform" width="500">
 
-1. **Flash the Teensy 4.0 Board:**
-   Begin by flashing the Teensy 4.0 board with the basic test code found in the repository at `/firmware/basic_test/basic_test.ino`. This initial test is crucial for validating your setup.
+*Assembled chassis with controller*
 
-2. **Expected Behavior:**
-   Upon successful flashing, the robot should exhibit a simple behavior pattern: moving forward, pausing, and then moving backward.
+<img src="github/img/stack_with_controller.jpg" alt="Mobile base platform assembly" width="500">
 
+*Custom PCB showing integrated motor drivers and controller connections*
 
+<img src="github/img/stack_ports_plus_controller.jpg" alt="Custom PCB with ports and controller" width="500">
 
-See the [open issues](https://github.com/portlandrobotics/common_platform/issues) for a full list of proposed features (and known issues).
+*Completed chassis - top view with Raspberry Pi AI HAT+*
+
+<img src="github/img/stack_top.jpg" alt="Assembled Platform - Top View" width="500">
+
+*Raspberry Pi 5 with AI HAT+*
+
+<img src="github/img/raspberry_pi_ai.jpg" alt="Raspberry Pi 5 with AI HAT+" width="500">
+
+*Side view with LiDAR sensor mounted*
+
+<img src="github/img/side_image_lidar.jpg" alt="Side view with LiDAR sensor" width="500">
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+See the [open issues](https://github.com/rosecityrobotics/common_platform/issues) for a full list of proposed features (and known issues).
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
