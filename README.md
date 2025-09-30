@@ -273,31 +273,39 @@ b. Install unzip and extract the micro-ROS library:
    unzip micro_ros_arduino.zip
    ```
 
-c. Navigate to firmware directory and create build folder:
+c. Navigate to the common_platform repository, update it, and place the arduino-cli config files in the correct place
+  ```bash
+  cd ~/repos/common_platform/
+  git checkout main
+  git pull
+  scripts/place_arduino-cli_config.sh
+  ```
+
+d. Navigate to firmware directory and create build folder:
    ```bash
    cd ~/repos/common_platform/firmware/closed_loop/
    mkdir build
    cd build
    ```
 
-d. Compile the firmware for Teensy 4.0:
+e. Compile the firmware for Teensy 4.0:
    ```bash
    arduino-cli compile --fqbn teensy:avr:teensy40 --build-property build.usbtype=USB_DUAL_SERIAL --build-path . ../closed_loop.ino
    ```
 
-e. Find the Teensy device:
+f. Find the Teensy device:
    ```bash
    SERIAL_TEENSY_DEVICE=`find /dev/serial/by-id/ -name "usb-Teensyduino*if00"|head -1`
    echo "-> Performing soft reset (baud = 134 hack). $SERIAL_TEENSY_DEVICE"
    ```
 
-f. Reset Teensy into programming mode:
+g. Reset Teensy into programming mode:
    ```bash
    stty -F $SERIAL_TEENSY_DEVICE 9600
    stty -F $SERIAL_TEENSY_DEVICE 134
    ```
 
-g. Verify Teensy is ready and upload firmware:
+h. Verify Teensy is ready and upload firmware:
    ```bash
    lsusb | grep Teensy; echo "-> Should be ready to program…"
    sudo teensy_loader_cli -v --mcu=TEENSY40 closed_loop.ino.hex
