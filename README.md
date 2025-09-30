@@ -170,6 +170,8 @@ scp firmware/libraries/micro_ros_arduino.zip rcr@192.168.1.n:~
 ssh rcr@192.168.1.n
 ```
 
+**Note:** Replace `n` with your specific IP address number (e.g., if your Pi's IP is 192.168.1.9, use `192.168.1.9`).
+
 #### 5. Setup micro-ROS Library and Compile Firmware
 
 **What we're doing:** Now we're working directly on the Raspberry Pi to set up the micro-ROS library and compile the robot's firmware. The Raspberry Pi will handle the compilation process and then upload the compiled code to the Teensy microcontroller.
