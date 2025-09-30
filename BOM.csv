@@ -1,14 +1,79 @@
-,,,,,,,
-,Name,Quantity,Description,URL,Price (each),,
-,"Motor Driver
+Name,Quantity,Description,Price (each),Total,URL
+"Motor Driver
 ",2,"TB9051FTG Single Brushed DC Motor Driver Carrier
-",https://www.pololu.com/product/2997/resources,$11.95,,
-,Voltage Regulator,1,"Pololu 5V, 2.5A Step-Down Voltage Regulator D24V22F5",https://www.pololu.com/product/2858/resources,$8.95,,
-,IMU,1,MPU-9250 9DOF Module Nine-axis,https://www.amazon.com/HiLetgo-Gyroscope-Acceleration-Accelerator-Magnetometer/dp/B01I1J0Z7Y/ref=sr_1_3?keywords=mpu-9250&qid=1699221278&sr=8-3,$14.99,,
-,Chassis,1,Romi Chasis Kit,https://www.pololu.com/category/203/romi-chassis-kits,$39.95,,
-,Wheel Encoders,1,Romi Encoder (pair),https://www.pololu.com/product/3542,$9.95,,
-,Caster,1,Romi Chasis Caster,https://www.pololu.com/product/3530,$3.95,,
-,Processor,1,Teensy 4.0,https://www.pjrc.com/store/teensy40.html,$23.80,,
-,Switch,2,SPDT slide switch,https://www.pololu.com/product/1408,$1.69,,
-,MOSFET,2,MOSFET,https://www.digikey.com/product-detail/en/infineon-technologies/IRFU5505PBF/IRFU5505PBF-ND/812417,0.86,,
-,Chassis,1,Alternate chassis,https://www.sparkfun.com/products/16405,14.95,,
+",$11.95,$23.90 ,https://www.pololu.com/product/2997/resources
+Voltage Regulator,1,"Pololu 5V, 2.5A Step-Down Voltage Regulator D24V22F5",$8.95,$8.95 ,https://www.pololu.com/product/2858/resources
+IMU,1,MPU-9250 9DOF Module Nine-axis,$14.99,$14.99 ,https://www.amazon.com/HiLetgo-Gyroscope-Acceleration-Accelerator-Magnetometer/dp/B01I1J0Z7Y/ref=sr_1_3?keywords=mpu-9250&qid=1699221278&sr=8-3
+Chassis,1,Romi Chasis Kit,$39.95,$39.95 ,https://www.pololu.com/category/203/romi-chassis-kits
+Wheel Encoders,1,Romi Encoder (pair),$9.95,$9.95 ,https://www.pololu.com/product/3542
+Caster,1,Romi Chasis Caster,$3.95,$3.95 ,https://www.pololu.com/product/3530
+Processor,1,Teensy 4.0,$23.80,$23.80 ,https://www.pjrc.com/store/teensy40.html
+Switch,2,SPDT slide switch,$1.69,$3.38 ,https://www.pololu.com/product/1408
+MOSFET,2,MOSFET,$0.86,$1.72 ,https://www.digikey.com/product-detail/en/infineon-technologies/IRFU5505PBF/IRFU5505PBF-ND/812417
+AI Compute,1,Raspberry Pi AI HAT+ 26 TOPS,$119.95,$119.95 ,https://www.pishop.us/product/raspberry-pi-ai-hat-26-tops/
+Computer,1,Raspberry Pi 5 / 16 GB with active cooler and power supply,$144.90,$144.90 ,https://www.pishop.us/product/raspberry-pi-5-16gb/
+Pi HQ Camera,1,"Raspberry Pi HQ Camera M12
+SKU: 942-1: 2.7mm 12MP Wide-Angle Lens
+SKU: 819-1: Universal Tilt-Adjustable Mount",$97.85,$97.85 ,
+"Motor Control PCB
+",1,Custom PCB to mount motor controller and Teensy,$20.00,$20.00 ,https://github.com/portlandrobotics/common_platform/tree/665b2a9ae5a72f6d04d19fb59966c4b148ab0bfb/hardware/romi_board
+Lidar,1,Slamtec RPLIDAR A1M8-R6,$89.60,$89.60 ,https://www.amazon.com/dp/B0923RYT8V?ref=ppx_yo2ov_dt_b_fed_asin_title
+Camera Cable,1,Camera cable for Raspberry Pi 5,$2.65,$2.65 ,https://www.pishop.us/product/camera-cable-for-raspberry-pi-5/?searchid=0&search_query=raspberry+pi+camera+cable%5D%5C
+Chassis Expansion,1,Romi Chassis Expansion Plate,$6.49,$6.49 ,https://www.pololu.com/product/3560/specs
+Standoffs,,M2 20 mm,,$0.00 ,
+Standoffs,,M2 5 mm,,$0.00 ,
+Standoffs,4,M2.5 15 mm,,$0.00 ,
+Standoffs,4,M2.5 5 mm,,$0.00 ,
+Standoffs,2,M2.5 10 mm,,$0.00 ,
+,,,,$0.00 ,
+,,,,$0.00 ,
+Hardware,,M2 screws,,$0.00 ,
+Hardware,,M2 nuts,,$0.00 ,
+Hardware,,M2.5 screws,,$0.00 ,
+Hardware,,M2.5 nuts,,$0.00 ,
+Batteries,1,8-Pack Rechargeable AA Batteries with Dual-Mode Charger for Lithium & NiMH Batteries 3600mWh High Capacity AA Li-ion Battery,$22.50,$22.50 ,https://www.amazon.com/dp/B0DRVBK4LC?ref=ppx_yo2ov_dt_b_fed_asin_title
+Storage,,MicroSD card 128GB Amazon Basics,$11.99,$0.00 ,https://www.amazon.com/gp/product/B08TJRVWV1/ref=ox_sc_act_title_1?smid=A2Q1LRYTXHYQ2K&th=1
+Power cord,,USB C to 2 pin bare wire,$2.48,$0.00 ,https://www.amazon.com/dp/B0CY2J5H3K?ref=fed_asin_title&th=1
+Wire,,red/black 18 gauge,$0.10,$0.00 ,https://www.amazon.com/GS-Power-Automotive-Spool-Red-Electrical/dp/B07D74RGVM/ref=sr_1_5?crid=31AZD1FH7SKNX&dib=eyJ2IjoiMSJ9.4rIqyMb-6kJhqdaF1TKTOCrH6Q3rJy5gmbtGnW0n4BEEDviWm7AcESbJbRjZrThjf1LLOLTZ_JKwE9AEdX5x8YvVX9_LBzr7RWPrHvs34xW5RJtm5P5q-A4vCuVkWX23OYKj7SqO16XxCKEjD2ONaTTbkK4GcwkiuuxHHoPh_NHj_NXeEbVYtLs7Dmk3ePAFkNKqXgf3OdWaXItvw8mDX98KSMOITewVWFtTnjdx2e74Ih0qDiOGKwJScK6Aa-hRTMLYnzRJp93gEQucy479VjAt9egWotsb84PMYRCrEQg.JmxoOQtJPNnbGV_W9gqMEWo9QM6X_AoTyKgKE-4u2Rs&dib_tag=se&keywords=red%2Bwire%2B18%2Bgauge&qid=1757722157&s=electronics&sprefix=red%2Bwire%2B18%2Bgauge%2Celectronics%2C148&sr=1-5&th=1
+Header,1,female 1 position,,$0.00 ,
+Header,1,female 2 position,,$0.00 ,
+Header,2,female 3 position,,$0.00 ,
+Header,2,female 4 position,,$0.00 ,
+Header,1,female 5 position,,$0.00 ,
+Header,2,female 6 position,,$0.00 ,
+Header,2,female 10 position,,$0.00 ,
+Header,2,female 14 position,,$0.00 ,
+Header,5,male 4 position,,$0.00 ,
+Header,1,"male 10 position, 2 rows",,$0.00 ,
+Header,1,"male 12 position, 2 rows",,$0.00 ,
+Header,1,male 2 position,,$0.00 ,
+Header,2,male 6 position,,$0.00 ,
+Header,2,male 14 position,,$0.00 ,
+Resistor,4,"4.7 kOhms, 1/4 watt",,$0.00 ,
+Resistor,1,"2 MOhms, 1/4 watt",,$0.00 ,
+Resistor,1,"1 MOhms, 1/4 watt",,$0.00 ,
+Resistor,2,"10 kOhms, 1/4 watt (comes with ultrasonic sensor)",$0.00,$0.00 ,
+Resistor,1,"1 kOhm, 1/4 watt",,$0.00 ,
+LED,1,green light power on,,$0.00 ,
+Capacitor,4,".1 nF, SMD:C_0805_2012Metric_Pad1.18x1.45mm_HandSolder",,$0.00 ,
+Capacitor,1,"470 uF, THT:CP_Radial_D6.3mm_P2.50mm",,$0.00 ,
+Capacitor,1,".1 uF, THT:C_Disc_D5.0mm_W2.5mm_P5.00mm",,$0.00 ,
+Ultrasonic Sensor,1,HC-SR04,,$0.00 ,
+Ultrasonic Sensor Mount,1,Mount for ultrasonic sensor,$1.75,$1.75 ,https://www.ebay.com/itm/224786207610
+Input,1,Logitec Keyboard/Mouse,$24.99,$24.99 ,
+Heat Shrink,2,"red/black 1/8""",$0.21,$0.42 ,
+Display Cable,1,"Micro HDMI to HDMI, 6 ft",$7.45,$7.45 ,https://www.pishop.us/product/microhdmi-hdmi-cable-6ft/
+Lidar Cable,1,Micro USB to USB A male,$2.95,$2.95 ,https://www.pishop.us/product/usb-a-male-to-usb-micro-b-cable-6-inches/?searchid=0&search_query=USB+2.0+A+MALE+TO
+Teensy Cable,1,L-Micro USB to USB A male,$2.95,$2.95 ,https://www.pishop.us/product/usb-2-0-a-male-to-l-shape-micro-b-male-cable-6inch/
+Digikey Bulk Order,1,"Resisters, Headers, Capacitors",$52.50,$52.50 ,Digikey
+Amazon Bulk Order,1,Standoffs,$2.50,$2.50 ,Amazon
+Screwdriver,1,"Sunex 11P1X3H Phillips Screwdriver #1 x 3"" with Bolster",$3.52,$3.52 ,Amazon
+Screwdriver,1,"HARFINGTON PH00 Mini Phillips Screwdriver #00 3.1""",$0.29,$0.29 ,Amazon
+Rubber band,1,Size #27,$0.01,$0.01 ,
+Total Hardware BOM,,,,$733.86 ,
+,,,,,
+Soldering,1,Soldering custom electronics boards (paid out to students and interns),$195.00,$195.00 ,
+Shipping,1,Shipping / Tarrifs / Taxes Paid,$25.00,$25.00 ,
+Credit Card Fees,1,Transaction fees,$33.39,$33.39 ,
+,,,,,
+Total Cost,,,,$987.25 ,
