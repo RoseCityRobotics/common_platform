@@ -225,18 +225,18 @@ g. Verify Teensy is ready and upload firmware:
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-### Direct connection to Raspberry Pi
-Connect your micro HDMI cable to your Pi and monitor and a keyboard into the USB-a port.
+### Direct Connection to Raspberry Pi
+Connect your micro HDMI cable to your Pi and monitor, and a keyboard to the USB-A port.
 
 ### Ubuntu Login on Raspberry Pi
-user: `rcr`
-password: `siliconforest`
+- **User:** `rcr`
+- **Password:** `siliconforest`
 
-### Accessing the Pi remotely via ssh
-Both the external device and the robot must both be on the same wifi for ssh to work. Use the static IP address of your Pi to ssh, the command will look something like `ssh@192.168.1.n` where `n` is your id, for example `ssh@192.168.1.9`.
+### Accessing the Pi Remotely via SSH
+Both the external device and the robot must be on the same WiFi for SSH to work. Use the static IP address of your Pi to SSH. The command will look something like `ssh rcr@192.168.1.n` where `n` is your ID, for example `ssh rcr@192.168.1.9`.
 
-### Host settings
-The host has been preset for you as rcr00_ with your specific id. To update the hostname:
+### Host Settings
+The host has been preset for you as `rcr00_` with your specific ID. To update the hostname:
 
 1. Update the hostname for the robot:
    ```bash
@@ -262,7 +262,7 @@ The host has been preset for you as rcr00_ with your specific id. To update the 
 
 ### Network Configuration
 
-Set custom IP address and setup networking:
+Set custom IP address and set up networking:
 
 1. Edit the netplan configuration:
    ```bash
@@ -299,12 +299,12 @@ Set custom IP address and setup networking:
 
 ### Testing SSH Connection
 
-1. **On the Pi:** Make sure the IP address is assigned
+1. **On the Pi:** Make sure the IP address is assigned:
    ```bash
    hostname -I
    ```
 
-2. **On the other computer:** Connect via SSH
+2. **On the other computer:** Connect via SSH:
    ```bash
    ssh rcr@192.168.1.n
    ```
@@ -312,7 +312,7 @@ Set custom IP address and setup networking:
 
 ### Teensy Programming
 
-You can compile and upload Arduino code for a Teensy entirely from the Ubuntu command line, without using the Arduino IDE GUI. There are a couple of different approaches depending on what tooling you want:
+You can compile and upload Arduino code for a Teensy entirely from the Ubuntu command line without using the Arduino IDE GUI. There are a couple of different approaches depending on what tooling you want:
 
 #### Use Arduino CLI
 
@@ -321,8 +321,6 @@ Arduino provides an official `arduino-cli` tool.
 1. **Install Arduino CLI:**
    ```bash
    curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh
-   ```
-   ```
    mv bin/arduino-cli ~/.local/bin/
    ```
 
@@ -334,7 +332,6 @@ Arduino provides an official `arduino-cli` tool.
 3. **Add Teensy board support:**
    ```bash
    arduino-cli core update-index
-
    arduino-cli core install teensy:avr --additional-urls https://www.pjrc.com/teensy/package_teensy_index.json
    ```
 
@@ -344,27 +341,24 @@ Arduino provides an official `arduino-cli` tool.
 
    ```bash
    sudo docker pull microros/micro_ros_static_library_builder:kilted
-   ```
-
-   ```bash
    git clone https://github.com/micro-ROS/micro_ros_arduino
    ```
 
-   A specific single target can be built using the `-p <LIBRARY_TARGET>` argument. Run this command from inside the `micro-ROS/micro_ros_arduino` repository.
+   A specific single target can be built using the `-p <LIBRARY_TARGET>` argument. Run this command from inside the `micro-ROS/micro_ros_arduino` repository:
 
    ```bash
    sudo docker run -it --rm -v $(pwd):/project --env MICROROS_LIBRARY_FOLDER=extras microros/micro_ros_static_library_builder:kilted -p teensy4
+   ```
 
-4. **Compile and upload:**
+5. **Compile and upload:**
    ```bash
    arduino-cli compile --fqbn teensy:avr:teensy40 path/to/sketch
-
    arduino-cli upload -p /dev/ttyACM0 --fqbn teensy:avr:teensy40 ~/repos/common_platform/firmware/closed_loop/closed_loop.ino
    ```
 
 **Pros and Cons:**
 - 👉 **Pros:** Official Arduino tool, integrates with Arduino library manager
-- 👉 **Cons:** Teensy support sometimes lags behind — you may need to install Paul Stoffregen's Teensyduino core manually
+- 👉 **Cons:** Teensy support sometimes lags behind—you may need to install Paul Stoffregen's Teensyduino core manually
 
 ## Usage
 
@@ -403,10 +397,10 @@ _For more examples, please refer to the [Documentation](https://parts-common-pla
 - [ ] ROS2 Setup
     - [ ] micro-ROS + ROS2 Humble
     - [ ] control
-    - [ ] commuication
+     - [ ] Communication
     - [ ] navigation
     - [ ] avoidance
- - [ ] Demo of system
+- [ ] Demo of system
 
 
 See the [open issues](https://github.com/portlandrobotics/common_platform/issues) for a full list of proposed features (and known issues).
