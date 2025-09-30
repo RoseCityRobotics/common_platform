@@ -156,75 +156,6 @@ The Pololu Romi Chassis forms the physical structure of your robot.
 
 - Follow the [Romi Chassis Assembly Guide](https://www.pololu.com/docs/0J68/4) for detailed instructions on assembling the chassis.
 
-#### 4. Transfer micro-ROS Arduino Library to Raspberry Pi
-
-The required micro-ROS Arduino library is available in the repository: [micro_ros_arduino.zip](firmware/libraries/micro_ros_arduino.zip)
-
-**What we're doing:** We need to transfer the micro-ROS library from your development computer (host) to the Raspberry Pi (RPi) that's connected to your robot. The Raspberry Pi serves as the main computer that will compile and upload firmware to the Teensy microcontroller.
-
-**Why SCP:** Secure Copy Protocol (SCP) allows us to securely transfer files over SSH to the Raspberry Pi. This is more reliable than other methods and works well over network connections.
-
-From your development computer (host):
-```bash
-scp firmware/libraries/micro_ros_arduino.zip rcr@192.168.1.n:~
-ssh rcr@192.168.1.n
-```
-
-**Note:** Replace `n` with your specific IP address number (e.g., if your Pi's IP is 192.168.1.9, use `192.168.1.9`).
-
-#### 5. Setup micro-ROS Library and Compile Firmware
-
-**What we're doing:** Now we're working directly on the Raspberry Pi to set up the micro-ROS library and compile the robot's firmware. The Raspberry Pi will handle the compilation process and then upload the compiled code to the Teensy microcontroller.
-
-From the Raspberry Pi (RPi):
-
-a. Set up Arduino libraries directory:
-   ```bash
-   cd
-   mkdir -p Arduino/libraries/
-   mv micro_ros_arduino.zip Arduino/libraries/
-   cd ~/Arduino/libraries/
-   ```
-
-b. Install unzip and extract the micro-ROS library:
-   ```bash
-   sudo apt update
-   sudo apt install unzip
-   unzip micro_ros_arduino.zip
-   ```
-
-c. Navigate to firmware directory and create build folder:
-   ```bash
-   cd ~/repos/common_platform/firmware/closed_loop/
-   mkdir build
-   cd build
-   ```
-
-d. Compile the firmware for Teensy 4.0:
-   ```bash
-   arduino-cli compile --fqbn teensy:avr:teensy40 --build-property build.usbtype=USB_DUAL_SERIAL --build-path . ../closed_loop.ino
-   ```
-
-e. Find the Teensy device:
-   ```bash
-   SERIAL_TEENSY_DEVICE=`find /dev/serial/by-id/ -name "usb-Teensyduino*if00"|head -1`
-   echo "-> Performing soft reset (baud = 134 hack). $SERIAL_TEENSY_DEVICE"
-   ```
-
-f. Reset Teensy into programming mode:
-   ```bash
-   stty -F $SERIAL_TEENSY_DEVICE 9600
-   stty -F $SERIAL_TEENSY_DEVICE 134
-   ```
-
-g. Verify Teensy is ready and upload firmware:
-   ```bash
-   lsusb | grep Teensy; echo "-> Should be ready to program…"
-   sudo teensy_loader_cli -v --mcu=TEENSY40 closed_loop.ino.hex
-   ```
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
 ### Direct Connection to Raspberry Pi
 Connect your micro HDMI cable to your Pi and monitor, and a keyboard to the USB-A port.
 
@@ -335,30 +266,74 @@ Arduino provides an official `arduino-cli` tool.
    arduino-cli core install teensy:avr --additional-urls https://www.pjrc.com/teensy/package_teensy_index.json
    ```
 
-4. **Build the precompiled library:**
+#### 4. Transfer micro-ROS Arduino Library to Raspberry Pi
 
-   If you need to add custom packages or types, or customize any internal parameter of the micro-ROS stack, you will need to recompile this library from source code:
+The required micro-ROS Arduino library is available in the repository: [micro_ros_arduino.zip](firmware/libraries/micro_ros_arduino.zip)
 
+**What we're doing:** We need to transfer the micro-ROS library from your development computer (host) to the Raspberry Pi (RPi) that's connected to your robot. The Raspberry Pi serves as the main computer that will compile and upload firmware to the Teensy microcontroller.
+
+**Why SCP:** Secure Copy Protocol (SCP) allows us to securely transfer files over SSH to the Raspberry Pi. This is more reliable than other methods and works well over network connections.
+
+From your development computer (host):
+```bash
+scp firmware/libraries/micro_ros_arduino.zip rcr@192.168.1.n:~
+ssh rcr@192.168.1.n
+```
+
+**Note:** Replace `n` with your specific IP address number (e.g., if your Pi's IP is 192.168.1.9, use `192.168.1.9`).
+
+#### 5. Setup micro-ROS Library and Compile Firmware
+
+**What we're doing:** Now we're working directly on the Raspberry Pi to set up the micro-ROS library and compile the robot's firmware. The Raspberry Pi will handle the compilation process and then upload the compiled code to the Teensy microcontroller.
+
+From the Raspberry Pi (RPi):
+
+a. Set up Arduino libraries directory:
    ```bash
-   sudo docker pull microros/micro_ros_static_library_builder:kilted
-   git clone https://github.com/micro-ROS/micro_ros_arduino
+   cd
+   mkdir -p Arduino/libraries/
+   mv micro_ros_arduino.zip Arduino/libraries/
+   cd ~/Arduino/libraries/
    ```
 
-   A specific single target can be built using the `-p <LIBRARY_TARGET>` argument. Run this command from inside the `micro-ROS/micro_ros_arduino` repository:
-
+b. Install unzip and extract the micro-ROS library:
    ```bash
-   sudo docker run -it --rm -v $(pwd):/project --env MICROROS_LIBRARY_FOLDER=extras microros/micro_ros_static_library_builder:kilted -p teensy4
+   sudo apt update
+   sudo apt install unzip
+   unzip micro_ros_arduino.zip
    ```
 
-5. **Compile and upload:**
+c. Navigate to firmware directory and create build folder:
    ```bash
-   arduino-cli compile --fqbn teensy:avr:teensy40 path/to/sketch
-   arduino-cli upload -p /dev/ttyACM0 --fqbn teensy:avr:teensy40 ~/repos/common_platform/firmware/closed_loop/closed_loop.ino
+   cd ~/repos/common_platform/firmware/closed_loop/
+   mkdir build
+   cd build
    ```
 
-**Pros and Cons:**
-- 👉 **Pros:** Official Arduino tool, integrates with Arduino library manager
-- 👉 **Cons:** Teensy support sometimes lags behind—you may need to install Paul Stoffregen's Teensyduino core manually
+d. Compile the firmware for Teensy 4.0:
+   ```bash
+   arduino-cli compile --fqbn teensy:avr:teensy40 --build-property build.usbtype=USB_DUAL_SERIAL --build-path . ../closed_loop.ino
+   ```
+
+e. Find the Teensy device:
+   ```bash
+   SERIAL_TEENSY_DEVICE=`find /dev/serial/by-id/ -name "usb-Teensyduino*if00"|head -1`
+   echo "-> Performing soft reset (baud = 134 hack). $SERIAL_TEENSY_DEVICE"
+   ```
+
+f. Reset Teensy into programming mode:
+   ```bash
+   stty -F $SERIAL_TEENSY_DEVICE 9600
+   stty -F $SERIAL_TEENSY_DEVICE 134
+   ```
+
+g. Verify Teensy is ready and upload firmware:
+   ```bash
+   lsusb | grep Teensy; echo "-> Should be ready to program…"
+   sudo teensy_loader_cli -v --mcu=TEENSY40 closed_loop.ino.hex
+   ```
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Usage
 
