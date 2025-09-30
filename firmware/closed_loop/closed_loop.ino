@@ -68,6 +68,7 @@ const int LED_PIN = 13;
 #include "MotorControl.h"
 #include "RobotState.h"
 #include "Motion.h"
+#include "TuningManager.h"
 
 #include <Wire.h>
 // #include <math.h>
@@ -81,6 +82,14 @@ RobotState robotState;
 MotorControl leftMotor(PIN_LD_OCM, PIN_LENCB, PIN_LENCA, PIN_LD_PWM2, PIN_LD_PWM1, "Left");
 MotorControl rightMotor(PIN_RD_OCM, PIN_RENCA, PIN_RENCB, PIN_RD_PWM1, PIN_RD_PWM2, "Right");
 Motion motion;
+
+// Tuning manager for persistent motor parameters
+TuningManager* tuningManager = nullptr;
+
+#if ROS
+// ROS context instance
+RosContext rosContext;
+#endif
 
 void robotState_reset() {
   robotState.targetLinearVelocity = 0.0f;
@@ -96,6 +105,7 @@ void robotState_reset() {
 #endif
   SERIAL_OUT.println("RobotState reset");
 }
+
 
 // --- Interrupt Service Routines for Encoders ---
 // These ISRs directly manipulate the public volatile members of the global motor objects.
@@ -159,7 +169,6 @@ void parseCommand(const char *const cmd) {
     return;
   }
 
-  float value = (cmd[1] != '\0') ? atof(cmd + 1) : 0.0f;
   bool commandProcessed = false;  // Flag to check if any case matched
 
   switch (cmd[0]) {
@@ -188,6 +197,7 @@ void parseCommand(const char *const cmd) {
     case 'L':  // Turn Left (degrees)
     case 'R':  // Turn Right (degrees)
       {
+        float value = (cmd[1] != '\0') ? atof(cmd + 1) : 0.0f;
         float angleRad = value * M_PI / 180.0f;
         float wheelTravel = (angleRad * Motion::TRACK_WIDTH) / 2.0f;
         // Use public constant from MotorControl
@@ -213,6 +223,7 @@ void parseCommand(const char *const cmd) {
 
     case 'F':  // Move Forward/Backward (meters)
       {
+        float value = (cmd[1] != '\0') ? atof(cmd + 1) : 0.0f;
         // Use public constant from MotorControl
         float counts = value / MotorControl::METERS_PER_COUNT;
         noInterrupts();  // Protect target distance updates
@@ -231,36 +242,235 @@ void parseCommand(const char *const cmd) {
       break;
 
     case 'V':  // Set Max Speed (m/s)
-      // Use public constant from MotorControl
-      if (value > 0.0f && value <= MotorControl::MAX_SPEED) {
-        robotState.maxSpeed = value;
-        SERIAL_OUT.print("Max speed set to: ");
-        SERIAL_OUT.println(value);
-        commandProcessed = true;
-      } else {
-        SERIAL_OUT.print("Error: Speed must be > 0 and <= ");
-        SERIAL_OUT.println(MotorControl::MAX_SPEED);  // Use public constant
+      {
+        float value = (cmd[1] != '\0') ? atof(cmd + 1) : 0.0f;
+        // Use public constant from MotorControl
+        if (value > 0.0f && value <= MotorControl::MAX_SPEED) {
+          robotState.maxSpeed = value;
+          SERIAL_OUT.print("Max speed set to: ");
+          SERIAL_OUT.println(value);
+          commandProcessed = true;
+        } else {
+          SERIAL_OUT.print("Error: Speed must be > 0 and <= ");
+          SERIAL_OUT.println(MotorControl::MAX_SPEED);  // Use public constant
+        }
       }
       break;
 
     // Differential PID Tuning Commands (Non-ROS)
     case 'P':
-      differential.P = value;
-      commandProcessed = true;
-      SERIAL_OUT.print("Diff P=");
-      SERIAL_OUT.println(value);
+      {
+        float value = (cmd[1] != '\0') ? atof(cmd + 1) : 0.0f;
+        differential.P = value;
+        commandProcessed = true;
+        SERIAL_OUT.print("Diff P=");
+        SERIAL_OUT.println(value);
+        if (tuningManager) tuningManager->saveToEEPROM();  // Auto-save to EEPROM
+      }
       break;
     case 'I':
-      differential.I = value;
-      commandProcessed = true;
-      SERIAL_OUT.print("Diff I=");
-      SERIAL_OUT.println(value);
+      {
+        float value = (cmd[1] != '\0') ? atof(cmd + 1) : 0.0f;
+        differential.I = value;
+        commandProcessed = true;
+        SERIAL_OUT.print("Diff I=");
+        SERIAL_OUT.println(value);
+        if (tuningManager) tuningManager->saveToEEPROM();  // Auto-save to EEPROM
+      }
       break;
     case 'D':
-      differential.D = value;
+      {
+        float value = (cmd[1] != '\0') ? atof(cmd + 1) : 0.0f;
+        differential.D = value;
+        commandProcessed = true;
+        SERIAL_OUT.print("Diff D=");
+        SERIAL_OUT.println(value);
+        if (tuningManager) tuningManager->saveToEEPROM();  // Auto-save to EEPROM
+      }
+      break;
+
+    // Motor Balance/Scaling Commands
+    case 'B':  // Balance motors (scale factors)
+      {
+        float value = (cmd[1] != '\0') ? atof(cmd + 1) : 0.0f;
+        if (tuningManager) {
+          commandProcessed = tuningManager->setLeftMotorScale(value);
+        } else {
+          SERIAL_OUT.println("Error: Tuning manager not initialized");
+        }
+      }
+      break;
+    case 'N':  // Right motor scale (N for "right" - next letter after M)
+      {
+        float value = (cmd[1] != '\0') ? atof(cmd + 1) : 0.0f;
+        if (tuningManager) {
+          commandProcessed = tuningManager->setRightMotorScale(value);
+        } else {
+          SERIAL_OUT.println("Error: Tuning manager not initialized");
+        }
+      }
+      break;
+
+    // Individual Motor PID Tuning
+    case 'Q':  // Left motor P
+      {
+        float value = (cmd[1] != '\0') ? atof(cmd + 1) : 0.0f;
+        leftMotor.pid.P = value;
+        commandProcessed = true;
+        SERIAL_OUT.print("Left Motor P=");
+        SERIAL_OUT.println(value);
+        if (tuningManager) tuningManager->saveToEEPROM();  // Auto-save to EEPROM
+      }
+      break;
+    case 'W':  // Left motor I
+      {
+        float value = (cmd[1] != '\0') ? atof(cmd + 1) : 0.0f;
+        leftMotor.pid.I = value;
+        commandProcessed = true;
+        SERIAL_OUT.print("Left Motor I=");
+        SERIAL_OUT.println(value);
+        if (tuningManager) tuningManager->saveToEEPROM();  // Auto-save to EEPROM
+      }
+      break;
+    case 'E':  // Left motor D
+      {
+        float value = (cmd[1] != '\0') ? atof(cmd + 1) : 0.0f;
+        leftMotor.pid.D = value;
+        commandProcessed = true;
+        SERIAL_OUT.print("Left Motor D=");
+        SERIAL_OUT.println(value);
+        if (tuningManager) tuningManager->saveToEEPROM();  // Auto-save to EEPROM
+      }
+      break;
+    case 'U':  // Right motor P
+      {
+        float value = (cmd[1] != '\0') ? atof(cmd + 1) : 0.0f;
+        rightMotor.pid.P = value;
+        commandProcessed = true;
+        SERIAL_OUT.print("Right Motor P=");
+        SERIAL_OUT.println(value);
+        if (tuningManager) tuningManager->saveToEEPROM();  // Auto-save to EEPROM
+      }
+      break;
+    case 'O':  // Right motor I
+      {
+        float value = (cmd[1] != '\0') ? atof(cmd + 1) : 0.0f;
+        rightMotor.pid.I = value;
+        commandProcessed = true;
+        SERIAL_OUT.print("Right Motor I=");
+        SERIAL_OUT.println(value);
+        if (tuningManager) tuningManager->saveToEEPROM();  // Auto-save to EEPROM
+      }
+      break;
+    case 'T':  // Right motor D
+      {
+        float value = (cmd[1] != '\0') ? atof(cmd + 1) : 0.0f;
+        rightMotor.pid.D = value;
+        commandProcessed = true;
+        SERIAL_OUT.print("Right Motor D=");
+        SERIAL_OUT.println(value);
+        if (tuningManager) tuningManager->saveToEEPROM();  // Auto-save to EEPROM
+      }
+      break;
+
+    // Motor Testing Commands
+    case 'S':  // Test both motors at same speed
+      {
+        float value = (cmd[1] != '\0') ? atof(cmd + 1) : 0.0f;
+        if (value >= -1.0f && value <= 1.0f) {
+          leftMotor.setTargetSpeed(value);
+          rightMotor.setTargetSpeed(value);
+          SERIAL_OUT.print("Testing both motors at speed: ");
+          SERIAL_OUT.println(value);
+          commandProcessed = true;
+        } else {
+          SERIAL_OUT.println("Error: Speed must be between -1.0 and 1.0 m/s");
+        }
+      }
+      break;
+    case 'A':  // Test left motor only
+      {
+        float value = (cmd[1] != '\0') ? atof(cmd + 1) : 0.0f;
+        if (value >= -1.0f && value <= 1.0f) {
+          leftMotor.setTargetSpeed(value);
+          rightMotor.setTargetSpeed(0.0f);
+          SERIAL_OUT.print("Testing left motor at speed: ");
+          SERIAL_OUT.println(value);
+          commandProcessed = true;
+        } else {
+          SERIAL_OUT.println("Error: Speed must be between -1.0 and 1.0 m/s");
+        }
+      }
+      break;
+    case 'Z':  // Test right motor only
+      {
+        float value = (cmd[1] != '\0') ? atof(cmd + 1) : 0.0f;
+        if (value >= -1.0f && value <= 1.0f) {
+          leftMotor.setTargetSpeed(0.0f);
+          rightMotor.setTargetSpeed(value);
+          SERIAL_OUT.print("Testing right motor at speed: ");
+          SERIAL_OUT.println(value);
+          commandProcessed = true;
+        } else {
+          SERIAL_OUT.println("Error: Speed must be between -1.0 and 1.0 m/s");
+        }
+      }
+      break;
+
+    // EEPROM Management Commands
+    case 'Y':  // Save current tuning to EEPROM
+      if (tuningManager) {
+        tuningManager->saveToEEPROM();
+        commandProcessed = true;
+      } else {
+        SERIAL_OUT.println("Error: Tuning manager not initialized");
+      }
+      break;
+    case 'G':  // Load tuning from EEPROM
+      if (tuningManager) {
+        tuningManager->loadFromEEPROM();
+        commandProcessed = true;
+      } else {
+        SERIAL_OUT.println("Error: Tuning manager not initialized");
+      }
+      break;
+    case 'C':  // Clear/reset tuning to defaults
+      if (tuningManager) {
+        tuningManager->resetToDefaults();
+        tuningManager->saveToEEPROM();  // Save defaults to EEPROM
+        commandProcessed = true;
+      } else {
+        SERIAL_OUT.println("Error: Tuning manager not initialized");
+      }
+      break;
+
+    case 'H':  // Help - show all commands
+      SERIAL_OUT.println("=== Available Commands ===");
+      SERIAL_OUT.println("M - Toggle motor drive on/off");
+      SERIAL_OUT.println("X - Reset all state");
+      SERIAL_OUT.println("L<degrees> - Turn left");
+      SERIAL_OUT.println("R<degrees> - Turn right");
+      SERIAL_OUT.println("F<meters> - Move forward/backward");
+      SERIAL_OUT.println("V<speed> - Set max speed (m/s)");
+      SERIAL_OUT.println("P<value> - Set differential PID P");
+      SERIAL_OUT.println("I<value> - Set differential PID I");
+      SERIAL_OUT.println("D<value> - Set differential PID D");
+      SERIAL_OUT.println("B<scale> - Set left motor scale (0.5-2.0)");
+      SERIAL_OUT.println("N<scale> - Set right motor scale (0.5-2.0)");
+      SERIAL_OUT.println("Q<value> - Set left motor PID P");
+      SERIAL_OUT.println("W<value> - Set left motor PID I");
+      SERIAL_OUT.println("E<value> - Set left motor PID D");
+      SERIAL_OUT.println("U<value> - Set right motor PID P");
+      SERIAL_OUT.println("O<value> - Set right motor PID I");
+      SERIAL_OUT.println("T<value> - Set right motor PID D");
+      SERIAL_OUT.println("S<speed> - Test both motors at same speed");
+      SERIAL_OUT.println("A<speed> - Test left motor only");
+      SERIAL_OUT.println("Z<speed> - Test right motor only");
+      SERIAL_OUT.println("Y - Save tuning to EEPROM");
+      SERIAL_OUT.println("G - Load tuning from EEPROM");
+      SERIAL_OUT.println("C - Reset tuning to defaults");
+      SERIAL_OUT.println("H - Show this help");
       commandProcessed = true;
-      SERIAL_OUT.print("Diff D=");
-      SERIAL_OUT.println(value);
       break;
 
 #endif  // !ROS Specific Commands
@@ -350,18 +560,18 @@ void setup() {
   analogWrite(PIN_LD_PWM2, 0);
   SERIAL_OUT.println("Motor driver enabled, PWM initialized to 0");
   // Configure Motor PIDs (Common)
-  // These values likely need tuning!
   leftMotor.pid.setLimits(1.0, 0.5);      // Max output, max integral sum
   leftMotor.pid.setFiltering(0.01, 0.1);  // Deadband, D filter coeff
-  leftMotor.pid.P = 8.0;
-  leftMotor.pid.I = 0.8;
-  leftMotor.pid.D = 0.00;
-
   rightMotor.pid.setLimits(1.0, 0.5);
   rightMotor.pid.setFiltering(0.01, 0.1);
-  rightMotor.pid.P = 8.0;
-  rightMotor.pid.I = 0.8;
-  rightMotor.pid.D = 0.00;
+  
+  // Initialize tuning manager and load parameters from EEPROM
+#if !ROS
+  tuningManager = new TuningManager(&leftMotor, &rightMotor, &differential);
+#else
+  tuningManager = new TuningManager(&leftMotor, &rightMotor, nullptr);
+#endif
+  tuningManager->loadFromEEPROM();
   SERIAL_OUT.print("Motor PID Init L(P,I,D)=");
   SERIAL_OUT.print(leftMotor.pid.P); SERIAL_OUT.print(",");
   SERIAL_OUT.print(leftMotor.pid.I); SERIAL_OUT.print(",");
@@ -376,6 +586,14 @@ void setup() {
   rightMotor.resetCounter();
   motion.reset();
   robotState_reset();
+
+#if ROS
+  // Initialize ROS context
+  rosContext.robotState = &robotState;
+  rosContext.odomContext.motion = &motion;
+  rosContext.odomContext.leftMotor = &leftMotor;
+  rosContext.odomContext.rightMotor = &rightMotor;
+#endif
 
   // Attach interrupts for encoders
   // Note: digitalPinToInterrupt() is necessary for mapping pin numbers to interrupt numbers.
@@ -438,6 +656,9 @@ void printStatus() {
   snprintf(buf, sizeof(buf), "Diff PID: P=%.2f I=%.2f D=%.2f",
            differential.P, differential.I, differential.D);
   SERIAL_OUT.println(buf);
+  if (tuningManager) {
+    tuningManager->printStatus();
+  }
 #else
   // Print ROS specific info (if any needed beyond speeds)
   // TODO: figure out what to do for this message
@@ -579,6 +800,12 @@ void drivecontrol() {
 #endif  // ROS / !ROS
 
 
+  // Apply motor scaling factors to compensate for speed differences
+  if (tuningManager) {
+    leftVelocity *= tuningManager->getLeftMotorScale();
+    rightVelocity *= tuningManager->getRightMotorScale();
+  }
+
   // set motor speeds
   leftMotor.setTargetSpeed(leftVelocity);
   rightMotor.setTargetSpeed(rightVelocity);
@@ -612,7 +839,7 @@ void loop() {
 
   // --- ROS Handling ---
 #if ROS
-  handleRosAgentState(&robotState);  // Handles connection and spins the executor
+  handleRosAgentState(&rosContext);  // Handles connection and spins the executor
 #endif
 
   // --- Serial Command Input ---

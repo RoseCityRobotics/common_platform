@@ -11,6 +11,25 @@
 #include <stdio.h>
 
 #include <geometry_msgs/msg/twist.h>
+#include <nav_msgs/msg/odometry.h>
+
+// Forward declarations
+class Motion;
+class MotorControl;
+class RobotState;
+
+// Context structure for odometry timer callback
+struct OdometryContext {
+  Motion* motion;
+  MotorControl* leftMotor;
+  MotorControl* rightMotor;
+};
+
+// Combined context structure for ROS operations
+struct RosContext {
+  RobotState* robotState;
+  OdometryContext odomContext;
+};
 
 // ROS Agent States
 enum RosAgentStatus {

@@ -1,15 +1,21 @@
 #include "RosInterface.h"
 #include "RobotState.h"
+#include "Motion.h"
+#include "MotorControl.h"
 
 #if ROS
 rcl_subscription_t subscriber;
 geometry_msgs__msg__Twist msg;
+rcl_publisher_t odom_publisher;
+nav_msgs__msg__Odometry odom_msg;
+rcl_timer_t odom_timer;
 rclc_executor_t executor;
 rcl_allocator_t allocator;
 rclc_support_t support;
 rcl_node_t node;
 
 RosAgentStatus currentRosAgentStatus = WAITING_AGENT;
+RosContext* global_ros_context = nullptr;
 
 // ROS-specific Macros
 #define RCCHECK(fn)                                                            \
@@ -47,7 +53,8 @@ void error_loop(const char *msg, int line, int rc) {
 void subscription_callback(const void *msgin, void *context) {
   const geometry_msgs__msg__Twist *msg =
       (const geometry_msgs__msg__Twist *)msgin;
-  RobotState *robotState_ptr = (RobotState *)context;
+  RosContext *ros_ctx = (RosContext *)context;
+  RobotState *robotState_ptr = ros_ctx->robotState;
 
   // Directly update robot state from twist message
   robotState_ptr->targetLinearVelocity = msg->linear.x;
@@ -70,20 +77,80 @@ void subscription_callback(const void *msgin, void *context) {
 #endif
 }
 
+
+// Timer callback for publishing odometry
+void odom_timer_callback(rcl_timer_t *timer, int64_t last_call_time) {
+  (void)timer;
+  (void)last_call_time;
+  
+  if (!global_ros_context || !global_ros_context->odomContext.motion || !global_ros_context->odomContext.leftMotor || !global_ros_context->odomContext.rightMotor) {
+    return;
+  }
+
+  // Set timestamp
+  odom_msg.header.stamp.sec = uxr_millis() / 1000;
+  odom_msg.header.stamp.nanosec = (uxr_millis() % 1000) * 1000000;
+  odom_msg.header.frame_id.data = (char*)"odom";
+  odom_msg.header.frame_id.size = 4;
+  odom_msg.child_frame_id.data = (char*)"base_link";
+  odom_msg.child_frame_id.size = 8;
+
+  // Set pose
+  odom_msg.pose.pose.position.x = global_ros_context->odomContext.motion->getX();
+  odom_msg.pose.pose.position.y = global_ros_context->odomContext.motion->getY();
+  odom_msg.pose.pose.position.z = 0.0;
+
+  // Convert theta to quaternion
+  float theta = global_ros_context->odomContext.motion->getTheta();
+  odom_msg.pose.pose.orientation.x = 0.0;
+  odom_msg.pose.pose.orientation.y = 0.0;
+  odom_msg.pose.pose.orientation.z = sin(theta / 2.0);
+  odom_msg.pose.pose.orientation.w = cos(theta / 2.0);
+
+  // Set twist (linear and angular velocities)
+  float leftSpeed = global_ros_context->odomContext.leftMotor->getSpeed();
+  float rightSpeed = global_ros_context->odomContext.rightMotor->getSpeed();
+  float linearVel = (leftSpeed + rightSpeed) / 2.0;
+  float angularVel = (rightSpeed - leftSpeed) / Motion::TRACK_WIDTH;
+
+  odom_msg.twist.twist.linear.x = linearVel;
+  odom_msg.twist.twist.linear.y = 0.0;
+  odom_msg.twist.twist.linear.z = 0.0;
+  odom_msg.twist.twist.angular.x = 0.0;
+  odom_msg.twist.twist.angular.y = 0.0;
+  odom_msg.twist.twist.angular.z = angularVel;
+
+  // Publish the message
+  rcl_ret_t ret = rcl_publish(&odom_publisher, &odom_msg, NULL);
+  if (ret != RCL_RET_OK) {
+    SERIAL_OUT.print("Failed to publish odometry: ");
+    SERIAL_OUT.println(ret);
+  }
+}
+
 // Create ROS entities
 bool create_entities(void *context) {
   allocator = rcl_get_default_allocator();
+  
+  // Set global context for timer callback
+  global_ros_context = (RosContext*)context;
 
   RCCHECK(rclc_support_init(&support, 0, NULL, &allocator));
   RCCHECK(
-      rclc_node_init_default(&node, "micro_ros_arduino_node", "", &support));
+      rclc_node_init_default(&node, "micro_ros_arduino_node", "rcr001", &support));
   RCCHECK(rclc_subscription_init_default(
       &subscriber, &node,
       ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist), "cmd_vel"));
-  RCCHECK(rclc_executor_init(&executor, &support.context, 1, &allocator));
+  RCCHECK(rclc_publisher_init_default(
+      &odom_publisher, &node,
+      ROSIDL_GET_MSG_TYPE_SUPPORT(nav_msgs, msg, Odometry), "odom"));
+  RCCHECK(rclc_timer_init_default(
+      &odom_timer, &support, RCL_MS_TO_NS(50), odom_timer_callback));
+  RCCHECK(rclc_executor_init(&executor, &support.context, 2, &allocator));
   RCCHECK(rclc_executor_add_subscription_with_context(
       &executor, &subscriber, &msg, &subscription_callback, context,
       ON_NEW_DATA));
+  RCCHECK(rclc_executor_add_timer(&executor, &odom_timer));
   return true;
 }
 
@@ -93,6 +160,8 @@ void destroy_entities() {
   (void)rmw_uros_set_context_entity_destroy_session_timeout(rmw_context, 0);
 
   rcl_subscription_fini(&subscriber, &node);
+  rcl_publisher_fini(&odom_publisher, &node);
+  rcl_timer_fini(&odom_timer);
   rclc_executor_fini(&executor);
   rcl_node_fini(&node);
   rclc_support_fini(&support);
@@ -100,7 +169,8 @@ void destroy_entities() {
 
 // Handle agent connection state machine
 void handleRosAgentState(void *context) {
-  RobotState *robotState_ptr = (RobotState *)context;
+  RosContext *ros_ctx = (RosContext *)context;
+  RobotState *robotState_ptr = ros_ctx->robotState;
   static bool loggedConnected = false; // print-once guard for AGENT_CONNECTED
 
   switch (currentRosAgentStatus) {
