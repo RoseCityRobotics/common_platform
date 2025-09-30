@@ -95,12 +95,12 @@ The platform now features a complete ROS2 integration with micro-ROS running on 
 
 ### Installation
 
-Welcome to the setup guide for the PARTS Common Robotics Platform. Follow these steps to prepare your hardware and software for an exciting journey into robotics!
+Welcome to the setup guide for the Common Robotics Platform. Follow these steps to prepare your hardware and software for an exciting journey into robotics!
 
 #### 1. Solder Your PARTS CRP Board
 Soldering the PARTS CRP board is the first crucial step. Follow the instructions carefully to ensure a successful setup.
 
-- **Interactive BOM**: Utilize the [Interactive BOM](https://htmlpreview.github.io/?https://github.com/portlandrobotics/common_platform/blob/master/hardware/romi_board/bom/ibom.html) for an easier soldering process.
+- **Interactive BOM**: Utilize the [Interactive BOM](https://htmlpreview.github.io/?https://github.com/rosecityrobotics/common_platform/blob/master/hardware/romi_board/bom/ibom.html) for an easier soldering process.
 - **Headers for Connectivity**: We recommend using headers for connections between boards. This makes disassembly possible if needed.
   - Use female (socket) headers on the bottom board.
   - Use male (pin) headers on the top board. These are typically included with all breakout boards.
@@ -109,9 +109,9 @@ Soldering the PARTS CRP board is the first crucial step. Follow the instructions
   - Use a 2M ohm resistor (R1) for 6 AA batteries.
   - Opt for a 3M ohm resistor if using higher voltage batteries like 2 LiPo batteries.
   - Install a >100 pf capacitor across R2 to address voltage drop issues.
-- **Teensy Board Modification**: For battery power, cut the trace on the Teensy board. Refer to the note "Cut to separate VIN from VUSB" on the [Teensy 4.0 Back Side](https://github.com/portlandrobotics/common_platform/blob/master/hardware/main_schematic.pdf) image.
+- **Teensy Board Modification**: For battery power, cut the trace on the Teensy board. Refer to the note "Cut to separate VIN from VUSB" on the [Teensy 4.0 Back Side](https://github.com/rosecityrobotics/common_platform/blob/master/hardware/main_schematic.pdf) image.
 - **Resistor Values**: The values of R4, R5, R8, R9 depend on your specific usage. For I2C, 4.7k is appropriate.
-- **Schematic**: Refer to the [Main Schematic](https://github.com/portlandrobotics/common_platform/blob/master/hardware/main_schematic.pdf) for detailed understanding.
+- **Schematic**: Refer to the [Main Schematic](https://github.com/rosecityrobotics/common_platform/blob/master/hardware/main_schematic.pdf) for detailed understanding.
 
 #### 2. Solder Accessories
 Solder accessories like the Inertial Measurement Unit (IMU), ensuring proper orientation and connection.
@@ -133,17 +133,17 @@ This section provides practical examples of how to use the Common Robotics Platf
 2. **Expected Behavior:**
    Upon successful flashing, the robot should exhibit a simple behavior pattern: moving forward, pausing, and then moving backward.
 
-### 🍓 Direct Connection to Raspberry Pi
+### <img src="github/img/raspberry-pi.png" alt="Raspberry Pi" width="20"> Direct Connection to Raspberry Pi
 Connect your micro HDMI cable to your Pi and monitor, and a keyboard to the USB-A port.
 
-### 🍓 Ubuntu Login on Raspberry Pi
+### <img src="github/img/raspberry-pi.png" alt="Raspberry Pi" width="20"> Ubuntu Login on Raspberry Pi
 - **User:** `rcr`
 - **Password:** `siliconforest`
 
-### 🍓 Accessing the Pi Remotely via SSH
+### <img src="github/img/raspberry-pi.png" alt="Raspberry Pi" width="20"> Accessing the Pi Remotely via SSH
 Both the external device and the robot must be on the same WiFi for SSH to work. Use the static IP address of your Pi to SSH. The command will look something like `ssh rcr@192.168.1.n` where `n` is your ID, for example `ssh rcr@192.168.1.9`.
 
-### 🍓 Host Settings
+### <img src="github/img/raspberry-pi.png" alt="Raspberry Pi" width="20"> Host Settings
 The host has been preset for you as `rcr00_` with your specific ID. To update the hostname:
 
 1. Update the hostname for the robot:
@@ -168,7 +168,7 @@ The host has been preset for you as `rcr00_` with your specific ID. To update th
    sudo reboot
    ```
 
-### 🍓 Network Configuration
+### <img src="github/img/raspberry-pi.png" alt="Raspberry Pi" width="20"> Network Configuration
 
 Set custom IP address and set up networking:
 
@@ -205,9 +205,9 @@ Set custom IP address and set up networking:
    sudo netplan apply
    ```
 
-### 🍓 Testing SSH Connection
+### <img src="github/img/raspberry-pi.png" alt="Raspberry Pi" width="20"> Testing SSH Connection
 
-1. **🍓 On the Pi:** Make sure the IP address is assigned:
+1. **<img src="github/img/raspberry-pi.png" alt="Raspberry Pi" width="16"> On the Pi:** Make sure the IP address is assigned:
    ```bash
    hostname -I
    ```
@@ -218,7 +218,7 @@ Set custom IP address and set up networking:
    ```
    Replace `n` with your robot number.
 
-### 🍓 Teensy Programming - Use Arduino CLI
+### <img src="github/img/raspberry-pi.png" alt="Raspberry Pi" width="20"> Teensy Programming - Use Arduino CLI
 
 **What we're doing:** We'll set up the Arduino CLI tool on the Raspberry Pi to compile and upload firmware to the Teensy microcontroller. This allows us to program the robot's brain (Teensy) directly from the command line without needing a graphical interface.
 
@@ -268,7 +268,7 @@ ssh rcr@192.168.1.n
 
 **What we're doing:** Now we're working directly on the Raspberry Pi to set up the micro-ROS library and compile the robot's firmware. The Raspberry Pi will handle the compilation process and then upload the compiled code to the Teensy microcontroller.
 
-**🍓 From the Raspberry Pi (RPi):**
+**<img src="github/img/raspberry-pi.png" alt="Raspberry Pi" width="16"> From the Raspberry Pi (RPi):**
 
 a. Set up Arduino libraries directory:
    ```bash
