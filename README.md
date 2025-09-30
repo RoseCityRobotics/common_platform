@@ -241,13 +241,9 @@ Set custom IP address and set up networking:
    ```
    Replace `n` with your robot number.
 
-### Teensy Programming
+### Teensy Programming - Use Arduino CLI
 
-You can compile and upload Arduino code for a Teensy entirely from the Ubuntu command line without using the Arduino IDE GUI. There are a couple of different approaches depending on what tooling you want:
-
-#### Use Arduino CLI
-
-Arduino provides an official `arduino-cli` tool.
+Arduino provides an official `arduino-cli` tool. You can compile and upload Arduino code for a Teensy entirely from the Ubuntu command line.
 
 1. **Install Arduino CLI:**
    ```bash
