@@ -158,6 +158,8 @@ The Pololu Romi Chassis forms the physical structure of your robot.
 
 #### 4. Transfer micro-ROS Arduino Library to Raspberry Pi
 
+The required micro-ROS Arduino library is available in the repository: [micro_ros_arduino.zip](firmware/libraries/micro_ros_arduino.zip)
+
 From host:
 ```bash
 scp firmware/libraries/micro_ros_arduino.zip rcr@192.168.1.n:~
