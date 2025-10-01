@@ -297,7 +297,7 @@ e. Compile the firmware for Teensy 4.0:
    arduino-cli compile --fqbn teensy:avr:teensy40 --build-property build.usbtype=USB_DUAL_SERIAL --build-path . ../closed_loop.ino
    ```
 
-f. Find the Teensy device:
+f. Find the Teensy device (first power the Teensy - i.e. put in the lower-half batteries):
    ```bash
    SERIAL_TEENSY_DEVICE=`find /dev/serial/by-id/ -name "usb-Teensyduino*if00"|head -1`
    echo "-> Performing soft reset (baud = 134 hack). $SERIAL_TEENSY_DEVICE"
