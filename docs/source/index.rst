@@ -14,6 +14,7 @@ Welcome to PARTS- Common Robotics Platform documentation!
    hardware
    software
    testing
+   operations/index
 
 Indices and tables
 ==================
