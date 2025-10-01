@@ -207,7 +207,7 @@ Set custom IP address and set up networking:
    ```
    Replace `n` with your robot number.
 
-### <img src="github/img/raspberry-pi.png" alt="Raspberry Pi" width="20"> Accessing the Pi Remotely via SSH
+### Accessing the Pi <img src="github/img/raspberry-pi.png" alt="Raspberry Pi" width="20"> from your development machine 🖥️ via SSH
 Both the external device and the robot must be on the same WiFi for SSH to work. Use the static IP address of your Pi to SSH. The command will look something like `ssh rcr@192.168.1.n` where `n` is your ID, for example `ssh rcr@192.168.1.9`.
 
 ### <img src="github/img/raspberry-pi.png" alt="Raspberry Pi" width="20"> Teensy Programming - Use Arduino CLI
