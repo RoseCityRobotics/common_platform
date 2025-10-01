@@ -81,8 +81,6 @@ The platform now features a complete ROS2 integration with micro-ROS running on 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-
-
 <!-- GETTING STARTED -->
 ## Getting Started
 
@@ -128,30 +126,33 @@ Connect your micro HDMI cable to your Pi and monitor, and a keyboard to the USB-
 - **User:** `rcr`
 - **Password:** `siliconforest`
 
-### <img src="github/img/raspberry-pi.png" alt="Raspberry Pi" width="20"> Accessing the Pi Remotely via SSH
-Both the external device and the robot must be on the same WiFi for SSH to work. Use the static IP address of your Pi to SSH. The command will look something like `ssh rcr@192.168.1.n` where `n` is your ID, for example `ssh rcr@192.168.1.9`.
-
 ### <img src="github/img/raspberry-pi.png" alt="Raspberry Pi" width="20"> Host Settings
 The host has been preset for you as `rcr00_` with your specific ID. To update the hostname:
 
-1. Update the hostname for the robot:
+1. Tell cloud-init to preserve your hostname:
+   ```bash
+   sudo nano /etc/cloud/cloud.cfg
+   ```
+   Set `preserve_hostname: true` and save the file
+
+2. Update the hostname for the robot:
    ```bash
    sudo nano /etc/hostname
    ```
    Change `rcr001` to `rcr00n` (replace n with the number)
 
-2. Update the hosts file:
+3. Update the hosts file:
    ```bash
    sudo nano /etc/hosts
    ```
    Change `rcr001` to `rcr00n`
 
-3. Set the hostname:
+4. Set the hostname:
    ```bash
    sudo hostnamectl set-hostname rcr00n
    ```
 
-4. Reboot to make sure the changes have taken effect:
+5. Reboot to make sure the changes have taken effect:
    ```bash
    sudo reboot
    ```
@@ -205,6 +206,9 @@ Set custom IP address and set up networking:
    ssh rcr@192.168.1.n
    ```
    Replace `n` with your robot number.
+
+### <img src="github/img/raspberry-pi.png" alt="Raspberry Pi" width="20"> Accessing the Pi Remotely via SSH
+Both the external device and the robot must be on the same WiFi for SSH to work. Use the static IP address of your Pi to SSH. The command will look something like `ssh rcr@192.168.1.n` where `n` is your ID, for example `ssh rcr@192.168.1.9`.
 
 ### <img src="github/img/raspberry-pi.png" alt="Raspberry Pi" width="20"> Teensy Programming - Use Arduino CLI
 
