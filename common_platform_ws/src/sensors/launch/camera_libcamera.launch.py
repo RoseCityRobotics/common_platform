@@ -27,8 +27,8 @@ def generate_launch_description():
   
   format_arg = DeclareLaunchArgument(
     'format',
-    default_value='',
-    description='Pixel format (empty for default)'
+    default_value='RGB888',
+    description='Pixel format (RGB888, YUV420, etc.)'
   )
   
   use_sim_time_arg = DeclareLaunchArgument(
@@ -44,26 +44,39 @@ def generate_launch_description():
   format = LaunchConfiguration('format')
   use_sim_time = LaunchConfiguration('use_sim_time')
   
+  # Handle namespace from environment variable
+  ns = os.environ.get('ROS_NAMESPACE', '').strip()
+  
   # Create composable camera node for libcamera
+  # Use namespace from ROS_NAMESPACE environment variable
   camera_node = ComposableNode(
     package='camera_ros',
     plugin='camera::CameraNode',
     name='camera',
-    namespace='camera',
+    namespace=ns if ns else '',  # Use ROS_NAMESPACE if set, otherwise empty
     parameters=[{
       'camera': camera_id,
       'width': width,
       'height': height,
-      'format': format,
+      'format': 'RGB888',  # Force RGB888 format to avoid RPBP warning
       'use_sim_time': use_sim_time,
+      # Frame ID with namespace prefix for proper TF tree
+      'frame_id': f'{ns}/camera' if ns else 'camera',
+      # Add parameters to help with device busy issues
+      'timeout': 5000,  # 5 second timeout
+      'retry_count': 3,  # Retry 3 times
+      # Additional format parameters for camera_ros
+      'encoding': 'rgb8',
+      'color_space': 'sRGB',
     }],
     extra_arguments=[{'use_intra_process_comms': True}],
   )
   
   # Create container for composable nodes
+  # Use namespace from ROS_NAMESPACE environment variable
   camera_container = ComposableNodeContainer(
     name='camera_container',
-    namespace='',
+    namespace=ns if ns else '',  # Use ROS_NAMESPACE if set, otherwise empty
     package='rclcpp_components',
     executable='component_container',
     composable_node_descriptions=[camera_node],
@@ -71,26 +84,12 @@ def generate_launch_description():
     parameters=[{'use_sim_time': use_sim_time}],
   )
   
-  # Handle namespace
-  ns = os.environ.get('ROS_NAMESPACE', '').strip()
-  if ns:
-    return LaunchDescription([
-      camera_id_arg,
-      width_arg,
-      height_arg,
-      format_arg,
-      use_sim_time_arg,
-      GroupAction([
-        PushRosNamespace(ns),
-        camera_container
-      ])
-    ])
-  else:
-    return LaunchDescription([
-      camera_id_arg,
-      width_arg,
-      height_arg,
-      format_arg,
-      use_sim_time_arg,
-      camera_container
-    ])
+  # Always return the same launch description - namespace handling is done by ROS2
+  return LaunchDescription([
+    camera_id_arg,
+    width_arg,
+    height_arg,
+    format_arg,
+    use_sim_time_arg,
+    camera_container
+  ])

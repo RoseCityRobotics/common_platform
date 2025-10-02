@@ -1,22 +1,21 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>data_recorder</name>
+  <name>sensors</name>
   <version>0.0.0</version>
-  <description>Data recorder for teleoperation training data collection</description>
+  <description>ROS2 package for sensor launch files and configurations</description>
   <maintainer email="joe@rosecityrobotics.com">Joe Cole</maintainer>
-  <license>MIT</license>
+  <license>Apache-2.0</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
-
+  
+  <!-- Dependencies for camera and sensor functionality -->
   <depend>rclcpp</depend>
   <depend>sensor_msgs</depend>
-  <depend>geometry_msgs</depend>
   <depend>std_msgs</depend>
-  <depend>cv_bridge</depend>
-  <depend>libopencv-dev</depend>
-  <depend>tf2</depend>
-  <depend>tf2_ros</depend>
+  <depend>camera_info_manager</depend>
+  <depend>image_proc</depend>
+  <depend>camera_calibration</depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
