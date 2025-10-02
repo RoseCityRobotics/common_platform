@@ -320,6 +320,10 @@ h. Verify Teensy is ready and upload firmware:
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+🎉 Congratulations! You're all set up and ready to go with week 1 of the Engineering Boldly: AI Robotics Sprint!
+
+If you want to continue your robotics journey, check out the next set of documentation on setting up teleoperation: [Keyboard Teleoperation Guide](https://github.com/RoseCityRobotics/common_platform/blob/main/docs/source/operations/daily_operations/KeyboardTeleop.md)
+
 ## Usage
 
 This section provides practical examples of how to use the Common Robotics Platform effectively. We'll start with a basic test to ensure your setup is functioning correctly.
