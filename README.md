@@ -303,7 +303,7 @@ f. Find the Teensy device:
 
 
 ```bash
-SERIAL_TEENSY_DEVICE=`find /dev/serial/by-id/ -name "usb-Teensyduino*if00"|head -1` echo "-> Performing soft reset (baud = 134 hack). $SERIAL_TEENSY_DEVICE"
+SERIAL_TEENSY_DEVICE=`find /dev/serial/by-id/ -name "usb-Teensyduino*if00"|head -1`; echo "-> Performing soft reset (baud = 134 hack). $SERIAL_TEENSY_DEVICE"
 ```
 
 g. Reset Teensy into programming mode:
