@@ -241,11 +241,15 @@ The required micro-ROS Arduino library is available in the repository: `firmware
 
 **What we're doing:** We need to transfer the micro-ROS library GitHub to the Raspberry Pi that's connected to your robot. The Raspberry Pi serves as the main computer that will compile and upload firmware to the Teensy microcontroller.
 
+🖥️ From your development machine
+```bash
+ssh rcr@192.168.1.n
+```
+
 **<img src="github/img/raspberry-pi.png" alt="Raspberry Pi" width="16"> From your Raspberry Pi** in the common_platform directory:
 
 First update your directory with the latest changes from the https://github.com/roseCityRobotics/common_platform repository including the .zip file you'll need next.
 ```bash
-ssh rcr@192.168.1.n
 git pull origin main
 ```
 
@@ -259,7 +263,7 @@ a. Set up Arduino libraries directory:
    ```bash
    cd ~
    mkdir -p Arduino/libraries/
-   mv micro_ros_arduino.zip Arduino/libraries/
+   cp repos/firmware/libraries/micro_ros_arduino.zip Arduino/libraries/
    cd ~/Arduino/libraries/
    ```
 
