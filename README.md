@@ -237,11 +237,9 @@ arduino-cli core install teensy:avr --additional-urls https://www.pjrc.com/teens
 
 #### 4. Transfer micro-ROS Arduino Library to Raspberry Pi
 
-The required micro-ROS Arduino library is available in the repository: `firmware/libraries/micro_ros_arduino.zip` so we will  pull the repository to your development computer 🖥️ to access the file.
+The required micro-ROS Arduino library is available in the repository: `firmware/libraries/micro_ros_arduino.zip` so we will  pull the repository to Raspberry Pi <img src="github/img/raspberry-pi.png" alt="Raspberry Pi" width="16"> to access the file.
 
-**What we're doing:** We need to transfer the micro-ROS library from your development computer (host) 🖥️ to the Raspberry Pi (RPi) <img src="github/img/raspberry-pi.png" alt="Raspberry Pi" width="16"> that's connected to your robot. The Raspberry Pi serves as the main computer that will compile and upload firmware to the Teensy microcontroller.
-
-**Why SCP:** Secure Copy Protocol (SCP) allows us to securely transfer files over SSH to the Raspberry Pi. This is more reliable than other methods and works well over network connections.
+**What we're doing:** We need to transfer the micro-ROS library GitHub to the Raspberry Pi that's connected to your robot. The Raspberry Pi serves as the main computer that will compile and upload firmware to the Teensy microcontroller.
 
 **<img src="github/img/raspberry-pi.png" alt="Raspberry Pi" width="16"> From your Raspberry Pi** in the common_platform directory:
 
