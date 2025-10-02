@@ -251,6 +251,7 @@ cd ~/repos/common_platform/
 
 First update your directory with the latest changes from the https://github.com/roseCityRobotics/common_platform repository including the .zip file you'll need next.
 ```bash
+git checkout main
 git pull origin main
 ```
 
@@ -279,7 +280,7 @@ c. Navigate to the common_platform repository, update it, and place the arduino-
   ```bash
   cd ~/repos/common_platform/
   git checkout main
-  git pull
+  git pull origin main
   scripts/place_arduino-cli_config.sh
   ```
 
