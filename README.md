@@ -243,8 +243,8 @@ The required micro-ROS Arduino library is available in the repository: `firmware
 
 🖥️ From your development machine
 ```bash
-cd ~/repos/common_platform/
 ssh rcr@192.168.1.n
+cd ~/repos/common_platform/
 ```
 
 **<img src="github/img/raspberry-pi.png" alt="Raspberry Pi" width="16"> From your Raspberry Pi** in the common_platform directory:
