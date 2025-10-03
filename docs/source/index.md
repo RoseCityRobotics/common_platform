@@ -12,10 +12,6 @@ Welcome to the comprehensive documentation for the PARTS Common Robotics Platfor
 
 intro
 operations/index
-testing
-hardware
-software
-3dprint
 ```
 
 ## Documentation Sections
