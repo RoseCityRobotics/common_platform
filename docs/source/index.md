@@ -31,15 +31,14 @@ operations/daily_operations/ROS2_Joystick
 operations/daily_operations/maintenance
 ```
 
-### 🔧 Coming Soon
+### 📚 Additional Resources
 
-Additional documentation sections are under development:
+Complete documentation sections available:
 
-- Hardware setup and configuration
-- Software installation guides
-- Advanced troubleshooting
-- Sensor operations
-- Navigation systems
+- **Hardware Guide** - Physical assembly and components
+- **Software Guide** - Programming and development setup
+- **Testing Guide** - Validation and testing procedures
+- **3D Printed Parts** - Custom components and assembly
 
 ## Getting Help
 
