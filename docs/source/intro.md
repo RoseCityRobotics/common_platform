@@ -1,46 +1,57 @@
 # Introduction
 
-Welcome to the documentation for the PARTS- Common Robotics Platform! This document serves as an introduction to the Romi Chassis, a versatile and compact robotic platform, and outlines how it is used and customized in our PARTS project.
+Welcome to the Rose City Robotics documentation for the PARTS Common Robotics Platform! This document serves as an introduction to our implementation of the Romi Chassis, a versatile and compact robotic platform, and outlines how we've customized it for our robotics education and development needs.
 
 ## What is the Romi Chassis?
 
-The Romi Chassis is a [brief description of the Romi Chassis, its features, and its typical applications].
+The Romi Chassis is a compact, versatile robotic platform designed for educational and prototyping applications. Built around a robust aluminum frame, it features:
 
-## About This Project
+- **Dual DC Motors**: Direct-drive motors with built-in encoders for precise movement control
+- **Omnidirectional Capability**: Three omni-wheels enable smooth movement in any direction
+- **Modular Design**: Easy-to-access mounting points for sensors, cameras, and custom electronics
+- **Battery Powered**: Rechargeable lithium battery pack for extended operation
+- **Arduino Compatible**: Built-in carrier board with Arduino-compatible headers for easy programming
+- **Expandable**: Multiple I/O pins and mounting options for adding sensors, displays, and other peripherals
 
-This section should provide an overview of your specific project. Discuss what the PARTS- Common Robotics Platform is, its objectives, and what makes it unique or different from standard implementations.
+The Romi Chassis is perfect for learning robotics concepts, prototyping autonomous systems, and developing navigation algorithms. Its compact size (approximately 6" diameter) makes it ideal for indoor testing and classroom environments.
 
-- **Project Goals**: Outline the goals or problems that this project aims to address.
-- **Custom Features**: Highlight any custom features or modifications made to the standard Romi Chassis in this project.
+## About Rose City Robotics' Implementation
+
+This is Rose City Robotics' fork of the PARTS Common Robotics Platform, customized for our specific educational and development needs.
+
+- **Project Goals**: Provide hands-on robotics education, enable rapid prototyping of autonomous systems, and create a standardized platform for our robotics programs and competitions.
+- **Custom Features**: Our implementation includes ROS2 integration, custom carrier board modifications, and enhanced sensor capabilities for advanced navigation and perception tasks.
 
 ## Getting Started
 
-Here, guide the reader on how to begin with the PARTS- Common Robotics Platform.
+Ready to start working with our robotics platform? Here's how to begin:
 
-- **Prerequisites**: List any prerequisites, such as hardware components, software requirements, or knowledge prerequisites.
-- **Initial Setup**: Briefly describe the initial setup steps or refer the reader to a section in the documentation where the setup is detailed.
+- **Prerequisites**: Basic understanding of robotics concepts, familiarity with Linux command line, and access to the required hardware components.
+- **Initial Setup**: Follow our [Hardware Setup](hardware) guide to assemble your robot, then proceed to [Software Setup](software) for the development environment configuration.
 
 ## Project Components
 
-Provide an overview of the different components of the project, such as:
+Our robotics platform consists of several key components:
 
-- **Hardware Components**: List the hardware components, including the Romi Chassis and any additional modules or sensors used.
-- **Software and Firmware**: Mention the software, firmware, or any special programming environments used in the project.
+- **Hardware Components**: Romi Chassis base, custom carrier board, Raspberry Pi, Teensy microcontroller, LiDAR sensor, camera, IMU, and various mounting hardware. See our [Hardware Guide](hardware) for detailed specifications.
+- **Software Stack**: ROS2 Kilted, micro-ROS for Teensy communication, Python, and custom packages for navigation and control. See our [Software Guide](software) for setup instructions.
 
 ## How to Use This Documentation
 
-Guide the reader on how to navigate and use this documentation effectively.
+This documentation is organized to help you get up and running quickly:
 
-- **Navigation Tips**: Explain how to navigate through the documentation, referring to the table of contents or any search functionality.
-- **Conventions Used**: If there are any special notations, conventions, or symbols used in the documentation, explain them here.
+- **Navigation**: Use the sidebar to browse different sections, or start with the [Quick Start](index) section for an overview of available guides.
+- **Getting Started**: New users should begin with the [Introduction](intro) (this page), then follow the [Hardware Setup](hardware) and [Software Setup](software) guides.
+- **Daily Operations**: Once your robot is set up, check out our [Robot Operations](operations/index) section for day-to-day usage instructions.
 
 ## Contact and Support
 
-Provide information on how readers can get support, ask questions, or contribute to the project.
+Need help or want to contribute to the project?
 
-- **Support Channels**: List available support channels like email, forums, or social media links.
-- **Contributing**: If open to contributions, explain how others can contribute to the project.
+- **Support Channels**: [GitHub Issues](https://github.com/RoseCityRobotics/common_platform/issues) for bug reports and feature requests
+- **Community**: Join our discussions and get help from the community
+- **Contributing**: We welcome contributions! Check our GitHub repository for guidelines on submitting pull requests and improvements
 
 ## Conclusion
 
-Conclude the introduction with a brief summary and encourage the reader to explore the rest of the documentation.
+You're now ready to explore the Rose City Robotics PARTS Common Robotics Platform! This documentation will guide you through setup, operation, and advanced usage of our robotics platform. Start with the [Hardware Setup](hardware) guide to begin building your robot, and don't hesitate to reach out if you need assistance along the way.
