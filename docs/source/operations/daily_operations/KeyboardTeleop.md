@@ -37,77 +37,81 @@ The Raspberry Pi will host the micro-ROS agent and other ROS2 nodes. Ensure it's
 
 1.  **Get your Teensy serial number**:
 
-    ```bash
-    SERIAL_NUM=$(
-    basename "$(find /dev/serial/by-id/ -name 'usb-Teensyduino*if0[02]' | head -1)" \
-    | sed -E 's/.*_([0-9A-Za-z]+)-if0[02]/\1/'
-    )
-    echo "Teensy serial: $SERIAL_NUM"
-    ```
+```bash
+SERIAL_NUM=$(
+basename "$(find /dev/serial/by-id/ -name 'usb-Teensyduino*if0[02]' | head -1)" \
+| sed -E 's/.*_([0-9A-Za-z]+)-if0[02]/\1/'
+)
+echo "Teensy serial: $SERIAL_NUM"
+```
 
 2.  **Setup a terminal with miniterm to monitor Teensy debug output**:
 
-    ```bash
-    python3 -m serial.tools.miniterm "/dev/serial/by-id/usb-Teensyduino_Dual_Serial_${SERIAL_NUM}-if02" 115200
+```bash
+python3 -m serial.tools.miniterm "/dev/serial/by-id/usb-Teensyduino_Dual_Serial_${SERIAL_NUM}-if02" 115200
 
-    ```
+```
 
-    This command starts a `miniterm` session to display debug messages from the Teensy. The path identifies your Teensy and the {SERIAL_NUM} command pulls your serial number, and `115200` sets the baud rate. You should expect to see "**WAITING\_AGENT**" if the Teensy is awaiting a connection.
+This command starts a `miniterm` session to display debug messages from the Teensy. The path identifies your Teensy and the {SERIAL_NUM} command pulls your serial number, and `115200` sets the baud rate. You should expect to see "**WAITING\_AGENT**" if the Teensy is awaiting a connection.
 
 3. **Start the micro-ROS Agent**
 
-    The micro-ROS agent acts as a bridge between the micro-ROS client running on the Teensy and the ROS2 network.
-    ```bash
-    sudo docker run -it --rm \
-    -v /dev:/dev --privileged --net=host \
-    --env-file ./env.list \
-    microros/micro-ros-agent:kilted \
-    serial --dev "/dev/serial/by-id/usb-Teensyduino_Dual_Serial_${SERIAL_NUM}-if00" -v4
-    ```
+The micro-ROS agent acts as a bridge between the micro-ROS client running on the Teensy and the ROS2 network.
 
-    This Docker command starts the micro-ROS agent:
+```bash
+sudo docker run -it --rm \
+  -v /dev:/dev --privileged --net=host \
+  --env-file ./env.list \
+  microros/micro-ros-agent:kilted \
+  serial --dev "/dev/serial/by-id/usb-Teensyduino_Dual_Serial_${SERIAL_NUM}-if00" -v4
+```
 
-    * **`sudo docker run`**: Executes a Docker container.
-    * **`-it`**: Runs in interactive mode with a pseudo-TTY.
-    * **`--rm`**: Automatically removes the container when it exits.
-    * **`-v /dev:/dev`**: Mounts the host's `/dev` directory into the container, allowing access to serial devices.
-    * **`--privileged`**: Grants the container elevated privileges, necessary for direct hardware access.
-    * **`--net=host`**: Uses the host's network stack, simplifying network configuration.
-    * **`--env-file ./env.list`**: Loads environment variables from the `env.list` file.
-    * **`microros/micro-ros-agent:kilted`**: Specifies the Docker image to use.
-    * **`serial --dev ...`**: Instructs the agent to connect via a serial port, specifying the Teensy's serial device path.
-    * **`-v4`**: Sets the verbosity level for the agent's output.
+This Docker command starts the micro-ROS agent:
+
+  * **`sudo docker run`**: Executes a Docker container.
+  * **`-it`**: Runs in interactive mode with a pseudo-TTY.
+  * **`--rm`**: Automatically removes the container when it exits.
+  * **`-v /dev:/dev`**: Mounts the host's `/dev` directory into the container, allowing access to serial devices.
+  * **`--privileged`**: Grants the container elevated privileges, necessary for direct hardware access.
+  * **`--net=host`**: Uses the host's network stack, simplifying network configuration.
+  * **`--env-file ./env.list`**: Loads environment variables from the `env.list` file.
+  * **`microros/micro-ros-agent:kilted`**: Specifies the Docker image to use.
+  * **`serial --dev ...`**: Instructs the agent to connect via a serial port, specifying the Teensy's serial device path.
+  * **`-v4`**: Sets the verbosity level for the agent's output.
 
 ## 4. Start the Keyboard Monitor Node
 
-    This node allows you to control your robot or application using keyboard inputs.
+This node allows you to control your robot or application using keyboard inputs.
 
-    ```bash
-    cd ~/repos/common_platform/common_platform_ws
-    source install/setup.bash
-    ros2 launch evdev_teleop evdev_teleop.launch.py
-    ```
+```bash
+cd ~/repos/common_platform/common_platform_ws
+source install/setup.bash
+ros2 launch evdev_teleop evdev_teleop.launch.py
+```
 
-    This command launches the `evdev_teleop` package, which sets up a ROS2 node to read keyboard input and publish corresponding control commands.
+This command launches the `evdev_teleop` package, which sets up a ROS2 node to read keyboard input and publish corresponding control commands.
 
 ## 5. Keyboard Commands 🎮
-    ⚠️ **Important:** Put your robot on the ground before starting teleoperation!
 
-    | Command | Key | Action |
-    |---------|-----|--------|
-    | ⬆️ | **Forward Arrow** | Move forward |
-    | ⬇️ | **Backward Arrow** | Move backward |
-    | ⬅️ | **Left Arrow** | Turn left |
-    | ➡️ | **Right Arrow** | Turn right |
-    | ⏸️ | **Spacebar** | Stop/Emergency brake |
+> ⚠️ **Important:** Put your robot on the ground before starting teleoperation!
 
+| Command | Key | Action |
+|---------|-----|--------|
+| ⬆️ | **Forward Arrow** | Move forward |
+| ⬇️ | **Backward Arrow** | Move backward |
+| ⬅️ | **Left Arrow** | Turn left |
+| ➡️ | **Right Arrow** | Turn right |
+| ⏸️ | **Spacebar** | Stop/Emergency brake |
+
+-----
 
 ## 6. Shutdown Procedure 🔌
-    When you're finished with teleoperation, properly shut down the system:
 
-    ```bash
-    sudo shutdown now
-    ```
+When you're finished with teleoperation, properly shut down the system:
+
+```bash
+sudo shutdown now
+```
 
 This command will safely power down the Raspberry Pi and all connected systems.
 
