@@ -6,6 +6,7 @@ Welcome to the comprehensive documentation for the PARTS Common Robotics Platfor
 
 - [Introduction](intro.rst) - Overview of the platform and its capabilities
 - [Robot Operations](operations/index.md) - Complete operations manual
+- [Testing Guide](testing.rst) - Testing procedures and validation
 
 ## Documentation Sections
 
@@ -25,7 +26,7 @@ Additional documentation sections are under development:
 If you need assistance or have questions:
 1. Check the [Operations Manual](operations/index.md) for step-by-step guides
 2. Review the troubleshooting sections
-3. Contact the PARTS team for additional support
+3. Contact the RCR team for additional support
 
 ---
 
