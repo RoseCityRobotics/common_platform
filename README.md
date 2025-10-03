@@ -210,111 +210,40 @@ Set custom IP address and set up networking:
 ### Accessing the Pi <img src="github/img/raspberry-pi.png" alt="Raspberry Pi" width="20"> from your development machine 🖥️ via SSH
 Both the external device and the robot must be on the same WiFi for SSH to work. Use the static IP address of your Pi to SSH. The command will look something like `ssh rcr@192.168.1.n` where `n` is your ID, for example `ssh rcr@192.168.1.9`.
 
-### <img src="github/img/raspberry-pi.png" alt="Raspberry Pi" width="20"> Teensy Programming - Use Arduino CLI
+### <img src="github/img/raspberry-pi.png" alt="Raspberry Pi" width="20">Flash the Teensy micro-controller with updated firmware
 
-**What we're doing:** We'll set up the Arduino CLI tool on the Raspberry Pi to compile and upload firmware to the Teensy microcontroller. This allows us to program the robot's brain (Teensy) directly from the command line without needing a graphical interface.
-
-**Why Arduino CLI:** The Arduino CLI is the official command-line tool that provides all the functionality of the Arduino IDE but runs entirely in the terminal. This is perfect for our setup since we're working remotely via SSH on the Raspberry Pi.
-
-Arduino provides an official `arduino-cli` tool. You can compile and upload Arduino code for a Teensy entirely from the Ubuntu command line. You will do this from the Raspberry Pi (after connecting via SSH).
-
-#### 1. **Install Arduino CLI:**
-```bash
-curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh
-mv bin/arduino-cli ~/.local/bin/
-```
-
-#### 2. **Configure Arduino CLI:**
-```bash
-arduino-cli config init
-```
-
-#### 3. **Add Teensy board support:**
-```bash
-arduino-cli core update-index
-arduino-cli core install teensy:avr --additional-urls https://www.pjrc.com/teensy/package_teensy_index.json
-```
-
-#### 4. Transfer micro-ROS Arduino Library to Raspberry Pi
-
-The required micro-ROS Arduino library is available in the repository: `firmware/libraries/micro_ros_arduino.zip` so we will  pull the repository to Raspberry Pi <img src="github/img/raspberry-pi.png" alt="Raspberry Pi" width="16"> to access the file.
-
-**What we're doing:** We need to transfer the micro-ROS library GitHub to the Raspberry Pi that's connected to your robot. The Raspberry Pi serves as the main computer that will compile and upload firmware to the Teensy microcontroller.
-
-🖥️ From your development machine
-```bash
-ssh rcr@192.168.1.n
-cd ~/repos/common_platform/
-```
-
-**<img src="github/img/raspberry-pi.png" alt="Raspberry Pi" width="16"> From your Raspberry Pi** in the common_platform directory:
-
-First update your directory with the latest changes from the https://github.com/roseCityRobotics/common_platform repository including the .zip file you'll need next.
-```bash
-git checkout main
-git pull origin main
-```
-
-#### 5. Setup micro-ROS Library and Compile Firmware
-
-**What we're doing:** Now we're working directly on the Raspberry Pi to set up the micro-ROS library and compile the robot's firmware. The Raspberry Pi will handle the compilation process and then upload the compiled code to the Teensy microcontroller.
-
-**<img src="github/img/raspberry-pi.png" alt="Raspberry Pi" width="16"> From the Raspberry Pi (RPi):**
-
-a. Set up Arduino libraries directory:
-   ```bash
-   cd ~
-   mkdir -p Arduino/libraries/
-   cp repos/firmware/libraries/micro_ros_arduino.zip Arduino/libraries/
-   cd ~/Arduino/libraries/
-   ```
-
-b. Install unzip and extract the micro-ROS library:
-   ```bash
-   sudo apt update
-   sudo apt install unzip
-   unzip micro_ros_arduino.zip
-   ```
-
-c. Navigate to the common_platform repository, update it, and place the arduino-cli config files in the correct place
-  ```bash
-  cd ~/repos/common_platform/
-  git checkout main
-  git pull origin main
-  scripts/place_arduino-cli_config.sh
-  ```
-
-d. Navigate to firmware directory and create build folder:
+a. Navigate to firmware directory and create build folder:
    ```bash
    cd ~/repos/common_platform/firmware/closed_loop/
    mkdir build
    cd build
    ```
 
-e. Compile the firmware for Teensy 4.0:
+b. Compile the firmware for Teensy 4.0:
    ```bash
    arduino-cli compile --fqbn teensy:avr:teensy40 --build-property build.usbtype=USB_DUAL_SERIAL --build-path . ../closed_loop.ino
    ```
 
-f. Find the Teensy device:
+c. Find the Teensy device:
 - first power the Teensy - put in the lower-half batteries
 - second turn on the switch for the Teensy
 - make sure the green LED has turned on
-
 
 ```bash
 SERIAL_TEENSY_DEVICE=`find /dev/serial/by-id/ -name "usb-Teensyduino*if00"|head -1`; echo "-> Performing soft reset (baud = 134 hack). $SERIAL_TEENSY_DEVICE"
 ```
 
-g. Reset Teensy into programming mode:
+d. Reset Teensy into programming mode:
    ```bash
    stty -F $SERIAL_TEENSY_DEVICE 9600
    stty -F $SERIAL_TEENSY_DEVICE 134
    ```
 
-h. Verify Teensy is ready and upload firmware:
+e. Verify Teensy is ready and upload firmware:
    ```bash
    lsusb | grep Teensy; echo "-> Should be ready to program…"
+   ```
+   ```bash
    sudo teensy_loader_cli -v --mcu=TEENSY40 closed_loop.ino.hex
    ```
 
@@ -395,16 +324,12 @@ Don't forget to give the project a star! Thanks again!
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-
-
 <!-- LICENSE -->
 ## License
 
 Distributed under the MIT License and the Solderpad Hardware License v2.1. See [LICENSE.txt][license-url] for more information.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
