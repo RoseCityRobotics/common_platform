@@ -6,7 +6,7 @@ This document outlines essential commands for setting up a ROS2 environment, par
 
 ## 1\. Start the ROS Discovery Server
 
-The ROS discovery server facilitates communication between different ROS2 nodes. It acts as a central point for nodes to discover each other on the network.
+The ROS discovery server facilitates communication between different ROS2 nodes. It acts as a central point for nodes to discover each other on the network. If you are using your robot at our Rose City Robotics Lab you will not need to do this step as we are already running a discovery server here on the network.
 
 1.  **Note the IP address of the server**:
 
@@ -38,27 +38,32 @@ The Raspberry Pi will host the micro-ROS agent and other ROS2 nodes. Ensure it's
 1.  **Get your Teensy serial number**:
 
     ```bash
-    ls -l /dev/serial/by-id
+    SERIAL_NUM=$(
+    basename "$(find /dev/serial/by-id/ -name 'usb-Teensyduino*if0[02]' | head -1)" \
+    | sed -E 's/.*_([0-9A-Za-z]+)-if0[02]/\1/'
+    )
+    echo "Teensy serial: $SERIAL_NUM"
     ```
-
-    This command lists symbolic links for serial devices, allowing you to identify the unique serial number of your connected Teensy microcontroller.
 
 2.  **Setup a terminal with miniterm to monitor Teensy debug output**:
 
     ```bash
-    python3 -m serial.tools.miniterm /dev/serial/by-id/usb-Teensyduino_Dual_Serial_<YOUR_SERIAL_NUMBER>-if02 115200
+    python3 -m serial.tools.miniterm "/dev/serial/by-id/usb-Teensyduino_Dual_Serial_${SERIAL_NUM}-if02" 115200
+
     ```
 
-    This command starts a `miniterm` session to display debug messages from the Teensy. The path identifies your Teensy (replace **`<YOUR_SERIAL_NUMBER>`** with the actual value), and `115200` sets the baud rate. You should expect to see "**WAITING\_AGENT**" if the Teensy is awaiting a connection.
+    This command starts a `miniterm` session to display debug messages from the Teensy. The path identifies your Teensy and the {SERIAL_NUM} command pulls your serial number, and `115200` sets the baud rate. You should expect to see "**WAITING\_AGENT**" if the Teensy is awaiting a connection.
 
------
-
-## 3\. Start the micro-ROS Agent
+3. **Start the micro-ROS Agent**
 
 The micro-ROS agent acts as a bridge between the micro-ROS client running on the Teensy and the ROS2 network.
 
 ```bash
-sudo docker run -it --rm -v /dev:/dev --privileged --net=host --env-file ./env.list microros/micro-ros-agent:kilted serial --dev /dev/serial/by-id/usb-Teensyduino_Dual_Serial_<YOUR_SERIAL_NUMBER>-if00 -v4
+sudo docker run -it --rm \
+  -v /dev:/dev --privileged --net=host \
+  --env-file ./env.list \
+  microros/micro-ros-agent:kilted \
+  serial --dev "/dev/serial/by-id/usb-Teensyduino_Dual_Serial_${SERIAL_NUM}-if00" -v4
 ```
 
 This Docker command starts the micro-ROS agent:
