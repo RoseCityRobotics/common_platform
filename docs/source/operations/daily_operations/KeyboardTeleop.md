@@ -33,9 +33,11 @@ c.  **Update the address field of the discovery server config file**:
 
 ## Power and Log on to Raspberry Pi
 
-The Raspberry Pi will host the micro-ROS agent and other ROS2 nodes. Ensure it's powered on and you're logged in. Required ROS2 environment variables set in the **`.profile`** file for automated setup upon login.
+The Raspberry Pi will host the micro-ROS agent and other ROS2 nodes. Ensure it's powered on and you're logged in. Required ROS2 environment variables set in the [**`.profile`**](https://github.com/RoseCityRobotics/common_platform/blob/main/.profile) file for automated setup upon login.
 
-1.  **Get your Teensy serial number**:
+You will need a separate terminal window for each process below:
+
+1. **Get your Teensy serial number**:
 
 ```bash
 SERIAL_NUM=$(
@@ -45,7 +47,7 @@ basename "$(find /dev/serial/by-id/ -name 'usb-Teensyduino*if0[02]' | head -1)" 
 echo "Teensy serial: $SERIAL_NUM"
 ```
 
-2.  **Setup a terminal with miniterm to monitor Teensy debug output**:
+2. **Setup a terminal with miniterm to monitor Teensy debug output**:
 
 ```bash
 python3 -m serial.tools.miniterm "/dev/serial/by-id/usb-Teensyduino_Dual_Serial_${SERIAL_NUM}-if02" 115200
