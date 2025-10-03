@@ -29,6 +29,7 @@ This is Rose City Robotics' fork of the PARTS Common Robotics Platform, customiz
 Ready to start working with our robotics platform? Here's how to begin:
 
 - **Prerequisites**: Basic understanding of robotics concepts, familiarity with Linux command line, and access to the required hardware components.
+- **RCR Foundations**: Check out our [RCR Foundations repository](https://github.com/RoseCityRobotics/rcr-foundations) for fundamental robotics concepts and tutorials.
 - **Initial Setup**: Follow our [Hardware Setup](hardware) guide to assemble your robot, then proceed to [Software Setup](software) for the development environment configuration.
 
 ## Project Components
