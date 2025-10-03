@@ -8,12 +8,12 @@ This document outlines essential commands for setting up a ROS2 environment, par
 
 The ROS discovery server facilitates communication between different ROS2 nodes. It acts as a central point for nodes to discover each other on the network. If you are using your robot at our Rose City Robotics Lab you will not need to do this step as we are already running a discovery server here on the network.
 
-1.  **Note the IP address of the server**:
+a.  **Note the IP address of the server**:
 
       * `192.168.1.125` for Joe’s laptop on RoseCityRobotics WiFi
       * `127.0.0.1` for local host (your own machine)
 
-2.  **Start the discovery server**:
+b.  **Start the discovery server**:
 
     ```bash
     fastdds discovery --server-id 0
@@ -21,7 +21,7 @@ The ROS discovery server facilitates communication between different ROS2 nodes.
 
     This command initiates the Fast DDS discovery server with a server ID of 0.
 
-3.  **Update the address field of the discovery server config file**:
+c.  **Update the address field of the discovery server config file**:
 
     ```bash
     nano ~/ros2_ws/super_client_configuration_file_rcr.xml
