@@ -2,6 +2,8 @@
 
 Welcome to the Rose City Robotics documentation for the PARTS Common Robotics Platform! This document serves as an introduction to our implementation of the Romi Chassis, a versatile and compact robotic platform, and outlines how we've customized it for our robotics education and development needs.
 
+> 📦 **Source Code**: All code, hardware designs, and documentation for this project are available in our [GitHub repository](https://github.com/RoseCityRobotics/common_platform)
+
 ## What is the Romi Chassis?
 
 The Romi Chassis is a compact, versatile robotic platform designed for educational and prototyping applications. Built around a robust aluminum frame, it features:
@@ -48,9 +50,10 @@ This documentation is organized to help you get up and running quickly:
 
 Need help or want to contribute to the project?
 
+- **🔗 GitHub Repository**: [https://github.com/RoseCityRobotics/common_platform](https://github.com/RoseCityRobotics/common_platform)
 - **Support Channels**: [GitHub Issues](https://github.com/RoseCityRobotics/common_platform/issues) for bug reports and feature requests
 - **Community**: Join our discussions and get help from the community
-- **Contributing**: We welcome contributions! Check our GitHub repository for guidelines on submitting pull requests and improvements
+- **Contributing**: We welcome contributions! Check our [GitHub repository](https://github.com/RoseCityRobotics/common_platform) for guidelines on submitting pull requests and improvements
 
 ## Conclusion
 

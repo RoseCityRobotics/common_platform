@@ -2,6 +2,8 @@
 
 Welcome to the comprehensive documentation for the PARTS Common Robotics Platform! This documentation provides everything you need to build, operate, and maintain your robotics system.
 
+> 🔗 **GitHub Repository**: [https://github.com/RoseCityRobotics/common_platform](https://github.com/RoseCityRobotics/common_platform) - Source code, hardware designs, and issue tracking
+
 ## Quick Start
 
 ```{toctree}
@@ -46,7 +48,8 @@ If you need assistance or have questions:
 
 1. Check the [Operations Manual](operations/index) for step-by-step guides
 2. Review the troubleshooting sections
-3. Contact the RCR team for additional support
+3. Visit our [GitHub repository](https://github.com/RoseCityRobotics/common_platform) for source code and issue tracking
+4. Contact the RCR team for additional support
 
 ---
 
