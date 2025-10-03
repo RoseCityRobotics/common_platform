@@ -4,42 +4,46 @@ Welcome to the Robot Operations Manual for the PARTS Common Robotics Platform. T
 
 ## Quick Navigation
 
-### Setup and Initial Configuration
-- [Setup Overview](setup/index.md) - Complete setup procedures
-- [Hardware Setup](setup/hardware_setup.md) - Physical assembly and connections
-- [Software Setup](setup/software_setup.md) - Software installation and configuration
-- [Calibration](setup/calibration.md) - Sensor and system calibration procedures
-
 ### Daily Operations
-- [Daily Operations Overview](daily_operations/index.md) - Routine operations guide
-- [Startup Procedure](daily_operations/startup_procedure.md) - How to properly start the robot
-- [Shutdown Procedure](daily_operations/shutdown_procedure.md) - Safe shutdown procedures
 - [Keyboard Teleoperation](daily_operations/KeyboardTeleop.md) - Control robot using keyboard commands
-- [ROS2 Joystick Control](daily_operations/ROS2_Joystick.md) - Control robot using Bluetooth gamepad
-- [Routine Maintenance](daily_operations/maintenance.md) - Regular maintenance tasks
 
-### Navigation Operations
-- [Navigation Overview](navigation/index.md) - Navigation system guide
-- [Mapping](navigation/mapping.md) - Creating and updating maps
-- [Localization](navigation/localization.md) - Robot positioning and localization
-- [Path Planning](navigation/path_planning.md) - Navigation and path planning
+### Coming Soon
+The following sections are under development and will be available soon:
 
-### Sensor Operations
-- [Sensor Overview](sensors/index.md) - Sensor system guide
-- [LiDAR Operations](sensors/lidar_operations.md) - LiDAR setup and troubleshooting
-- [Camera Operations](sensors/camera_operations.md) - Camera configuration and usage
-- [IMU Operations](sensors/imu_operations.md) - IMU calibration and monitoring
+#### Setup and Initial Configuration
+- Setup Overview - Complete setup procedures
+- Hardware Setup - Physical assembly and connections
+- Software Setup - Software installation and configuration
+- Calibration - Sensor and system calibration procedures
 
-### Troubleshooting
-- [Troubleshooting Overview](troubleshooting/index.md) - Problem-solving guide
-- [Common Issues](troubleshooting/common_issues.md) - Frequently encountered problems
-- [Error Codes](troubleshooting/error_codes.md) - Error code reference
-- [Recovery Procedures](troubleshooting/recovery_procedures.md) - System recovery steps
+#### Additional Daily Operations
+- Startup Procedure - How to properly start the robot
+- Shutdown Procedure - Safe shutdown procedures
+- ROS2 Joystick Control - Control robot using Bluetooth gamepad
+- Routine Maintenance - Regular maintenance tasks
 
-### Advanced Operations
-- [Advanced Overview](advanced/index.md) - Advanced operations guide
-- [Custom Controllers](advanced/custom_controllers.md) - Advanced controller configuration
-- [Firmware Updates](advanced/firmware_updates.md) - Updating robot firmware
+#### Navigation Operations
+- Navigation Overview - Navigation system guide
+- Mapping - Creating and updating maps
+- Localization - Robot positioning and localization
+- Path Planning - Navigation and path planning
+
+#### Sensor Operations
+- Sensor Overview - Sensor system guide
+- LiDAR Operations - LiDAR setup and troubleshooting
+- Camera Operations - Camera configuration and usage
+- IMU Operations - IMU calibration and monitoring
+
+#### Troubleshooting
+- Troubleshooting Overview - Problem-solving guide
+- Common Issues - Frequently encountered problems
+- Error Codes - Error code reference
+- Recovery Procedures - System recovery steps
+
+#### Advanced Operations
+- Advanced Overview - Advanced operations guide
+- Custom Controllers - Advanced controller configuration
+- Firmware Updates - Updating robot firmware
 
 ## Safety Guidelines
 
