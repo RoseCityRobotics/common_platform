@@ -1,0 +1,11 @@
+[build]
+  publish = "docs/build/html"
+  command = "cd docs && make html"
+
+[build.environment]
+  PYTHON_VERSION = "3.11"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
