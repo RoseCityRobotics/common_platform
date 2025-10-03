@@ -81,7 +81,8 @@ This Docker command starts the micro-ROS agent:
 This node allows you to control your robot or application using keyboard inputs.
 
 ```bash
-cd ~/ros2_ws
+cd ~/repos/common_platform/common_platform_ws
+source install/setup.bash
 ros2 launch evdev_teleop evdev_teleop.launch.py
 ```
 
