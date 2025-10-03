@@ -293,7 +293,7 @@ d. Navigate to firmware directory and create build folder:
 
 e. Compile the firmware for Teensy 4.0:
    ```bash
-   arduino-cli compile --fqbn teensy:avr:teensy40 --build-property build usbtype=USB_DUAL_SERIAL --build-path . ../closed_loop.ino
+   arduino-cli compile --fqbn teensy:avr:teensy40 --build-property build.usbtype=USB_DUAL_SERIAL --build-path . ../closed_loop.ino
    ```
 
 f. Find the Teensy device:
