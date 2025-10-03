@@ -4,17 +4,34 @@ Welcome to the comprehensive documentation for the PARTS Common Robotics Platfor
 
 ## Quick Start
 
-- [Introduction](intro.rst) - Overview of the platform and its capabilities
-- [Robot Operations](operations/index.md) - Complete operations manual
-- [Testing Guide](testing.rst) - Testing procedures and validation
+```{toctree}
+:maxdepth: 2
+:caption: Getting Started
+
+intro
+operations/index
+testing
+```
 
 ## Documentation Sections
 
 ### 🤖 Robot Operations
-- [Keyboard Teleoperation](operations/daily_operations/KeyboardTeleop.md) - Control your robot with keyboard commands
+
+```{toctree}
+:maxdepth: 2
+:caption: Robot Operations
+
+operations/daily_operations/KeyboardTeleop
+operations/daily_operations/startup_procedure
+operations/daily_operations/shutdown_procedure
+operations/daily_operations/ROS2_Joystick
+operations/daily_operations/maintenance
+```
 
 ### 🔧 Coming Soon
+
 Additional documentation sections are under development:
+
 - Hardware setup and configuration
 - Software installation guides
 - Advanced troubleshooting
@@ -24,7 +41,8 @@ Additional documentation sections are under development:
 ## Getting Help
 
 If you need assistance or have questions:
-1. Check the [Operations Manual](operations/index.md) for step-by-step guides
+
+1. Check the [Operations Manual](operations/index) for step-by-step guides
 2. Review the troubleshooting sections
 3. Contact the RCR team for additional support
 

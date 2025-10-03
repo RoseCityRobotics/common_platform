@@ -5,11 +5,17 @@ Welcome to the Robot Operations Manual for the PARTS Common Robotics Platform. T
 ## Quick Navigation
 
 ### Daily Operations
-- [Keyboard Teleoperation](daily_operations/KeyboardTeleop.md) - Control robot using keyboard commands
-- [Startup Procedure](daily_operations/startup_procedure.md) - How to properly start the robot
-- [Shutdown Procedure](daily_operations/shutdown_procedure.md) - Safe shutdown procedures
-- [ROS2 Joystick Control](daily_operations/ROS2_Joystick.md) - Control robot using Bluetooth gamepad
-- [Routine Maintenance](daily_operations/maintenance.md) - Regular maintenance tasks
+
+```{toctree}
+:maxdepth: 1
+:caption: Daily Operations
+
+daily_operations/KeyboardTeleop
+daily_operations/startup_procedure
+daily_operations/shutdown_procedure
+daily_operations/ROS2_Joystick
+daily_operations/maintenance
+```
 
 ### Coming Soon
 The following sections are under development and will be available soon:
