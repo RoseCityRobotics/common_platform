@@ -81,7 +81,7 @@ This Docker command starts the micro-ROS agent:
 
 -----
 
-## 4\. Start the Keyboard Monitor Node
+## 4. Start the Keyboard Monitor Node
 
 This node allows you to control your robot or application using keyboard inputs.
 
@@ -104,3 +104,17 @@ This command launches the `evdev_teleop` package, which sets up a ROS2 node to r
 | ⬅️ | **Left Arrow** | Turn left |
 | ➡️ | **Right Arrow** | Turn right |
 | ⏸️ | **Spacebar** | Stop/Emergency brake |
+
+-----
+
+## 6. Shutdown Procedure 🔌
+
+When you're finished with teleoperation, properly shut down the system:
+
+```bash
+sudo shutdown now
+```
+
+This command will safely power down the Raspberry Pi and all connected systems.
+
+> 💡 **Tip:** Always use the proper shutdown command to avoid data corruption and ensure the system starts cleanly next time.
