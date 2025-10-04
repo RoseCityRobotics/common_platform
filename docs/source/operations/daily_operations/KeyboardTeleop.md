@@ -33,6 +33,7 @@ Edit line 11 of the **`super_client_configuration_file_rcr.xml`** file to set th
 
 d. **Start the micro ros agent docker container**
   ```bash
+  cd ~
   SERIAL_TEENSY_DEVICE=`find /dev/serial/by-id/ -name "usb-Teensyduino*if00"|head -1`
   sudo docker run -it --rm -v /dev:/dev --privileged --net=host --env-file ./env.list --name agent microros/micro-ros-agent:kilted serial --dev ${SERIAL_TEENSY_DEVICE} -v4
   ```
@@ -75,6 +76,14 @@ This command starts a `miniterm` session to display debug messages from the Teen
 3. **Start the micro-ROS Agent**
 
 The micro-ROS agent acts as a bridge between the micro-ROS client running on the Teensy and the ROS2 network.
+
+```bash
+SERIAL_NUM=$(
+basename "$(find /dev/serial/by-id/ -name 'usb-Teensyduino*if0[02]' | head -1)" \
+| sed -E 's/.*_([0-9A-Za-z]+)-if0[02]/\1/'
+)
+echo "Teensy serial: $SERIAL_NUM"
+```
 
 ```bash
 sudo docker run -it --rm \
