@@ -1,0 +1,25 @@
+data_recorder:
+  ros__parameters:
+    # Output directory for recorded data
+    output_dir: "/home/rcr/teleop_data"
+    
+    # Topics to record
+    camera_topic: "/camera/image_raw"
+    cmd_vel_topic: "/cmd_vel"
+    
+    # Recording parameters
+    record_rate: 30.0  # Hz
+    image_width: 640
+    image_height: 480
+    
+    # Auto-start recording when node starts
+    auto_start: false
+    
+    # Robot physical parameters (should match your robot config)
+    wheel_separation: 0.14048  # meters
+    wheel_radius: 0.035        # meters
+     
+    # Camera configuration
+    camera_type: "libcamera"  # "v4l2" or "libcamera"
+    camera_id: "0"            # Camera ID for libcamera (0 for first camera)
+    pixel_format: ""          # Pixel format (empty for default)

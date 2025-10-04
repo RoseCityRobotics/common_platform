@@ -63,7 +63,7 @@ ros2 topic hz /camera/image_raw
 **Calibration Command:**
 ```bash
 # Run camera calibration
-ros2 run camera_calibration cameracalibrator --size 8x6 --square 0.108 image:=/camera/image_raw camera:=/camera
+# Command to be added after verification
 ```
 
 ### 2. Extrinsic Calibration
