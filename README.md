@@ -135,7 +135,7 @@ In your firmware directory, update the namespace inside the `ros_interface.cpp` 
 
 ```bash
 cd ~/repos/common_platform/firmware/closed_loop/
-nano ros_interface.cpp
+nano RosInterface.cpp
 ```
 
 Go to **line 79**, where the node is initialized with a namespace (default is empty `""`). Change it to:
