@@ -20,23 +20,23 @@ Mapping is the process of creating a representation of the robot's environment u
 SLAM allows the robot to build a map while simultaneously tracking its position within that map.
 
 1. **Launch SLAM**
-   ```bash
-      cd ros2_ws/
+```bash
+   cd ros2_ws/
 
-      # 1. Launch the robot state publisher
-      ros2 launch common_platform pub_robot_state.launch.py use_sim_time:=false
+   # 1. Launch the robot state publisher
+   ros2 launch common_platform pub_robot_state.launch.py use_sim_time:=false
 
-      # 2. Run Cartographer node with remapped scan topic
-      ros2 run cartographer_ros cartographer_node \
-      -configuration_directory . \
-      -configuration_basename common_platform.lua \
-      --ros-args --remap scan:=/${ROS_NAMESPACE}/scan -r __ns:=${ROS_NAMESPACE}
+   # 2. Run Cartographer node with remapped scan topic
+   ros2 run cartographer_ros cartographer_node \
+   -configuration_directory . \
+   -configuration_basename common_platform.lua \
+   --ros-args --remap scan:=/${ROS_NAMESPACE}/scan -r __ns:=${ROS_NAMESPACE}
 
-      # 3. Run occupancy grid node
-      ros2 run cartographer_ros cartographer_occupancy_grid_node \
-      --ros-args -p resolution:=0.05 -p publish_period_sec:=1.0 \
-      -r __ns:=${ROS_NAMESPACE}
-   ```
+   # 3. Run occupancy grid node
+   ros2 run cartographer_ros cartographer_occupancy_grid_node \
+   --ros-args -p resolution:=0.05 -p publish_period_sec:=1.0 \
+   -r __ns:=${ROS_NAMESPACE}
+```
 
    **Nodes Created:**
    - `robot_state_publisher` - Publishes robot transforms
