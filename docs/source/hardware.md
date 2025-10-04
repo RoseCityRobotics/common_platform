@@ -23,3 +23,12 @@ Solder accessories like the Inertial Measurement Unit (IMU), ensuring proper ori
 The Pololu Romi Chassis forms the physical structure of your robot.
 
 - Follow the [Romi Chassis Assembly Guide](https://www.pololu.com/docs/0J68/4) for detailed instructions on assembling the chassis.
+
+
+### Starting with the Basic Test
+
+**Flash the Teensy 4.0 Board:**
+Begin by flashing the Teensy 4.0 board with the basic test code found in the repository at `/firmware/basic_test/basic_test.ino`. This initial test is crucial for validating your setup.
+
+**Expected Behavior:**
+Upon successful flashing, the robot should exhibit a simple behavior pattern: moving forward, pausing, and then moving backward.
