@@ -16,39 +16,61 @@ daily_operations/ROS2_Joystick
 daily_operations/maintenance
 ```
 
-<!--
-### Coming Soon
-The following sections are under development and will be available soon:
+## Navigation Operations
 
-#### Setup and Initial Configuration
-- Setup Overview - Complete setup procedures
-- Hardware Setup - Physical assembly and connections
-- Software Setup - Software installation and configuration
-- Calibration - Sensor and system calibration procedures
+```{toctree}
+:maxdepth: 1
 
-#### Navigation Operations
-- Navigation Overview - Navigation system guide
-- Mapping - Creating and updating maps
-- Localization - Robot positioning and localization
-- Path Planning - Navigation and path planning
+navigation/index
+navigation/mapping
+navigation/localization
+navigation/path_planning
+```
 
-#### Sensor Operations
-- Sensor Overview - Sensor system guide
-- LiDAR Operations - LiDAR setup and troubleshooting
-- Camera Operations - Camera configuration and usage
-- IMU Operations - IMU calibration and monitoring
+## Sensor Operations
 
-#### Troubleshooting
-- Troubleshooting Overview - Problem-solving guide
-- Common Issues - Frequently encountered problems
-- Error Codes - Error code reference
-- Recovery Procedures - System recovery steps
+```{toctree}
+:maxdepth: 1
 
-#### Advanced Operations
-- Advanced Overview - Advanced operations guide
-- Custom Controllers - Advanced controller configuration
-- Firmware Updates - Updating robot firmware
--->
+sensors/index
+sensors/lidar_operations
+sensors/camera_operations
+sensors/imu_operations
+```
+
+## Setup and Configuration
+
+```{toctree}
+:maxdepth: 1
+
+setup/index
+setup/hardware_setup
+setup/software_setup
+setup/calibration
+```
+
+## Troubleshooting
+
+```{toctree}
+:maxdepth: 1
+
+troubleshooting/index
+troubleshooting/common_issues
+troubleshooting/error_codes
+troubleshooting/recovery_procedures
+```
+
+## Advanced Operations
+
+```{toctree}
+:maxdepth: 1
+
+advanced/index
+advanced/custom_controllers
+advanced/firmware_updates
+advanced/performance_tuning
+```
+
 
 ## Safety Guidelines
 
