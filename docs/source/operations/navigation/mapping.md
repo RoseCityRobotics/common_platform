@@ -42,7 +42,6 @@ SLAM allows the robot to build a map while simultaneously tracking its position 
    - `/odom` (nav_msgs/Odometry) - Odometry data
 
    **Publications (cartographer_node):**
-   - `/map` (nav_msgs/OccupancyGrid) - Occupancy grid map
    - `/tf` (tf2_msgs/TFMessage) - Transform from map to odom
    - `/constraint_list` (cartographer_ros_msgs/ConstraintList) - Loop closure constraints
    - `/trajectory_node_list` (cartographer_ros_msgs/TrajectoryNodeList) - Trajectory nodes
@@ -55,10 +54,10 @@ SLAM allows the robot to build a map while simultaneously tracking its position 
    ```bash
    # Check active topics
    ros2 topic list
-   
+
    # Monitor map updates
    ros2 topic echo /map
-   
+
    # Check transform tree
    ros2 run tf2_tools view_frames
    ```
@@ -78,7 +77,7 @@ SLAM allows the robot to build a map while simultaneously tracking its position 
    # Save the map using Cartographer's built-in functionality
    ros2 service call /finish_trajectory cartographer_ros_msgs/srv/FinishTrajectory "{trajectory_id: 0}"
    ros2 service call /write_state cartographer_ros_msgs/srv/WriteState "{filename: 'my_map.pbstream'}"
-   
+
    # Convert to standard map format (optional)
    ros2 run cartographer_ros cartographer_pbstream_to_ros_map -pbstream_filename my_map.pbstream -map_filename my_map
    ```
@@ -250,15 +249,15 @@ Cartographer uses Lua configuration files located in `config/cartographer/`. The
    ```
 
    **Why Voxels in 2D SLAM?**
-   
+
    Even though Cartographer creates 2D maps, it processes 3D point cloud data from the LiDAR sensor. The voxel filtering serves several purposes:
-   
+
    - **3D Point Cloud Processing**: LiDAR sensors provide 3D points (x, y, z coordinates)
    - **Height Filtering**: `min_z` and `max_z` parameters filter out points outside the robot's height range
    - **Noise Reduction**: Voxel filtering reduces noise and duplicate points in 3D space
    - **Computational Efficiency**: Downsampling 3D points before projecting to 2D map
    - **Data Quality**: Removes outliers and inconsistent measurements
-   
+
    The final 2D map is created by projecting the filtered 3D points onto the ground plane.
 
 2. **Pose Graph Parameters**
