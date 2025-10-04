@@ -34,7 +34,7 @@ ros2 launch common_platform pub_robot_state.launch.py use_sim_time:=false
 ros2 run cartographer_ros cartographer_node \
 -configuration_directory . \
 -configuration_basename common_platform.lua \
---ros-args --remap scan:=/${ROS_NAMESPACE}/scan -r __ns:=${ROS_NAMESPACE}
+--ros-args --remap scan:=${ROS_NAMESPACE}/scan -r __ns:=${ROS_NAMESPACE}
 ```
 
 **Run occupancy grid node**
