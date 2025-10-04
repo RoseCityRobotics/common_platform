@@ -6,28 +6,29 @@ This document outlines essential commands for setting up a ROS2 environment, par
 
 ## Start the ROS Discovery Server
 
-The ROS discovery server facilitates communication between different ROS2 nodes. It acts as a central point for nodes to discover each other on the network. If you are using your robot at our Rose City Robotics Lab you will not need to do this step as we are already running a discovery server here on the network.
+The ROS discovery server facilitates communication between different ROS2 nodes. It acts as a central point for nodes to discover each other on the network.
+
+**If you are using your robot at our Rose City Robotics Lab you will not need to do this step as we are already running a discovery server here on the network.**
 
 a.  **Note the IP address of the server**:
+  * `192.168.1.125` for Joe’s laptop on RoseCityRobotics WiFi
+  * `127.0.0.1` for local host (your own machine)
 
-      * `192.168.1.125` for Joe’s laptop on RoseCityRobotics WiFi
-      * `127.0.0.1` for local host (your own machine)
+b. **Start the discovery server**:
 
-b.  **Start the discovery server**:
+```bash
+fastdds discovery --server-id 0
+```
 
-    ```bash
-    fastdds discovery --server-id 0
-    ```
+This command initiates the Fast DDS discovery server with a server ID of 0.
 
-    This command initiates the Fast DDS discovery server with a server ID of 0.
+c. **Update the address field of the discovery server config file**:
 
-c.  **Update the address field of the discovery server config file**:
+```bash
+nano ~/ros2_ws/super_client_configuration_file_rcr.xml
+```
 
-    ```bash
-    nano ~/ros2_ws/super_client_configuration_file_rcr.xml
-    ```
-
-    Edit line 11 of the **`super_client_configuration_file_rcr.xml`** file to set the discovery server's address to `127.0.0.1` if running locally.
+Edit line 11 of the **`super_client_configuration_file_rcr.xml`** file to set the discovery server's address to `127.0.0.1` if running locally.
 
 4. **Start the micro ros agent docker container**
     ```bash
