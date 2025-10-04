@@ -30,6 +30,8 @@
 
 # Common Platform
 
+> 📚 **📖 [View Complete Documentation](https://common.rosecityrobotics.com/)** - Comprehensive guides for setup, operation, and development
+
 <!-- ABOUT THE PROJECT -->
 ## Rose City Robotics Fork - Portland Area Robotics Society Project
 
