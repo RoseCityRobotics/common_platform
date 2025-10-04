@@ -190,6 +190,10 @@ e. Verify Teensy is ready and upload firmware:
 🎉 Congratulations! You're all caught up for class 2 of the Engineering Boldly: AI Robotics Sprint!
 
 ## Class 2
+
+### Attach your camera and battery pack
+We will walk you through attaching your wide angle video camera to the robot as well as your battery pack.
+
 When you are ready to proceed, check out the next step on setting up teleoperation: [Keyboard Teleoperation Guide](https://common.rosecityrobotics.com/operations/daily_operations/KeyboardTeleop.html)
 
 ## Usage
