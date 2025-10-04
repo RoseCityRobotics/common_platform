@@ -10,27 +10,62 @@ Mapping is the process of creating a representation of the robot's environment u
 
 - Robot hardware properly assembled and calibrated
 - LiDAR sensor functioning correctly
-- ROS2 navigation stack installed
+- Odometry system working (wheel encoders and/or IMU)
 - Sufficient battery charge for mapping session
 
 ## Mapping Methods
 
-### 1. SLAM (Simultaneous Localization and Mapping)
+### 1. SLAM (Simultaneous Localization and Mapping) Using Cartographer
 
 SLAM allows the robot to build a map while simultaneously tracking its position within that map.
 
-#### Using Cartographer
-
 1. **Launch SLAM**
    ```bash
-   ros2 launch common_platform cartographer_2d.launch.py
+   cd ros2_ws/
+   ros2 launch common_platform pub_robot_state.launch.py use_sim_time:=false
+   ros2 run cartographer_ros cartographer_node -configuration_directory . -configuration_basename common_platform.lua --ros-args --remap scan:=/rcr001/scan -r __ns:=${ROS_NAMESPACE}
+   ros2 run cartographer_ros cartographer_occupancy_grid_node --ros-args -p resolution:=0.05 -p publish_period_sec:=1.0 -r __ns:=${ROS_NAMESPACE}
+   ```
+
+   **Nodes Created:**
+   - `robot_state_publisher` - Publishes robot transforms
+   - `joint_state_publisher` - Publishes robot joint status
+   - `cartographer_node` - Main SLAM processing node
+   - `cartographer_occupancy_grid_node` - Occupancy grid publisher
+
+   **Expected Topics:**
+
+   **Subscriptions (cartographer_node):**
+   - `/scan` (sensor_msgs/LaserScan) - LiDAR scan data
+   - `/tf` (tf2_msgs/TFMessage) - Transform data
+   - `/tf_static` (tf2_msgs/TFMessage) - Static transform data
+   - `/odom` (nav_msgs/Odometry) - Odometry data
+
+   **Publications (cartographer_node):**
+   - `/map` (nav_msgs/OccupancyGrid) - Occupancy grid map
+   - `/tf` (tf2_msgs/TFMessage) - Transform from map to odom
+   - `/constraint_list` (cartographer_ros_msgs/ConstraintList) - Loop closure constraints
+   - `/trajectory_node_list` (cartographer_ros_msgs/TrajectoryNodeList) - Trajectory nodes
+
+   **Publications (cartographer_occupancy_grid_node):**
+   - `/map` (nav_msgs/OccupancyGrid) - Final occupancy grid map
+   - `/submap_list` (cartographer_ros_msgs/SubmapList) - Submap information
+
+   **Verify Topics:**
+   ```bash
+   # Check active topics
+   ros2 topic list
+   
+   # Monitor map updates
+   ros2 topic echo /map
+   
+   # Check transform tree
+   ros2 run tf2_tools view_frames
    ```
 
 2. **Teleop Control**
-   ```bash
-   # In another terminal
-   ros2 run teleop_twist_keyboard teleop_twist_keyboard
-   ```
+
+   See [Keyboard Teleoperation Setup](../../daily_operations/KeyboardTeleop.md) for robot control setup.
 
 3. **Drive the Robot**
    - Use keyboard controls to drive the robot
@@ -40,18 +75,13 @@ SLAM allows the robot to build a map while simultaneously tracking its position 
 
 4. **Save the Map**
    ```bash
-   # Save the map
-   ros2 run nav2_map_server map_saver_cli -f my_map
+   # Save the map using Cartographer's built-in functionality
+   ros2 service call /finish_trajectory cartographer_ros_msgs/srv/FinishTrajectory "{trajectory_id: 0}"
+   ros2 service call /write_state cartographer_ros_msgs/srv/WriteState "{filename: 'my_map.pbstream'}"
+   
+   # Convert to standard map format (optional)
+   ros2 run cartographer_ros cartographer_pbstream_to_ros_map -pbstream_filename my_map.pbstream -map_filename my_map
    ```
-
-#### Using Online Async SLAM
-
-1. **Launch Online Async SLAM**
-   ```bash
-   ros2 launch common_platform online_async_launch.py
-   ```
-
-2. **Follow similar teleop procedure**
 
 ### 2. Manual Mapping
 
@@ -197,52 +227,167 @@ free_thresh: 0.196
 
 ### Parameter Tuning
 
-1. **Resolution Settings**
-   ```yaml
-   # In mapping configuration
-   resolution: 0.05  # 5cm per pixel
+#### Cartographer Parameters
+
+Cartographer uses Lua configuration files located in `config/cartographer/`. The most important parameters for tuning:
+
+1. **Trajectory Builder Parameters**
+   ```lua
+   -- In cartographer_2d.lua
+   TRAJECTORY_BUILDER_2D = {
+     min_range = 0.3,                    -- Minimum LiDAR range (m)
+     max_range = 8.0,                    -- Maximum LiDAR range (m)
+     min_z = 0.1,                        -- Minimum height for points
+     max_z = 2.0,                        -- Maximum height for points
+     missing_data_ray_length = 1.0,      -- Length for missing data rays
+     num_accumulated_range_data = 1,     -- Number of scans to accumulate
+     voxel_filter_size = 0.025,          -- Voxel filter size (m)
+     adaptive_voxel_filter_max_length = 0.5,
+     adaptive_voxel_filter_min_num_points = 200,
+     adaptive_voxel_filter_max_range = 50.0,
+     use_intensities = false,            -- Use LiDAR intensity data
+   }
    ```
 
-2. **SLAM Parameters**
-   ```yaml
-   # Cartographer parameters
-   num_laser_scans: 1
-   num_multi_echo_laser_scans: 0
-   num_subdivisions_per_laser_scan: 1
+   **Why Voxels in 2D SLAM?**
+   
+   Even though Cartographer creates 2D maps, it processes 3D point cloud data from the LiDAR sensor. The voxel filtering serves several purposes:
+   
+   - **3D Point Cloud Processing**: LiDAR sensors provide 3D points (x, y, z coordinates)
+   - **Height Filtering**: `min_z` and `max_z` parameters filter out points outside the robot's height range
+   - **Noise Reduction**: Voxel filtering reduces noise and duplicate points in 3D space
+   - **Computational Efficiency**: Downsampling 3D points before projecting to 2D map
+   - **Data Quality**: Removes outliers and inconsistent measurements
+   
+   The final 2D map is created by projecting the filtered 3D points onto the ground plane.
+
+2. **Pose Graph Parameters**
+   ```lua
+   POSE_GRAPH = {
+     optimize_every_n_nodes = 90,        -- Optimize every N nodes
+     constraint_builder = {
+       sampling_ratio = 0.03,            -- Loop closure sampling ratio
+       max_constraint_distance = 15.0,   -- Max distance for constraints
+       min_score = 0.55,                 -- Minimum score for loop closure
+       global_localization_min_score = 0.6,
+     },
+   }
    ```
 
-3. **Map Server Settings**
-   ```yaml
-   # Map server configuration
-   occupied_thresh: 0.65
-   free_thresh: 0.196
+3. **Launch File Parameters**
+   ```bash
+   # Adjustable via launch arguments
+   ros2 launch common_platform cartographer_2d.launch.py \
+     resolution:=0.05 \
+     publish_period_sec:=1.0
    ```
 
-## Advanced Mapping
 
-### Multi-Floor Mapping
+#### Tuning Procedure
 
-1. **Separate Maps**
-   - Create individual maps per floor
-   - Use elevator/stairs as transition points
-   - Maintain separate navigation stacks
+1. **Start with Default Parameters**
+   ```bash
+   # Use default configuration
+   ros2 launch common_platform cartographer_2d.launch.py
+   ```
 
-2. **Map Switching**
-   - Implement map switching logic
-   - Update localization parameters
-   - Handle coordinate frame changes
+2. **Monitor Mapping Quality**
+   - Watch for loop closure detection
+   - Check for consistent wall thickness
+   - Verify accurate pose estimation
 
-### Dynamic Environment Mapping
+#### Detecting Loop Closures
 
-1. **Obstacle Tracking**
-   - Use dynamic obstacle detection
-   - Update costmaps in real-time
-   - Maintain static map base
+**Visual Indicators in RViz:**
+- **Pose Graph Visualization**: Look for constraint lines connecting distant poses
+- **Map Alignment**: Watch for sudden map corrections when returning to previously visited areas
+- **Trajectory Smoothing**: Notice when the robot's path becomes more consistent
 
-2. **Temporary Obstacles**
-   - Mark temporary obstacles
-   - Remove from map when cleared
-   - Update navigation accordingly
+**Console Output Indicators:**
+```bash
+# Look for these messages in the terminal:
+[INFO] [cartographer_node]: Adding loop closure constraint
+[INFO] [cartographer_node]: Optimization completed
+[INFO] [cartographer_node]: Pose graph optimization took X ms
+```
+
+**RViz Display Settings:**
+```bash
+# Enable these displays in RViz:
+- Map (occupancy grid)
+- Pose Graph (constraints and nodes)
+- Trajectory (robot path)
+- LaserScan (current scan data)
+```
+
+**Monitoring Commands:**
+```bash
+# Monitor Cartographer topics
+ros2 topic echo /constraint_list
+ros2 topic echo /trajectory_node_list
+
+# Check for optimization events
+ros2 topic hz /constraint_list
+```
+
+3. **Adjust Based on Environment**
+
+   **For Large Open Spaces:**
+   ```lua
+   -- Increase loop closure search distance
+   max_constraint_distance = 25.0
+   loop_search_maximum_distance = 5.0
+   ```
+
+   **For Cluttered Environments:**
+   ```lua
+   -- Reduce minimum range, increase sampling
+   min_range = 0.2
+   sampling_ratio = 0.05
+   ```
+
+   **For High-Speed Mapping:**
+   ```lua
+   -- Reduce optimization frequency
+   optimize_every_n_nodes = 120
+   num_accumulated_range_data = 2
+   ```
+
+4. **Fine-tune Loop Closure**
+   ```lua
+   -- Adjust loop closure sensitivity
+   min_score = 0.5              # Lower = more sensitive
+   global_localization_min_score = 0.55
+   ```
+
+5. **Optimize Performance**
+   ```lua
+   -- Balance accuracy vs. performance
+   optimize_every_n_nodes = 60   # Lower = more frequent optimization
+   num_accumulated_range_data = 1  # Higher = more data per scan
+   ```
+
+#### Common Tuning Scenarios
+
+**Poor Loop Closure:**
+- Increase `max_constraint_distance`
+- Decrease `min_score`
+- Increase `sampling_ratio`
+
+**Inconsistent Wall Thickness:**
+- Adjust `voxel_filter_size`
+- Tune `adaptive_voxel_filter_min_num_points`
+- Check `min_range` and `max_range`
+
+**Slow Performance:**
+- Increase `optimize_every_n_nodes`
+- Reduce `num_accumulated_range_data`
+- Decrease `sampling_ratio`
+
+**Memory Issues:**
+- Increase `optimize_every_n_nodes`
+- Reduce `max_constraint_distance`
+- Lower `adaptive_voxel_filter_max_range`
 
 ## Map Validation
 

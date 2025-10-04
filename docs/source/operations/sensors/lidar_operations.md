@@ -10,7 +10,7 @@ The robot uses a LiDAR sensor for obstacle detection, mapping, and navigation. T
 
 - **Model**: RPLidar A1M8
 - **Range**: 0.15m - 12m
-- **Angular Resolution**: 0.9°
+- **Angular Resolution**: 0.33°
 - **Scan Rate**: 5.5 Hz
 - **Interface**: Serial (USB)
 
@@ -38,7 +38,9 @@ The robot uses a LiDAR sensor for obstacle detection, mapping, and navigation. T
 **Launch LiDAR:**
 ```bash
 # Launch LiDAR node
-ros2 launch common_platform rplidar.launch.py
+cd ~/repos/common_platform/common_platform_ws/
+source install/setup.bash
+ros2 launch sensors rplidar.launch.py
 ```
 
 **Verify Data:**
@@ -61,11 +63,8 @@ ros2 topic hz /scan
 
 **Test Rotation:**
 ```bash
-# Monitor scan data
-ros2 topic echo /scan
-
-# Verify 360° coverage
-# Check for consistent readings
+ros2 service call /rcr001/stop_motor std_srvs/srv/Empty {}
+ros2 service call /rcr001/start_motor std_srvs/srv/Empty {}
 ```
 
 ### 2. Range Calibration
@@ -82,8 +81,6 @@ ros2 topic echo /scan
 
 ## LiDAR Data Analysis
 
-### 1. Data Structure
-
 **Scan Message:**
 ```yaml
 std_msgs/Header header
@@ -98,51 +95,10 @@ float32[] ranges
 float32[] intensities
 ```
 
-### 2. Data Quality
-
-**Check Data Quality:**
-```bash
-# Monitor scan data
-ros2 topic echo /scan
-
-# Check for:
-# - Consistent range values
-# - No missing data points
-# - Reasonable intensity values
-```
-
-## LiDAR Applications
-
-### 1. Obstacle Detection
-
-**Real-time Obstacle Detection:**
-```bash
-# Monitor for obstacles
-ros2 topic echo /scan | grep -E "range.*[0-9]"
-```
-
-**Obstacle Avoidance:**
-- Use LiDAR data for navigation
-- Implement safety margins
-- Handle dynamic obstacles
-
-### 2. Mapping
-
-**SLAM with LiDAR:**
-```bash
-# Launch SLAM
-ros2 launch common_platform cartographer_2d.launch.py
-
-# Monitor mapping progress
-ros2 topic echo /scan
-```
-
-### 3. Localization
-
-**AMCL Localization:**
-- Use LiDAR for pose estimation
-- Compare with map data
-- Update particle filter
+ Check for:
+ - Consistent range values
+ - No missing data points
+ - Reasonable intensity values
 
 ## Troubleshooting
 
@@ -190,39 +146,6 @@ ros2 topic hz /scan
 - "No data received" - Check power and connections
 - "Invalid data" - Check for interference or damage
 
-## Maintenance
-
-### Regular Maintenance
-
-**Daily:**
-- Visual inspection
-- Check for obstructions
-- Verify data quality
-
-**Weekly:**
-- Clean LiDAR lens
-- Check mounting stability
-- Test rotation mechanism
-
-**Monthly:**
-- Full calibration check
-- Performance testing
-- Connection inspection
-
-### Cleaning Procedures
-
-**LiDAR Lens:**
-1. Power off robot
-2. Use soft, lint-free cloth
-3. Clean gently to avoid scratches
-4. Remove dust and debris
-5. Verify clear view
-
-**Mounting Area:**
-- Clean mounting surface
-- Check for loose connections
-- Verify stability
-
 ## Performance Optimization
 
 ### Data Processing
@@ -251,22 +174,6 @@ range_max: 12.0
 - Adjust scan frequency
 - Balance performance vs. accuracy
 - Consider computational load
-
-## Safety Considerations
-
-### Operating Safety
-
-- Never look directly into LiDAR
-- Keep clear of rotating mechanism
-- Handle with care during maintenance
-- Follow manufacturer guidelines
-
-### Data Safety
-
-- Verify data accuracy
-- Use appropriate safety margins
-- Handle sensor failures gracefully
-- Implement emergency stops
 
 ---
 
