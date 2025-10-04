@@ -207,18 +207,6 @@ We will walk you through attaching your wide angle video camera to the robot as 
 
 When you are ready to proceed, check out the next step on setting up teleoperation: [Keyboard Teleoperation Guide](https://common.rosecityrobotics.com/operations/daily_operations/KeyboardTeleop.html)
 
-## Usage
-
-This section provides practical examples of how to use the Common Robotics Platform effectively. We'll start with a basic test to ensure your setup is functioning correctly.
-
-### Starting with the Basic Test
-
-1. **Flash the Teensy 4.0 Board:**
-   Begin by flashing the Teensy 4.0 board with the basic test code found in the repository at `/firmware/basic_test/basic_test.ino`. This initial test is crucial for validating your setup.
-
-2. **Expected Behavior:**
-   Upon successful flashing, the robot should exhibit a simple behavior pattern: moving forward, pausing, and then moving backward.
-
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ### Assembly Images
