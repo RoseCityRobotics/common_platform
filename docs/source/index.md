@@ -16,20 +16,6 @@ software
 hardware
 ```
 
-## Documentation Sections
-
-
-
-### 📚 Additional Resources
-
-Complete documentation sections available:
-
-- **Hardware Guide** - Physical assembly and components
-- **Software Guide** - Programming and development setup
-- **Arduino CLI Setup** - Teensy programming with Arduino CLI
-- **Testing Guide** - Validation and testing procedures
-- **3D Printed Parts** - Custom components and assembly
-
 ## Getting Help
 
 If you need assistance or have questions:
