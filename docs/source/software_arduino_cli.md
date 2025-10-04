@@ -1,4 +1,4 @@
-# <img src="img/raspberry-pi.png" alt="Raspberry Pi" width="20"> Teensy Programming - Use Arduino CLI
+# <img src="_static/img/raspberry-pi.png" alt="Raspberry Pi" width="20"> Teensy Programming - Use Arduino CLI
 
 **What we're doing:** We'll set up the Arduino CLI tool on the Raspberry Pi to compile and upload firmware to the Teensy microcontroller. This allows us to program the robot's brain (Teensy) directly from the command line without needing a graphical interface.
 
@@ -25,7 +25,7 @@ arduino-cli core install teensy:avr --additional-urls https://www.pjrc.com/teens
 
 #### 4. Transfer micro-ROS Arduino Library to Raspberry Pi
 
-The required micro-ROS Arduino library is available in the repository: `firmware/libraries/micro_ros_arduino.zip` so we will  pull the repository to Raspberry Pi <img src="img/raspberry-pi.png" alt="Raspberry Pi" width="16"> to access the file.
+The required micro-ROS Arduino library is available in the repository: `firmware/libraries/micro_ros_arduino.zip` so we will  pull the repository to Raspberry Pi <img src="_static/img/raspberry-pi.png" alt="Raspberry Pi" width="16"> to access the file.
 
 **What we're doing:** We need to transfer the micro-ROS library GitHub to the Raspberry Pi that's connected to your robot. The Raspberry Pi serves as the main computer that will compile and upload firmware to the Teensy microcontroller.
 
@@ -35,7 +35,7 @@ ssh rcr@192.168.1.n
 cd ~/repos/common_platform/
 ```
 
-**<img src="img/raspberry-pi.png" alt="Raspberry Pi" width="16"> From your Raspberry Pi** in the common_platform directory:
+**<img src="_static/img/raspberry-pi.png" alt="Raspberry Pi" width="16"> From your Raspberry Pi** in the common_platform directory:
 
 First update your directory with the latest changes from the https://github.com/roseCityRobotics/common_platform repository including the .zip file you'll need next.
 ```bash
@@ -47,7 +47,7 @@ git pull origin main
 
 **What we're doing:** Now we're working directly on the Raspberry Pi to set up the micro-ROS library and compile the robot's firmware. The Raspberry Pi will handle the compilation process and then upload the compiled code to the Teensy microcontroller.
 
-**<img src="img/raspberry-pi.png" alt="Raspberry Pi" width="16"> From the Raspberry Pi (RPi):**
+**<img src="_static/img/raspberry-pi.png" alt="Raspberry Pi" width="16"> From the Raspberry Pi (RPi):**
 
 a. Set up Arduino libraries directory:
    ```bash
