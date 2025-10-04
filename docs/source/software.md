@@ -89,3 +89,63 @@ Set custom IP address and set up networking:
 
 ### Accessing the Pi <img src="github/img/raspberry-pi.png" alt="Raspberry Pi" width="20"> from your development machine 🖥️ via SSH
 Both the external device and the robot must be on the same WiFi for SSH to work. Use the static IP address of your Pi to SSH. The command will look something like `ssh rcr@192.168.1.n` where `n` is your ID, for example `ssh rcr@192.168.1.9`.
+
+### Label Studio for Data Annotation
+
+Label Studio is a data labeling tool that students will use to annotate their robot datasets.
+
+#### Setup and Usage
+
+**1. Make folders:**
+```bash
+mkdir -p "$HOME/teleop_data/images"
+mkdir -p "$HOME/teleop_data/annotations"
+```
+
+**2. Start Label Studio:**
+```bash
+cd ~/LabelMaker
+source bin/activate
+label-studio start
+```
+
+**3. Access Label Studio:**
+- Open a web browser and navigate to: `http://192.168.1.n:8800` (replace `n` with your robot number)
+- Log in with:
+  - Email: `robot@rosecityrobotics.com`
+  - Password: `siliconforest`
+
+**4. Enable Local File Serving (for accessing images on the Pi):**
+```bash
+export LABEL_STUDIO_LOCAL_FILES_SERVING_ENABLED=true
+export LABEL_STUDIO_LOCAL_FILES_DOCUMENT_ROOT=[your path to the images folder on the Pi]
+```
+
+**5. (Optional) Make it persistent for future terminals:**
+```bash
+grep -q LABEL_STUDIO_LOCAL_FILES_DOCUMENT_ROOT ~/.bashrc || cat >> ~/.bashrc <<'EOF'
+export LABEL_STUDIO_LOCAL_FILES_SERVING_ENABLED=true
+export LABEL_STUDIO_LOCAL_FILES_DOCUMENT_ROOT="$HOME/teleop_data"
+EOF
+```
+
+**6. Configure Label Studio Storage:**
+
+*Add Source storage (the images to label):*
+- Storage type: **Local Files**
+- Storage Title: **Teleop Images**
+- Absolute local path: `/home/rcr/teleop_data`
+- Path: **images** ← (must be a child folder of the absolute path)
+- Import method: **Files** ← important for images (not "Tasks")
+- Click **Add Storage** → **Sync**
+
+*If you see UnsupportedFileFormatError ... Only .json/.jsonl/.parquet... you picked Tasks. Edit storage and switch Import method to Files.*
+
+*Add Target storage (where your annotations are saved):*
+- Storage type: **Local Files**
+- Storage Title: **Annotations**
+- Absolute local path: `/home/rcr/teleop_data/annotations/`
+- Path:
+- Click **Add Storage**
+
+*(Later, press Sync on this target storage to export annotations there.)*

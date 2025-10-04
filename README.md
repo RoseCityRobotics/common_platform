@@ -110,9 +110,9 @@ e. Verify Teensy is ready and upload firmware:
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-🎉 Congratulations! You're all set up and ready to go with week 1 of the Engineering Boldly: AI Robotics Sprint!
+🎉 Congratulations! You're all co of the Engineering Boldly: AI Robotics Sprint!
 
-If you want to continue your robotics journey, check out the next set of documentation on setting up teleoperation: [Keyboard Teleoperation Guide](https://github.com/RoseCityRobotics/common_platform/blob/main/docs/source/operations/daily_operations/KeyboardTeleop.md)
+If you want to continue your robotics journey, check out the next step on setting up teleoperation: [Keyboard Teleoperation Guide](https://github.com/RoseCityRobotics/common_platform/blob/main/docs/source/operations/daily_operations/KeyboardTeleop.md)
 
 ## Usage
 
