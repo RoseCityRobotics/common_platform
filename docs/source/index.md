@@ -12,6 +12,7 @@ Welcome to the comprehensive documentation for the PARTS Common Robotics Platfor
 
 intro
 operations/index
+software
 ```
 
 ## Documentation Sections
@@ -24,6 +25,7 @@ Complete documentation sections available:
 
 - **Hardware Guide** - Physical assembly and components
 - **Software Guide** - Programming and development setup
+- **Arduino CLI Setup** - Teensy programming with Arduino CLI
 - **Testing Guide** - Validation and testing procedures
 - **3D Printed Parts** - Custom components and assembly
 
