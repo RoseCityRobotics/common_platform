@@ -166,4 +166,9 @@ In your browser visit: `http://192.168.1.n:8800`
 
 **8. 🖥️ Upload Your Annotated Dataset:**
 - Press **Sync** in the target storage tab in Label Studio to export the annotations to your local `annotations/` folder
-- Upload the contents of that folder to the class Dropbox using the shared upload link [https://www.dropbox.com/request/7bILk5XN5JimKlovvapj](https://www.dropbox.com/request/7bILk5XN5JimKlovvapj)
+- Zip the annotations folder and leave it in the ~/teleop_data/:
+  ```bash
+  cd /home/rcr/teleop_data
+  zip -r annotations.zip annotations/
+  ```
+- Leave your Pi on and connected to the RCR internet and tell Joe he can grab your annotated dataset from your IP address.
