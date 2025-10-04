@@ -8,7 +8,8 @@ This document outlines essential commands for setting up a ROS2 environment, par
 
 The ROS discovery server facilitates communication between different ROS2 nodes. It acts as a central point for nodes to discover each other on the network.
 
-**If you are using your robot at our Rose City Robotics Lab you will not need to do this step as we are already running a discovery server here on the network.**
+> **Important**
+> If you are using your robot at our Rose City Robotics Lab, you do **not** need to do this step — a discovery server is already running on the lab network!
 
 a.  **Note the IP address of the server**:
   * `192.168.1.125` for Joe’s laptop on RoseCityRobotics WiFi
@@ -30,18 +31,19 @@ nano ~/ros2_ws/super_client_configuration_file_rcr.xml
 
 Edit line 11 of the **`super_client_configuration_file_rcr.xml`** file to set the discovery server's address to `127.0.0.1` if running locally.
 
-4. **Start the micro ros agent docker container**
-    ```bash
-    SERIAL_TEENSY_DEVICE=`find /dev/serial/by-id/ -name "usb-Teensyduino*if00"|head -1`
-    sudo docker run -it --rm -v /dev:/dev --privileged --net=host --env-file ./env.list --name agent microros/micro-ros-agent:kilted serial --dev ${SERIAL_TEENSY_DEVICE} -v4
-    ```
+d. **Start the micro ros agent docker container**
+  ```bash
+  SERIAL_TEENSY_DEVICE=`find /dev/serial/by-id/ -name "usb-Teensyduino*if00"|head -1`
+  sudo docker run -it --rm -v /dev:/dev --privileged --net=host --env-file ./env.list --name agent microros/micro-ros-agent:kilted serial --dev ${SERIAL_TEENSY_DEVICE} -v4
+  ```
 
-5. **Update the DDS configuration file inside the container**
-    sudo docker cp ~/ros2_ws/super_client_configuration_file_rcr.xml agent:/uros_ws/
-    sudo docker commit agent microros/micro-ros-agent:kilted
-    ```
+e. **Update the DDS configuration file inside the container**
+  ```
+  sudo docker cp ~/ros2_ws/super_client_configuration_file_rcr.xml agent:/uros_ws/
+  sudo docker commit agent microros/micro-ros-agent:kilted
+  ```
 
-    Restart the micro ros agent after updating the configuration file inside the container (<CTRL-C> in the terminal running the agent, then up arrow to repeat the sudo docker run command).
+  Restart the micro ros agent after updating the configuration file inside the container (<CTRL-C> in the terminal running the agent, then up arrow to repeat the sudo docker run command).
 
 -----
 
