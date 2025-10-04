@@ -138,10 +138,10 @@ cd ~/repos/common_platform/firmware/closed_loop/
 nano RosInterface.cpp
 ```
 
-Go to **line 79**, where the node is initialized with a namespace (default is empty `""`). Change it to:
+Find this line where the node is initialized with a namespace (default should either be empty `""` or `rcr001`). Change it to `rcr00n`:
 
 ```cpp
-node = allocator->create_node("teensy_node", "rcr00n");
+rclc_node_init_default(&node, "micro_ros_arduino_node", "rcr00n", &support));
 ```
 
 This sets the micro-ROS node namespace properly for communication with ROS2.
