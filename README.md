@@ -69,6 +69,12 @@ Connect your micro HDMI cable to your Pi and monitor, and a keyboard to the USB-
 - **User:** `rcr`
 - **Password:** `siliconforest`
 
+### 🖥️ On the development computer: Connect via SSH:
+   ```bash
+   ssh rcr@192.168.1.n
+   ```
+   Replace `n` with your robot number.
+
 ### <img src="github/img/raspberry-pi.png" alt="Raspberry Pi" width="20">Flash the Teensy micro-controller with updated firmware
 
 a. Navigate to firmware directory and create build folder:
