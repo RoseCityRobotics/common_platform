@@ -4,9 +4,7 @@ Welcome to the Robot Operations Manual for the PARTS Common Robotics Platform. T
 
 > 🔗 **GitHub Repository**: [https://github.com/RoseCityRobotics/common_platform](https://github.com/RoseCityRobotics/common_platform) - Source code and issue tracking
 
-## Quick Navigation
-
-### Daily Operations
+## Daily Operations
 
 ```{toctree}
 :maxdepth: 1
