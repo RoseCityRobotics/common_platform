@@ -71,6 +71,14 @@ OR
 - **User:** `rcr`
 - **Password:** `siliconforest`
 
+pull the latest changes from git
+cd /repos/common_platform
+
+update the git remote for the public repo so you dont need credentials
+git remote set-url origin "https://github.com/RoseCityRobotics/common_platform.git"
+
+git pull origin main
+
 ### 🧭 Robot Namespacing Setup
 
 To ensure your robot runs under its unique namespace (e.g., `/rcr001`, `/rcr002`, etc.), follow these steps:
