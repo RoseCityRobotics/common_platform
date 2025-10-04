@@ -1,6 +1,6 @@
 # Introduction
 
-Welcome to the Rose City Robotics documentation for our fork of the PARTS Common Robotics Platform! This project builds on the outstanding work of the PARTS team—many thanks to them for their contributions and for making this platform possible. Here you'll find an introduction to our implementation of the Romi Chassis, a versatile and compact robotic platform, along with details on how we've customized it for our robotics education and development needs.
+Welcome to the [Rose City Robotics](https://rosecityrobotics.com) documentation for our fork of the PARTS Common Robotics Platform! This project builds on the outstanding work of the PARTS team—many thanks to them for their contributions and for making this platform possible. Here you'll find an introduction to our implementation of the Romi Chassis, a versatile and compact robotic platform, along with details on how we've customized it for our robotics education and development needs.
 
 > 📦 **Source Code**: All code, hardware designs, and documentation for this project are available in our [GitHub repository](https://github.com/RoseCityRobotics/common_platform)
 
