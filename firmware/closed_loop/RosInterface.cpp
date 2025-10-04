@@ -83,7 +83,14 @@ void odom_timer_callback(rcl_timer_t *timer, int64_t last_call_time) {
   (void)timer;
   (void)last_call_time;
   
+#if PRINT_MOVES > 1
+  SERIAL_OUT.println("=== ODOM TIMER CALLBACK ===");
+#endif
+  
   if (!global_ros_context || !global_ros_context->odomContext.motion || !global_ros_context->odomContext.leftMotor || !global_ros_context->odomContext.rightMotor) {
+#if PRINT_MOVES > 1
+    SERIAL_OUT.println("ERROR: Missing ROS context or motion/motor objects");
+#endif
     return;
   }
 
@@ -120,11 +127,35 @@ void odom_timer_callback(rcl_timer_t *timer, int64_t last_call_time) {
   odom_msg.twist.twist.angular.y = 0.0;
   odom_msg.twist.twist.angular.z = angularVel;
 
+  // Debug output for odometry data
+#if PRINT_MOVES > 1
+  SERIAL_OUT.print("Position: x=");
+  SERIAL_OUT.print(odom_msg.pose.pose.position.x, 3);
+  SERIAL_OUT.print(" y=");
+  SERIAL_OUT.print(odom_msg.pose.pose.position.y, 3);
+  SERIAL_OUT.print(" theta=");
+  SERIAL_OUT.print(theta * 180.0 / M_PI, 1);
+  SERIAL_OUT.print("°");
+  SERIAL_OUT.print(" | Velocities: lin=");
+  SERIAL_OUT.print(linearVel, 3);
+  SERIAL_OUT.print(" ang=");
+  SERIAL_OUT.print(angularVel, 3);
+  SERIAL_OUT.print(" | Motor speeds: L=");
+  SERIAL_OUT.print(leftSpeed, 3);
+  SERIAL_OUT.print(" R=");
+  SERIAL_OUT.print(rightSpeed, 3);
+  SERIAL_OUT.println();
+#endif
+
   // Publish the message
   rcl_ret_t ret = rcl_publish(&odom_publisher, &odom_msg, NULL);
   if (ret != RCL_RET_OK) {
     SERIAL_OUT.print("Failed to publish odometry: ");
     SERIAL_OUT.println(ret);
+  } else {
+#if PRINT_MOVES > 1
+    SERIAL_OUT.println("Odometry published successfully");
+#endif
   }
 }
 

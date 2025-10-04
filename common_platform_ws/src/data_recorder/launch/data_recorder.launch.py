@@ -24,10 +24,10 @@ def generate_launch_description():
     description='Camera topic to record'
   )
   
-  cmd_vel_topic_arg = DeclareLaunchArgument(
-    'cmd_vel_topic',
-    default_value='/cmd_vel',
-    description='Command velocity topic to record'
+  odom_topic_arg = DeclareLaunchArgument(
+    'odom_topic',
+    default_value='/odom',
+    description='Odometry topic to record'
   )
   
   record_rate_arg = DeclareLaunchArgument(
@@ -51,7 +51,7 @@ def generate_launch_description():
   # Get launch configurations
   output_dir = LaunchConfiguration('output_dir')
   camera_topic = LaunchConfiguration('camera_topic')
-  cmd_vel_topic = LaunchConfiguration('cmd_vel_topic')
+  odom_topic = LaunchConfiguration('odom_topic')
   record_rate = LaunchConfiguration('record_rate')
   auto_start = LaunchConfiguration('auto_start')
   use_sim_time = LaunchConfiguration('use_sim_time')
@@ -60,11 +60,14 @@ def generate_launch_description():
   ns = os.environ.get('ROS_NAMESPACE', '').strip()
   if ns:
     # Prepend namespace to topic names
-    camera_topic_with_ns = f'/{ns}{camera_topic}' if not str(camera_topic).startswith('/') else f'/{ns}{camera_topic}'
-    cmd_vel_topic_with_ns = f'/{ns}{cmd_vel_topic}' if not str(cmd_vel_topic).startswith('/') else f'/{ns}{cmd_vel_topic}'
+    camera_topic_with_ns = f'{ns}/{camera_topic}' if not str(camera_topic).startswith('/') else f'{ns}{camera_topic}'
+    odom_topic_with_ns = f'{ns}/{odom_topic}' if not str(odom_topic).startswith('/') else f'{ns}{odom_topic}'
   else:
     camera_topic_with_ns = camera_topic
-    cmd_vel_topic_with_ns = cmd_vel_topic
+    odom_topic_with_ns = odom_topic
+  
+  print(f"Camera topic with namespace: {camera_topic_with_ns}")
+  print(f"Odometry topic with namespace: {odom_topic_with_ns}")
   
   # Data recorder node
   data_recorder_node = Node(
@@ -75,7 +78,7 @@ def generate_launch_description():
     parameters=[{
       'output_dir': output_dir,
       'camera_topic': camera_topic_with_ns,
-      'cmd_vel_topic': cmd_vel_topic_with_ns,
+      'odom_topic': odom_topic_with_ns,
       'record_rate': record_rate,
       'auto_start': auto_start,
       'use_sim_time': use_sim_time,
@@ -90,7 +93,7 @@ def generate_launch_description():
     return LaunchDescription([
       output_dir_arg,
       camera_topic_arg,
-      cmd_vel_topic_arg,
+      odom_topic_arg,
       record_rate_arg,
       auto_start_arg,
       use_sim_time_arg,
@@ -103,7 +106,7 @@ def generate_launch_description():
     return LaunchDescription([
       output_dir_arg,
       camera_topic_arg,
-      cmd_vel_topic_arg,
+      odom_topic_arg,
       record_rate_arg,
       auto_start_arg,
       use_sim_time_arg,

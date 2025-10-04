@@ -9,7 +9,7 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
-find_package(geometry_msgs REQUIRED)
+find_package(nav_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(cv_bridge REQUIRED)
 find_package(OpenCV REQUIRED)
@@ -23,7 +23,7 @@ add_executable(data_recorder_node src/data_recorder_node.cpp)
 target_link_libraries(data_recorder_node PUBLIC
   rclcpp::rclcpp
   ${sensor_msgs_TARGETS}
-  ${geometry_msgs_TARGETS}
+  ${nav_msgs_TARGETS}
   ${std_msgs_TARGETS}
   cv_bridge::cv_bridge
   ${OpenCV_LIBS}
@@ -49,17 +49,8 @@ install(DIRECTORY config
 
 # Install scripts
 install(PROGRAMS
-  scripts/process_training_data.py
   scripts/record_control.py
-  scripts/example_usage.py
-  scripts/test_libcamera.py
-  scripts/test_namespace.py
-  scripts/test_namespace_topics.py
-  scripts/prepare_for_labelstudio.py
-  scripts/combine_yolo_with_motor_data.py
-  scripts/ramdisk_recorder.py
-  scripts/ramdisk_control.py
-  scripts/test_ramdisk.py
+  scripts/backup_ramdisk.py
   DESTINATION lib/${PROJECT_NAME}
 )
 

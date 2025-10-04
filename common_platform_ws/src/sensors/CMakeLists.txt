@@ -23,9 +23,6 @@ install(DIRECTORY config
 
 # Install scripts
 install(PROGRAMS
-  scripts/test_camera.py
-  scripts/test_namespace_camera.py
-  scripts/diagnose_camera.py
   scripts/calibrate_camera.py
   DESTINATION lib/${PROJECT_NAME}
 )

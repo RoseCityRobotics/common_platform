@@ -1,16 +1,15 @@
 #!/usr/bin/env python3
 """
-Launch file for RAM disk data recording.
+Simple RAM disk data recording launch file.
 
-This launch file starts the data recorder with automatic RAM disk mounting
-and provides easy control via the ramdisk_control.py script.
+This launch file handles RAM disk mounting and data recorder startup
+without requiring separate Python scripts.
 """
 
 import os
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, ExecuteProcess
 from launch.substitutions import LaunchConfiguration
-from launch.conditions import IfCondition
 from launch_ros.actions import Node
 from launch.actions import GroupAction
 from launch_ros.actions import PushRosNamespace
@@ -29,64 +28,50 @@ def generate_launch_description():
     description='Path where RAM disk will be mounted'
   )
   
-  backup_path_arg = DeclareLaunchArgument(
-    'backup_path',
-    default_value='/home/rcr/robot_data',
-    description='Path where data will be backed up on SD card'
-  )
-  
-  namespace_arg = DeclareLaunchArgument(
-    'namespace',
-    default_value='',
-    description='ROS namespace for multi-robot setups'
-  )
-  
   auto_start_arg = DeclareLaunchArgument(
     'auto_start',
-    default_value='false',
+    default_value='true',
     description='Automatically start recording when launched'
   )
   
   # Get launch configurations
   ramdisk_size = LaunchConfiguration('ramdisk_size')
   ramdisk_path = LaunchConfiguration('ramdisk_path')
-  backup_path = LaunchConfiguration('backup_path')
-  namespace = LaunchConfiguration('namespace')
   auto_start = LaunchConfiguration('auto_start')
   
   # Handle namespace for topics
   ns = os.environ.get('ROS_NAMESPACE', '').strip()
   if ns:
-    camera_topic = f'/{ns}/camera/image_raw'
-    cmd_vel_topic = f'/{ns}/cmd_vel'
+    camera_topic = f'{ns}/camera/image_raw'
+    odom_topic = f'{ns}/odom'
   else:
     camera_topic = '/camera/image_raw'
-    cmd_vel_topic = '/cmd_vel'
+    odom_topic = '/odom'
+
+  print(f"Camera topic with namespace: {camera_topic}")
+  print(f"Odometry topic with namespace: {odom_topic}")
   
-  # Data recorder node (will be started by ramdisk_recorder.py)
-  # This is just for reference - the actual node is started by the Python script
+  # Note: RAM disk mounting is handled by the data_recorder_node C++ code
+  
+  # Data recorder node
   data_recorder_node = Node(
     package='data_recorder',
     executable='data_recorder_node',
     name='data_recorder',
     output='screen',
     parameters=[{
-      'output_dir': ramdisk_path,
+      'output_dir': '/home/rcr/teleop_data',
       'camera_topic': camera_topic,
-      'cmd_vel_topic': cmd_vel_topic,
+      'odom_topic': odom_topic,
       'record_rate': 30.0,
       'auto_start': auto_start,
-      'camera_type': 'libcamera',
     }],
-    condition=IfCondition('false')  # Disabled - started by Python script instead
   )
   
   # Create launch description
   launch_description = LaunchDescription([
     ramdisk_size_arg,
     ramdisk_path_arg,
-    backup_path_arg,
-    namespace_arg,
     auto_start_arg,
   ])
   
