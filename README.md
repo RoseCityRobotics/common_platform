@@ -65,15 +65,17 @@ The platform now features a complete ROS2 integration with micro-ROS running on 
 ### <img src="github/img/raspberry-pi.png" alt="Raspberry Pi" width="20"> Direct Connection to Raspberry Pi
 Connect your micro HDMI cable to your Pi and monitor, and a keyboard to the USB-A port.
 
-### <img src="github/img/raspberry-pi.png" alt="Raspberry Pi" width="20"> Ubuntu Login on Raspberry Pi
-- **User:** `rcr`
-- **Password:** `siliconforest`
+OR
 
 ### 🖥️ On the development computer: Connect via SSH:
    ```bash
    ssh rcr@192.168.1.n
    ```
    Replace `n` with your robot number.
+
+### <img src="github/img/raspberry-pi.png" alt="Raspberry Pi" width="20"> Ubuntu Login on Raspberry Pi
+- **User:** `rcr`
+- **Password:** `siliconforest`
 
 ### <img src="github/img/raspberry-pi.png" alt="Raspberry Pi" width="20">Flash the Teensy micro-controller with updated firmware
 
