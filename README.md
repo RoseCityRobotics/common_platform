@@ -155,7 +155,13 @@ a. Navigate to firmware directory and create build folder:
    cd ~/repos/common_platform/firmware/closed_loop/
    ```
 
-   if the build directory exists, delete it and remake it. If it doesn't exist just make it.
+   if the build directory exists, delete it.
+
+   ```
+   rm -rf build
+   ```
+
+   Now make the directory:
 
    ```
    mkdir build
