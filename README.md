@@ -71,6 +71,63 @@ OR
 - **User:** `rcr`
 - **Password:** `siliconforest`
 
+### 🧭 Robot Namespacing Setup
+
+To ensure your robot runs under its unique namespace (e.g., `/rcr001`, `/rcr002`, etc.), follow these steps:
+
+#### 1. Set Your Namespace in `.profile`
+
+Edit your shell profile to define your robot's namespace:
+
+```bash
+sudo nano ~/.profile
+```
+
+Add or update this line (replace `n` with your robot number):
+
+```bash
+export ROS_NAME=rcr00n
+```
+
+Save and close the file. This ensures that your environment variables are set on login.
+
+---
+
+#### 2. Set Namespace in `env.list`
+
+Update the environment variable file used for Docker and ROS:
+
+```bash
+sudo nano env.list
+```
+
+Add or update the line:
+
+```bash
+ROS_NAMESPACE=/rcr00n
+```
+
+---
+
+#### 3. Update Firmware Source Code
+
+In your firmware directory, update the namespace inside the `ros_interface.cpp` file:
+
+```bash
+cd ~/repos/common_platform/firmware/closed_loop/
+nano ros_interface.cpp
+```
+
+Go to **line 79**, where the node is initialized with a namespace (default is empty `""`). Change it to:
+
+```cpp
+node = allocator->create_node("teensy_node", "rcr00n");
+```
+
+This sets the micro-ROS node namespace properly for communication with ROS2.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
 ### <img src="github/img/raspberry-pi.png" alt="Raspberry Pi" width="20">Flash the Teensy micro-controller with updated firmware
 
 a. Navigate to firmware directory and create build folder:
