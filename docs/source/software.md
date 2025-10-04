@@ -96,32 +96,32 @@ Label Studio is a data labeling tool that students will use to annotate their ro
 
 #### Setup and Usage
 
-**1. Make folders:**
+**1. <img src="img/raspberry-pi.png" alt="Raspberry Pi" width="16"> Make folders:**
 ```bash
 mkdir -p "$HOME/teleop_data/images"
 mkdir -p "$HOME/teleop_data/annotations"
 ```
 
-**2. Start Label Studio:**
+**2. <img src="img/raspberry-pi.png" alt="Raspberry Pi" width="16"> Start Label Studio:**
 ```bash
 cd ~/LabelMaker
 source bin/activate
 label-studio start
 ```
 
-**3. Access Label Studio:**
+**3. 🖥️ Access Label Studio:**
 - Open a web browser and navigate to: `http://192.168.1.n:8800` (replace `n` with your robot number)
 - Log in with:
   - Email: `robot@rosecityrobotics.com`
   - Password: `siliconforest`
 
-**4. Enable Local File Serving (for accessing images on the Pi):**
+**4. <img src="img/raspberry-pi.png" alt="Raspberry Pi" width="16"> Enable Local File Serving (for accessing images on the Pi):**
 ```bash
 export LABEL_STUDIO_LOCAL_FILES_SERVING_ENABLED=true
 export LABEL_STUDIO_LOCAL_FILES_DOCUMENT_ROOT=[your path to the images folder on the Pi]
 ```
 
-**5. (Optional) Make it persistent for future terminals:**
+**5. <img src="img/raspberry-pi.png" alt="Raspberry Pi" width="16"> (Optional) Make it persistent for future terminals:**
 ```bash
 grep -q LABEL_STUDIO_LOCAL_FILES_DOCUMENT_ROOT ~/.bashrc || cat >> ~/.bashrc <<'EOF'
 export LABEL_STUDIO_LOCAL_FILES_SERVING_ENABLED=true
@@ -129,7 +129,7 @@ export LABEL_STUDIO_LOCAL_FILES_DOCUMENT_ROOT="$HOME/teleop_data"
 EOF
 ```
 
-**6. Configure Label Studio Storage:**
+**6. 🖥️ Configure Label Studio Storage:**
 
 *Add Source storage (the images to label):*
 - Storage type: **Local Files**
