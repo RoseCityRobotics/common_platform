@@ -54,9 +54,9 @@ M
    ```bash
    # Reset odometry
    X
-   
+
    # Drive forward at moderate speed
-   F1.0   # 1.0 meter forward
+   ↑ (Up Arrow)
    ```
 
 3. **Measure Deviation**
@@ -70,7 +70,7 @@ M
 # If robot drifts left, increase right motor scale
 N1.1     # Increase right motor scale to 1.1
 
-# If robot drifts right, increase left motor scale  
+# If robot drifts right, increase left motor scale
 B1.1     # Increase left motor scale to 1.1
 ```
 
@@ -93,7 +93,7 @@ PID (Proportional-Integral-Derivative) controllers regulate motor speed to match
 - **Too Low**: Slow response, steady-state error
 - **Default**: 8.0
 
-#### Integral (I) Gain  
+#### Integral (I) Gain
 - **Effect**: Eliminates steady-state error
 - **Too High**: Oscillations, windup
 - **Too Low**: Persistent error
@@ -145,7 +145,7 @@ U6.0     # Increase right P gain
 
 **If oscillating:**
 ```bash
-Q4.0     # Decrease left P gain  
+Q4.0     # Decrease left P gain
 U4.0     # Decrease right P gain
 ```
 
@@ -188,7 +188,7 @@ T0.1     # Small right D gain
 
 2. **Calculate Parameters**
    - P = 0.6 × Ku
-   - I = 2 × P / Tu  
+   - I = 2 × P / Tu
    - D = P × Tu / 8
 
 #### 2. Load-Dependent Tuning
@@ -213,7 +213,7 @@ Test at different speeds:
 # Low speed
 F0.2
 
-# Medium speed  
+# Medium speed
 F0.5
 
 # High speed
