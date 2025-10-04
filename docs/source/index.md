@@ -1,6 +1,6 @@
-# Welcome to Rose City Robotics - PARTS Common Robotics Platform Documentation
+# Welcome to Rose City Robotics Common Platform Documentation
 
-Welcome to the comprehensive documentation for the PARTS Common Robotics Platform! This documentation provides everything you need to build, operate, and maintain your robotics system.
+Welcome to the comprehensive documentation for the RCR Common Robotics Platform! This documentation provides everything you need to build, operate, and maintain your robotics system.
 
 > 🔗 **GitHub Repository**: [https://github.com/RoseCityRobotics/common_platform](https://github.com/RoseCityRobotics/common_platform) - Source code, hardware designs, and issue tracking
 
