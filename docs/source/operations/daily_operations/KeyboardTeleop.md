@@ -8,7 +8,7 @@ This document outlines essential commands for setting up a ROS2 environment, par
 
 The ROS discovery server facilitates communication between different ROS2 nodes. It acts as a central point for nodes to discover each other on the network.
 
-> **Important**
+> ⚠️ **Important**
 > If you are using your robot at our Rose City Robotics Lab, you do **not** need to do this step — a discovery server is already running on the lab network!
 
 a.  **Note the IP address of the server**:
