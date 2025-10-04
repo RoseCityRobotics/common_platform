@@ -16,18 +16,7 @@ operations/index
 
 ## Documentation Sections
 
-### 🤖 Robot Operations
 
-```{toctree}
-:maxdepth: 2
-:caption: Robot Operations
-
-operations/daily_operations/KeyboardTeleop
-operations/daily_operations/startup_procedure
-operations/daily_operations/shutdown_procedure
-operations/daily_operations/ROS2_Joystick
-operations/daily_operations/maintenance
-```
 
 ### 📚 Additional Resources
 
