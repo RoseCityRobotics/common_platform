@@ -2,6 +2,13 @@
 
 This document addresses frequently encountered problems with the PARTS Common Robotics Platform and their solutions.
 
+## Communication with Teensy 4.0 Microcontroller
+**View debug output**
+   ```bash
+   SERIAL_TEENSY_DEVICE=`find /dev/serial/by-id/ -name "usb-Teensyduino*if02"|head -1`
+   python3 -m serial.tools.miniterm ${SERIAL_TEENSY_DEVICE} 115200
+   ```
+
 ## Power Issues
 
 ### Robot Won't Power On
