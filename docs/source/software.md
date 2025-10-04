@@ -137,6 +137,8 @@ EOF
 
 **6. 🖥️ Configure Label Studio Storage:**
 
+In your browser visit: `http://192.168.1.n:8800`
+
 *Add Source storage (the images to label):*
 - Storage type: **Local Files**
 - Storage Title: **Teleop Images**
