@@ -153,6 +153,11 @@ This sets the micro-ROS node namespace properly for communication with ROS2.
 a. Navigate to firmware directory and create build folder:
    ```bash
    cd ~/repos/common_platform/firmware/closed_loop/
+   ```
+
+   if the build directory exists, delete it and remake it. If it doesn't exist just make it.
+
+   ```
    mkdir build
    cd build
    ```
