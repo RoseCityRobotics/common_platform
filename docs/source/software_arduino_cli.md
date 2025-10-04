@@ -1,4 +1,5 @@
-# <img src="_static/img/raspberry-pi.png" alt="Raspberry Pi" width="20"> Teensy Programming - Use Arduino CLI
+# Teensy Programming - Use Arduino CLI
+<img src="_static/img/raspberry-pi.png" alt="Raspberry Pi" width="20">
 
 **What we're doing:** We'll set up the Arduino CLI tool on the Raspberry Pi to compile and upload firmware to the Teensy microcontroller. This allows us to program the robot's brain (Teensy) directly from the command line without needing a graphical interface.
 
