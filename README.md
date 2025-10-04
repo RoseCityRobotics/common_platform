@@ -76,7 +76,7 @@ OR
 Change to the correct git-enabled directory:
 
 ```bash
-cd /repos/common_platform
+cd repos/common_platform
 ```
 
 Update the Git remote for the public repo so you don’t need credentials:
@@ -118,7 +118,7 @@ Save and close the file. This ensures that your environment variables are set on
 Update the environment variable file used for Docker and ROS:
 
 ```bash
-sudo nano env.list
+sudo nano ~/env.list
 ```
 
 Add or update the line:
