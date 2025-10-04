@@ -29,6 +29,19 @@ c.  **Update the address field of the discovery server config file**:
 
     Edit line 11 of the **`super_client_configuration_file_rcr.xml`** file to set the discovery server's address to `127.0.0.1` if running locally.
 
+4. **Start the micro ros agent docker container**
+    ```bash
+    SERIAL_TEENSY_DEVICE=`find /dev/serial/by-id/ -name "usb-Teensyduino*if00"|head -1`
+    sudo docker run -it --rm -v /dev:/dev --privileged --net=host --env-file ./env.list --name agent microros/micro-ros-agent:kilted serial --dev ${SERIAL_TEENSY_DEVICE} -v4
+    ```
+
+5. **Update the DDS configuration file inside the container**
+    sudo docker cp ~/ros2_ws/super_client_configuration_file_rcr.xml agent:/uros_ws/
+    sudo docker commit agent microros/micro-ros-agent:kilted
+    ```
+
+    Restart the micro ros agent after updating the configuration file inside the container (<CTRL-C> in the terminal running the agent, then up arrow to repeat the sudo docker run command).
+
 -----
 
 ## Power and Log on to Raspberry Pi
