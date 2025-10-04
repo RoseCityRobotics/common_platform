@@ -1,4 +1,4 @@
-# Welcome to Rose City Robotics - Common Robotics Platform Documentation
+# Welcome to Rose City Robotics - PARTS Common Robotics Platform Documentation
 
 Welcome to the comprehensive documentation for the PARTS Common Robotics Platform! This documentation provides everything you need to build, operate, and maintain your robotics system.
 
