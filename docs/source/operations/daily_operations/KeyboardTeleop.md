@@ -86,6 +86,7 @@ echo "Teensy serial: $SERIAL_NUM"
 ```
 
 ```bash
+cd ~
 sudo docker run -it --rm \
   -v /dev:/dev --privileged --net=host \
   --env-file ./env.list \
