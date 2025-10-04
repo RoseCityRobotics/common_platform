@@ -6,7 +6,7 @@ For programming the Teensy microcontroller, we use the Arduino CLI tool. This al
 
 See our detailed guide: [Arduino CLI Setup](software_arduino_cli)
 
-### <img src="github/img/raspberry-pi.png" alt="Raspberry Pi" width="20"> Host Settings
+### <img src="img/raspberry-pi.png" alt="Raspberry Pi" width="20"> Host Settings
 The host has been preset for you as `rcr00_` with your specific ID. To update the hostname:
 
 1. Tell cloud-init to preserve your hostname:
@@ -37,7 +37,7 @@ The host has been preset for you as `rcr00_` with your specific ID. To update th
    sudo reboot
    ```
 
-### <img src="github/img/raspberry-pi.png" alt="Raspberry Pi" width="20"> Network Configuration
+### <img src="img/raspberry-pi.png" alt="Raspberry Pi" width="20"> Network Configuration
 
 Set custom IP address and set up networking:
 
@@ -74,9 +74,9 @@ Set custom IP address and set up networking:
    sudo netplan apply
    ```
 
-### <img src="github/img/raspberry-pi.png" alt="Raspberry Pi" width="20"> Testing SSH Connection
+### <img src="img/raspberry-pi.png" alt="Raspberry Pi" width="20"> Testing SSH Connection
 
-1. **<img src="github/img/raspberry-pi.png" alt="Raspberry Pi" width="16"> On the Pi:** Make sure the IP address is assigned:
+1. **<img src="img/raspberry-pi.png" alt="Raspberry Pi" width="16"> On the Pi:** Make sure the IP address is assigned:
    ```bash
    hostname -I
    ```
@@ -87,7 +87,7 @@ Set custom IP address and set up networking:
    ```
    Replace `n` with your robot number.
 
-### Accessing the Pi <img src="github/img/raspberry-pi.png" alt="Raspberry Pi" width="20"> from your development machine 🖥️ via SSH
+### Accessing the Pi <img src="img/raspberry-pi.png" alt="Raspberry Pi" width="20"> from your development machine 🖥️ via SSH
 Both the external device and the robot must be on the same WiFi for SSH to work. Use the static IP address of your Pi to SSH. The command will look something like `ssh rcr@192.168.1.n` where `n` is your ID, for example `ssh rcr@192.168.1.9`.
 
 ### Label Studio for Data Annotation
