@@ -56,12 +56,6 @@ The platform now features a complete ROS2 integration with micro-ROS running on 
 <!-- GETTING STARTED -->
 ## Getting Started
 
-### Prerequisites
-
-* All the required parts from the BOM on hand. [BOM](/BOM.csv)
-* Windows/Mac/Linux PC
-* Soldering supplies
-
 ### <img src="github/img/raspberry-pi.png" alt="Raspberry Pi" width="20"> Direct Connection to Raspberry Pi
 Connect your micro HDMI cable to your Pi and monitor, and a keyboard to the USB-A port.
 

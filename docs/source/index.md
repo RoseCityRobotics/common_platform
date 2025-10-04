@@ -6,6 +6,12 @@ Welcome to the comprehensive documentation for the PARTS Common Robotics Platfor
 
 ## Quick Start
 
+### Prerequisites
+
+* All the required parts from the BOM on hand. [BOM](https://github.com/RoseCityRobotics/BOM.csv)
+* Windows/Mac/Linux PC
+* Soldering supplies
+
 ```{toctree}
 :maxdepth: 2
 :caption: Getting Started
