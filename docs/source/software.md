@@ -156,5 +156,12 @@ EOF
 
 *(Later, press Sync on this target storage to export annotations there.)*
 
-perform data labeling
+**7. 🖥️ Label Your Image Data from the Maze:**
+- Open your synced image dataset collected from the maze run
+- Begin labeling key events, robot actions, or objects of interest by drawing bounding boxes and assigning appropriate labels
+- Use overlapping annotations, region duplication, and set up annotation relationships if needed
+- For a full overview of labeling features, see the [Label Studio Labeling Guide](https://labelstud.io/guide/)
 
+**8. 🖥️ Upload Your Annotated Dataset:**
+- Press **Sync** in the target storage tab in Label Studio to export the annotations to your local `annotations/` folder
+- Upload the contents of that folder to the class Dropbox using the shared upload link [https://www.dropbox.com/request/7bILk5XN5JimKlovvapj](https://www.dropbox.com/request/7bILk5XN5JimKlovvapj)
