@@ -54,7 +54,7 @@ The platform now features a complete ROS2 integration with micro-ROS running on 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- GETTING STARTED -->
-## Getting Started
+## Getting Started on Week 2
 
 ### <img src="github/img/raspberry-pi.png" alt="Raspberry Pi" width="20"> Direct Connection to Raspberry Pi
 Connect your micro HDMI cable to your Pi and monitor, and a keyboard to the USB-A port.
