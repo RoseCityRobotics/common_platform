@@ -37,7 +37,7 @@ If you need assistance or have questions:
 1. Check the [Operations Manual](operations/index) for step-by-step guides
 2. Review the troubleshooting sections
 3. Visit our [GitHub repository](https://github.com/RoseCityRobotics/common_platform) for source code and issue tracking
-4. Contact the RCR team for additional support
+4. Contact the [RCR team](https://rosecityrobotics.com/contact) for additional support
 
 ---
 
