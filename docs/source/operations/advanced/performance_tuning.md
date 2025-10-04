@@ -8,7 +8,6 @@ This guide covers advanced performance tuning techniques for the PARTS Common Ro
 2. [PID Tuning for Dynamic Response](#pid-tuning-for-dynamic-response)
 3. [Serial Commands for Real-time Tuning](#serial-commands-for-real-time-tuning)
 4. [Troubleshooting Common Issues](#troubleshooting-common-issues)
-5. [Best Practices](#best-practices)
 
 ## Motor Calibration for Straight Driving
 
