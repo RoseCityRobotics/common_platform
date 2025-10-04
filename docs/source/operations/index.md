@@ -10,7 +10,6 @@ Welcome to the Robot Operations Manual for the PARTS Common Robotics Platform. T
 
 ```{toctree}
 :maxdepth: 1
-:caption: Daily Operations
 
 daily_operations/KeyboardTeleop
 daily_operations/startup_procedure
@@ -19,6 +18,7 @@ daily_operations/ROS2_Joystick
 daily_operations/maintenance
 ```
 
+<!--
 ### Coming Soon
 The following sections are under development and will be available soon:
 
@@ -50,6 +50,7 @@ The following sections are under development and will be available soon:
 - Advanced Overview - Advanced operations guide
 - Custom Controllers - Advanced controller configuration
 - Firmware Updates - Updating robot firmware
+-->
 
 ## Safety Guidelines
 

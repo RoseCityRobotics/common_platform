@@ -96,7 +96,9 @@ Both the external device and the robot must be on the same WiFi for SSH to work.
 
 ### Label Studio for Data Annotation
 
-Label Studio is a data labeling tool that students will use to annotate their robot datasets.
+Label Studio is a data labeling tool that students will use to annotate their robot datasets. Label Studio allows you to visually annotate your robot's data—such as teleoperation image sequences—so that you can later use it for training machine learning models or conducting analysis. You’ll access Label Studio through a browser (while SSH'd to the Pi), connect it to the image data stored on your Raspberry Pi, and annotate that data with bounding boxes and classifications (purple whiffle, green whiffle).
+
+🔗 Full Labeling Guide – [Label Studio Documentation](https://labelstud.io/guide/labeling)
 
 #### Setup and Usage
 
@@ -153,3 +155,6 @@ EOF
 - Click **Add Storage**
 
 *(Later, press Sync on this target storage to export annotations there.)*
+
+perform data labeling
+
