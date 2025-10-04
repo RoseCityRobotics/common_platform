@@ -71,13 +71,25 @@ OR
 - **User:** `rcr`
 - **Password:** `siliconforest`
 
-pull the latest changes from git
+### 🔄 Pull the Latest Changes from GitHub
+
+Change to the correct git-enabled directory:
+
+```bash
 cd /repos/common_platform
+```
 
-update the git remote for the public repo so you dont need credentials
+Update the Git remote for the public repo so you don’t need credentials:
+
+```bash
 git remote set-url origin "https://github.com/RoseCityRobotics/common_platform.git"
+```
 
+Pull the changes
+
+```bash
 git pull origin main
+```
 
 ### 🧭 Robot Namespacing Setup
 
