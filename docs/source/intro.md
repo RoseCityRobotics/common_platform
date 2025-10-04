@@ -1,28 +1,28 @@
 # Introduction
 
-Welcome to the Rose City Robotics documentation for the PARTS Common Robotics Platform! This document serves as an introduction to our implementation of the Romi Chassis, a versatile and compact robotic platform, and outlines how we've customized it for our robotics education and development needs.
+Welcome to the Rose City Robotics documentation for our fork of the PARTS Common Robotics Platform! This project builds on the outstanding work of the PARTS team—many thanks to them for their contributions and for making this platform possible. Here you'll find an introduction to our implementation of the Romi Chassis, a versatile and compact robotic platform, along with details on how we've customized it for our robotics education and development needs.
 
 > 📦 **Source Code**: All code, hardware designs, and documentation for this project are available in our [GitHub repository](https://github.com/RoseCityRobotics/common_platform)
 
 ## What is the Romi Chassis?
 
-The Romi Chassis is a compact, versatile robotic platform designed for educational and prototyping applications. Built around a robust aluminum frame, it features:
+The Romi Chassis is a compact, versatile robotic platform designed for educational and prototyping applications. Built around a robust frame, it features:
 
 - **Dual DC Motors**: Direct-drive motors with built-in encoders for precise movement control
-- **Omnidirectional Capability**: Three omni-wheels enable smooth movement in any direction
+- **Omnidirectional Capability**: Two wheels and one caster enable smooth movement in any direction (second caster recommended for heavier sensors)
 - **Modular Design**: Easy-to-access mounting points for sensors, cameras, and custom electronics
-- **Battery Powered**: Rechargeable lithium battery pack for extended operation
+- **Battery Powered**: Rechargeable lithium batteries can be added for extended operation
 - **Arduino Compatible**: Built-in carrier board with Arduino-compatible headers for easy programming
-- **Expandable**: Multiple I/O pins and mounting options for adding sensors, displays, and other peripherals
+- **Expandable**: Multiple I/O pins and mounting options for adding sensors and other peripherals
 
-The Romi Chassis is perfect for learning robotics concepts, prototyping autonomous systems, and developing navigation algorithms. Its compact size (approximately 6" diameter) makes it ideal for indoor testing and classroom environments.
+The Romi Chassis is perfect for learning robotics concepts, prototyping autonomous systems, and developing navigation algorithms. Its compact size (approximately 6" diameter) makes it ideal for indoor testing environments.
 
 ## About Rose City Robotics' Implementation
 
 This is Rose City Robotics' fork of the PARTS Common Robotics Platform, customized for our specific educational and development needs.
 
 - **Project Goals**: Provide hands-on robotics education, enable rapid prototyping of autonomous systems, and create a standardized platform for our robotics programs and competitions.
-- **Custom Features**: Our implementation includes ROS2 integration, custom carrier board modifications, and enhanced sensor capabilities for advanced navigation and perception tasks.
+- **Custom Features**: Our implementation includes ROS2 integration, custom carrier board modifications, onboard AI inference and enhanced sensor capabilities for advanced navigation and perception tasks.
 
 ## Getting Started
 
