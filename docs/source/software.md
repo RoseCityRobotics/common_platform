@@ -108,30 +108,28 @@ mkdir -p "$HOME/teleop_data/images"
 mkdir -p "$HOME/teleop_data/annotations"
 ```
 
-**2. <img src="_static/img/raspberry-pi.png" alt="Raspberry Pi" width="16"> Start Label Studio:**
+**2. <img src="_static/img/raspberry-pi.png" alt="Raspberry Pi" width="16"> Enable Local File Serving (for accessing images on the Pi):**
+```bash
+export LABEL_STUDIO_LOCAL_FILES_SERVING_ENABLED=true
+```
+
+**3. <img src="_static/img/raspberry-pi.png" alt="Raspberry Pi" width="16"> Start Label Studio:**
 ```bash
 cd ~/LabelMaker
 source bin/activate
 label-studio start
 ```
 
-**3. 🖥️ Access Label Studio:**
+**4. 🖥️ Access Label Studio:**
 - Open a web browser and navigate to: `http://192.168.1.n:8800` (replace `n` with your robot number)
 - Log in with:
   - Email: `robot@rosecityrobotics.com`
   - Password: `siliconforest`
 
-**4. <img src="_static/img/raspberry-pi.png" alt="Raspberry Pi" width="16"> Enable Local File Serving (for accessing images on the Pi):**
-```bash
-export LABEL_STUDIO_LOCAL_FILES_SERVING_ENABLED=true
-export LABEL_STUDIO_LOCAL_FILES_DOCUMENT_ROOT=[your path to the images folder on the Pi]
-```
-
 **5. <img src="_static/img/raspberry-pi.png" alt="Raspberry Pi" width="16"> (Optional) Make it persistent for future terminals:**
 ```bash
 grep -q LABEL_STUDIO_LOCAL_FILES_DOCUMENT_ROOT ~/.bashrc || cat >> ~/.bashrc <<'EOF'
 export LABEL_STUDIO_LOCAL_FILES_SERVING_ENABLED=true
-export LABEL_STUDIO_LOCAL_FILES_DOCUMENT_ROOT="$HOME/teleop_data"
 EOF
 ```
 
