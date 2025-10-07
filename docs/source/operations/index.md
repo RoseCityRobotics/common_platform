@@ -22,9 +22,6 @@ daily_operations/maintenance
 :maxdepth: 1
 
 navigation/index
-navigation/mapping
-navigation/localization
-navigation/path_planning
 ```
 
 ## Sensor Operations
@@ -34,7 +31,6 @@ navigation/path_planning
 
 sensors/index
 sensors/lidar_operations
-sensors/camera_operations
 sensors/imu_operations
 ```
 

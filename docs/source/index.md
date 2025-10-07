@@ -17,9 +17,12 @@ Welcome to the comprehensive documentation for the RCR Common Robotics Platform!
 :caption: Getting Started
 
 intro
-operations/index
-software
 hardware
+setup/index
+slam/index
+camera/index
+data_annotation/index
+operations/index
 ```
 
 ## Getting Help
