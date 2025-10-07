@@ -1,4 +1,4 @@
-# Software Guide
+# Host and Software Setup
 
 ## Arduino CLI Setup
 

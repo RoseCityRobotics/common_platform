@@ -11,15 +11,12 @@ host_and_software
 teensy_programming
 ```
 
-- **Host and Software Setup** - Complete guide to configuring your Raspberry Pi host, network settings, SSH setup, and robot namespacing
-- **Teensy Programming** - Programming the Teensy microcontroller using Arduino CLI
-
 ## Quick Start
 
-1. **Host Configuration** - Set up your robot's hostname, network, and SSH access
-2. **Software Setup** - Install and configure ROS2 and required packages
-3. **Firmware Programming** - Flash the Teensy with the latest firmware
-4. **Verification** - Test all systems before proceeding with operations
+1. **[Host Configuration](host_and_software.md#host-settings)** - Set up your robot's hostname, network, and SSH access
+2. **[Software Setup](host_and_software.md#network-configuration)** - Install and configure ROS2 and required packages
+3. **[Firmware Programming](teensy_programming.md)** - Flash the Teensy with the latest firmware
+4. **[Verification](host_and_software.md#ssh-connection)** - Test all systems before proceeding with operations
 
 ## Prerequisites
 
