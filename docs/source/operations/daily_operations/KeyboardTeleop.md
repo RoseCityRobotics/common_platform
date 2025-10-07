@@ -17,6 +17,8 @@ a.  **Note the IP address of the server**:
 
 b. **Start the discovery server**:
 
+Open a new terminal window 📟
+
 ```bash
 fastdds discovery --server-id 0
 ```
@@ -24,6 +26,8 @@ fastdds discovery --server-id 0
 This command initiates the Fast DDS discovery server with a server ID of 0.
 
 c. **Update the address field of the discovery server config file**:
+
+Open a new terminal window 📟
 
 ```bash
 nano ~/ros2_ws/super_client_configuration_file_rcr.xml
@@ -39,12 +43,15 @@ d. **Start the micro ros agent docker container**
   ```
 
 e. **Update the DDS configuration file inside the container**
+
+Open a new terminal window 📟
+
   ```
   sudo docker cp ~/ros2_ws/super_client_configuration_file_rcr.xml agent:/uros_ws/
   sudo docker commit agent microros/micro-ros-agent:kilted
   ```
 
-  Restart the micro ros agent after updating the configuration file inside the container (<CTRL-C> in the terminal running the agent, then up arrow to repeat the sudo docker run command).
+  Restart the micro ros agent after updating the configuration file inside the container (<CTRL-C> in the terminal window 📟 that is running the agent. You can use the up arrow to repeat the sudo docker run command).
 
 -----
 
@@ -56,6 +63,8 @@ You will need a separate terminal window for each process below:
 
 1. **Get your Teensy serial number**:
 
+Open a new terminal window 📟
+
 ```bash
 SERIAL_NUM=$(
 basename "$(find /dev/serial/by-id/ -name 'usb-Teensyduino*if0[02]' | head -1)" \
@@ -66,6 +75,8 @@ echo "Teensy serial: $SERIAL_NUM"
 
 2. **Setup a terminal with miniterm to monitor Teensy debug output**:
 
+Open a new terminal window 📟
+
 ```bash
 python3 -m serial.tools.miniterm "/dev/serial/by-id/usb-Teensyduino_Dual_Serial_${SERIAL_NUM}-if02" 115200
 
@@ -74,6 +85,8 @@ python3 -m serial.tools.miniterm "/dev/serial/by-id/usb-Teensyduino_Dual_Serial_
 This command starts a `miniterm` session to display debug messages from the Teensy. The path identifies your Teensy and the {SERIAL_NUM} command pulls your serial number, and `115200` sets the baud rate. You should expect to see "**WAITING\_AGENT**" if the Teensy is awaiting a connection.
 
 3. **Start the micro-ROS Agent**
+
+Open a new terminal window 📟
 
 The micro-ROS agent acts as a bridge between the micro-ROS client running on the Teensy and the ROS2 network.
 
@@ -108,6 +121,8 @@ This Docker command starts the micro-ROS agent:
   * **`-v4`**: Sets the verbosity level for the agent's output.
 
 ## 4. Start the Keyboard Monitor Node
+
+Open a new terminal window 📟
 
 This node allows you to control your robot or application using keyboard inputs.
 
