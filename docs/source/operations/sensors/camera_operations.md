@@ -38,7 +38,9 @@ The robot uses a camera for visual perception, navigation, and object detection.
 **Launch Camera:**
 ```bash
 # Launch camera node
-ros2 launch common_platform camera.launch.py
+cd ~/repos/common_platform/common_platform_ws
+source install/setup.bash
+ros2 launch sensors camera.launch.py
 ```
 
 **Verify Data:**

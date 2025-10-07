@@ -1,12 +1,12 @@
 # Software Guide
 
-#### Arduino CLI Setup
+## Arduino CLI Setup
 
 For programming the Teensy microcontroller, we use the Arduino CLI tool. This allows you to compile and upload firmware directly from the command line on the Raspberry Pi.
 
 See our detailed guide: [Arduino CLI Setup](software_arduino_cli)
 
-#### Pull the Latest Changes from GitHub
+## Pull the Latest Changes from GitHub
 
 Change to the correct git-enabled directory:
 
@@ -14,7 +14,7 @@ Change to the correct git-enabled directory:
 cd repos/common_platform
 ```
 
-Update the Git remote for the public repo so you don’t need credentials:
+Update the Git remote for the public repo so you don't need credentials:
 
 ```bash
 git remote set-url origin "https://github.com/RoseCityRobotics/common_platform.git"
@@ -26,7 +26,7 @@ Pull the changes
 git pull origin main
 ```
 
-#### Host Settings
+## Host Settings
 <img src="_static/img/raspberry-pi.png" alt="Raspberry Pi" width="20">
 The host has been preset for you as `rcr00_` with your specific ID. To update the hostname:
 
@@ -58,7 +58,7 @@ The host has been preset for you as `rcr00_` with your specific ID. To update th
    sudo reboot
    ```
 
-#### Network Configuration
+## Network Configuration
 <img src="_static/img/raspberry-pi.png" alt="Raspberry Pi" width="20">
 
 In this section we will set a custom IP address, set up networking and add WiFi access points. The Pi will try access points in order from top to bottom until it is successful connecting.
@@ -96,14 +96,14 @@ Apply the network configuration:
 sudo netplan apply
 ```
 
-#### SSH Connection
+## SSH Connection
 **🖥️ On the development computer:** Connect via SSH:
 ```bash
 ssh rcr@192.168.1.n
 ```
 Replace `n` with your robot number.
 
-##### Troubleshooting SSH Connections
+### Troubleshooting SSH Connections
 **<img src="_static/img/raspberry-pi.png" alt="Raspberry Pi" width="16"> On the Pi:** Make sure the IP address is assigned:
 ```bash
 hostname -I
@@ -121,15 +121,15 @@ ping google.com
 
 Make sure your development machine 🖥️ is on the same network.
 
-#### Accessing the Pi from your development machine via SSH
+## Accessing the Pi from your development machine via SSH
 <img src="_static/img/raspberry-pi.png" alt="Raspberry Pi" width="20"> 🖥️
 Both the external device and the robot must be on the same WiFi for SSH to work. Use the static IP address of your Pi to SSH. The command will look something like `ssh rcr@192.168.1.n` where `n` is your ID, for example `ssh rcr@192.168.1.9`.
 
-#### Robot Namespacing Setup
+## Robot Namespacing Setup
 
 To ensure your robot runs under its unique namespace (e.g., `/rcr001`, `/rcr002`, etc.), follow these steps:
 
-##### 1. Set Your Namespace in `.profile`
+### 1. Set Your Namespace in `.profile`
 
 Edit your shell profile to define your robot's namespace:
 
@@ -147,7 +147,7 @@ Save and close the file. This ensures that your environment variables are set on
 
 ---
 
-##### 2. Set Namespace in `env.list`
+### 2. Set Namespace in `env.list`
 
 Update the environment variable file used for Docker and ROS:
 
@@ -163,7 +163,7 @@ ROS_NAMESPACE=/rcr00n
 
 ---
 
-##### 3. Update Firmware Source Code
+### 3. Update Firmware Source Code
 
 In your firmware directory, update the namespace inside the `ros_interface.cpp` file:
 
@@ -182,7 +182,7 @@ This sets the micro-ROS node namespace properly for communication with ROS2.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-### Flash the Teensy micro-controller with updated firmware
+## Flash the Teensy micro-controller with updated firmware
 
 a. Navigate to firmware directory and create build folder:
    ```bash
@@ -236,7 +236,7 @@ Label Studio is a data labeling tool that students will use to annotate their ro
 
 🔗 Full Labeling Guide – [Label Studio Documentation](https://labelstud.io/guide/labeling)
 
-#### Setup and Usage
+### Setup and Usage
 
 **1. <img src="_static/img/raspberry-pi.png" alt="Raspberry Pi" width="16"> Make folders:**
 ```bash
