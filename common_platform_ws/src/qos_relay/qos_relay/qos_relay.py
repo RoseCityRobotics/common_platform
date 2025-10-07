@@ -54,6 +54,8 @@ class QoSRelay(Node):
     def odom_callback(self, msg):
         # Create a new message to ensure correct topic type hash
         relay_msg = Odometry()
+        
+        # Pass through the original timestamp from firmware (after firmware fix)
         relay_msg.header = msg.header
         relay_msg.header.frame_id = self.namespace + '/' + msg.header.frame_id
         relay_msg.child_frame_id = self.namespace + '/' + msg.child_frame_id
