@@ -26,9 +26,8 @@ label-studio start
 
 **4. 🖥️ Access Label Studio:**
 - Open a web browser and navigate to: `http://192.168.1.n:8800` (replace `n` with your robot number)
-- Log in with:
-  - Email: `robot@rosecityrobotics.com`
-  - Password: `siliconforest`
+- Create a Label Studio Account
+- Create a new Label Studio Project
 
 **5. <img src="_static/img/raspberry-pi.png" alt="Raspberry Pi" width="16"> (Optional) Make it persistent for future terminals:**
 ```bash

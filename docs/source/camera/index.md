@@ -1,6 +1,6 @@
 # Camera Operations
 
-This section covers camera setup, configuration, and operations for the common platform robot.
+This section covers camera setup, configuration, calibration, and usage for the common platform robot.
 
 ## Topics
 
@@ -9,8 +9,6 @@ This section covers camera setup, configuration, and operations for the common p
 
 camera_operations
 ```
-
-- **Camera Operations** - Complete guide to camera setup, calibration, and usage
 
 ## Quick Start
 

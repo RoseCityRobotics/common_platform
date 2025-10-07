@@ -1,6 +1,6 @@
 # Data Annotation
 
-This section covers tools and procedures for annotating robot datasets for machine learning and analysis.
+This section covers tools and procedures for annotating robot datasets for machine learning and analysis with Label Studio.
 
 ## Topics
 
@@ -9,8 +9,6 @@ This section covers tools and procedures for annotating robot datasets for machi
 
 label_studio
 ```
-
-- **Label Studio** - Complete guide to using Label Studio for data annotation
 
 ## Quick Start
 
