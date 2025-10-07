@@ -6,6 +6,26 @@ For programming the Teensy microcontroller, we use the Arduino CLI tool. This al
 
 See our detailed guide: [Arduino CLI Setup](software_arduino_cli)
 
+## Pull the Latest Changes from GitHub
+
+Change to the correct git-enabled directory:
+
+```bash
+cd repos/common_platform
+```
+
+Update the Git remote for the public repo so you don’t need credentials:
+
+```bash
+git remote set-url origin "https://github.com/RoseCityRobotics/common_platform.git"
+```
+
+Pull the changes
+
+```bash
+git pull origin main
+```
+
 ### Host Settings
 <img src="_static/img/raspberry-pi.png" alt="Raspberry Pi" width="20">
 The host has been preset for you as `rcr00_` with your specific ID. To update the hostname:
