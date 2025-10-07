@@ -10,7 +10,7 @@ def generate_launch_description():
         output='screen'
     )
     
-    ns = os.environ.get('ROS_NAMESPACE', '').strip()
+    ns = os.environ.get('ROS_NAME', '').strip()
     if ns:
         return LaunchDescription([
             GroupAction([

@@ -37,7 +37,7 @@ class QoSRelay(Node):
         # Subscribe with RELIABLE QoS
         self.subscription = self.create_subscription(
             Odometry,
-            f'{namespace}/odom_uros',
+            'odom_uros',
             self.odom_callback,
             reliable_qos
         )
@@ -45,7 +45,7 @@ class QoSRelay(Node):
         # Publish with BEST_EFFORT QoS
         self.publisher = self.create_publisher(
             Odometry,
-            f'{namespace}/odom',
+            'odom',
             best_effort_qos
         )
         
