@@ -1,0 +1,63 @@
+# Common Platform Documentation Restructure
+
+## Overview
+This file contains instructions for reorganizing the common_platform documentation structure based on the plan in `../common_platform_restructure.mdc`.
+
+## Directory Structure Changes
+
+### 1. Create New Directories
+```bash
+mkdir -p docs/source/slam
+mkdir -p docs/source/camera
+mkdir -p docs/source/data_annotation
+mkdir -p docs/source/setup
+```
+
+### 2. Move SLAM Documentation
+```bash
+# Move navigation files to slam directory
+mv docs/source/operations/navigation/mapping.md docs/source/slam/
+mv docs/source/operations/navigation/localization.md docs/source/slam/
+mv docs/source/operations/navigation/path_planning.md docs/source/slam/
+```
+
+### 3. Move Camera Documentation
+```bash
+# Move camera operations to camera directory
+mv docs/source/operations/sensors/camera_operations.md docs/source/camera/
+```
+
+### 4. Move Setup Documentation
+```bash
+# Move software setup files to setup directory
+mv docs/source/software.md docs/source/setup/host_and_software.md
+mv docs/source/software_arduino_cli.md docs/source/setup/teensy_programming.md
+```
+
+### 5. Extract Label Studio Content
+- Extract "Label Studio for Data Annotation" section from `docs/source/setup/host_and_software.md`
+- Create new file `docs/source/data_annotation/label_studio.md` with this content
+- Remove the section from `host_and_software.md`
+
+### 6. Create Index Files
+Create index.md files for each new directory:
+- `docs/source/slam/index.md`
+- `docs/source/camera/index.md`
+- `docs/source/data_annotation/index.md`
+- `docs/source/setup/index.md`
+
+### 7. Update Root Index
+Update `docs/source/index.md` to include new directories in the toctree.
+
+## Important Notes
+- **DO NOT CHANGE** any code blocks or commands during the move
+- **PRESERVE** all existing content exactly as-is
+- Only file paths should change, not content
+- Use `git diff` to verify content integrity after moves
+- Update cross-references to point to new locations
+
+## Verification Steps
+1. Run `git diff` to ensure only file paths changed, not content
+2. Test documentation build: `cd docs && sphinx-build -b html source build/html`
+3. Verify all links work in the generated documentation
+4. Check that all code blocks and commands remain unchanged

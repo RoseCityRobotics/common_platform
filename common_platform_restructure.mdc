@@ -1,0 +1,47 @@
+# Proposed Layout for common_platform Documentation
+
+## Directory Structure
+
+```
+docs/
+└── source/
+    ├── intro.md
+    ├── hardware.md
+    ├── 3dprint.md
+    ├── testing.md
+    ├── slam/
+    │   ├── index.md                # overview of SLAM operations
+    │   ├── mapping.md              # moved from operations/navigation/mapping.md
+    │   ├── localization.md         # moved from operations/navigation/localization.md
+    │   └── path_planning.md        # moved from operations/navigation/path_planning.md
+    ├── camera/
+    │   ├── index.md                # overview of camera operations
+    │   └── camera_operations.md    # moved from operations/sensors/camera_operations.md
+    ├── data_annotation/
+    │   ├── index.md                # overview of data annotation
+    │   └── label_studio.md         # new file extracted from the “Label Studio for Data Annotation” section in software.md
+    ├── setup/
+    │   ├── index.md                # overview of host and software setup
+    │   ├── host_and_software.md    # renamed from software.md (contains host settings, network configuration, SSH setup, namespacing)
+    │   └── teensy_programming.md   # renamed from software_arduino_cli.md (Teensy programming via Arduino CLI)
+    └── operations/                # existing operations docs for daily procedures, advanced topics, troubleshooting, etc.
+        └── ... (unchanged)
+```
+
+### Notes on the Reorganization
+
+- **SLAM**: All SLAM‑related documentation (mapping, localization, path planning) has been grouped into the new `docs/source/slam` directory.  The original files from `docs/source/operations/navigation/` are moved here without changing any content, ensuring that commands and code blocks remain exactly as they were.
+
+- **Camera image capture**: The camera operations guide (`camera_operations.md`) has been moved from `docs/source/operations/sensors/` to the new `docs/source/camera` folder.  An `index.md` file in this directory will serve as an overview and table of contents for camera‑related documents.
+
+- **Data annotation**: A new `data_annotation` directory consolidates instructions for labeling and annotating datasets.  The `label_studio.md` file should contain the “Label Studio for Data Annotation” section extracted verbatim from `software.md`, preserving all commands and code blocks.  An accompanying `index.md` will describe the purpose of this directory and link to `label_studio.md`.
+
+- **Host and software setup**: All host configuration, SSH setup, network settings and namespacing instructions are moved into the `setup` directory.  The original `software.md` becomes `host_and_software.md` and the original `software_arduino_cli.md` is renamed to `teensy_programming.md`.  A new `index.md` in this directory will provide a high‑level overview and navigation.
+
+- **Operations manual**: The `operations` directory (daily operations, advanced topics, troubleshooting, etc.) remains intact to preserve detailed procedural guides.  No content is changed here, but cross‑references can be updated to point to the new locations as needed.
+
+- **Index updates**:  The root `index.md` file should be updated so that its `toctree` lists the new folders (`slam/index`, `camera/index`, `data_annotation/index`, `setup/index`) alongside existing entries like `intro` and `hardware`.  This helps students easily find the relevant topics during class.
+
+### Code Integrity
+
+All command snippets and code blocks are **unchanged** in this reorganization.  Files have simply been moved or copied to new locations.  When applying these changes with Cursor, you can verify content integrity by running a diff (e.g., `git diff`) before and after the move.  Only the file paths should differ; the contents should be identical.
