@@ -17,7 +17,7 @@ class QoSRelay(Node):
         super().__init__('qos_relay')
         
         # Get namespace from ROS_NAME environment variable
-        namespace = os.getenv('ROS_NAME', '')
+        self.namespace = os.getenv('ROS_NAME', '')
         
         # Create QoS profiles
         reliable_qos = QoSProfile(
@@ -49,13 +49,14 @@ class QoSRelay(Node):
             best_effort_qos
         )
         
-        self.get_logger().info(f'QoS Relay started: {namespace}/odom_uros (RELIABLE) -> {namespace}/odom (BEST_EFFORT)')
+        self.get_logger().info(f'QoS Relay started: {self.namespace}/odom_uros (RELIABLE) -> {self.namespace}/odom (BEST_EFFORT)')
     
     def odom_callback(self, msg):
         # Create a new message to ensure correct topic type hash
         relay_msg = Odometry()
         relay_msg.header = msg.header
-        relay_msg.child_frame_id = msg.child_frame_id
+        relay_msg.header.frame_id = self.namespace + '/' + msg.header.frame_id
+        relay_msg.child_frame_id = self.namespace + '/' + msg.child_frame_id
         relay_msg.pose = msg.pose
         relay_msg.twist = msg.twist
         
