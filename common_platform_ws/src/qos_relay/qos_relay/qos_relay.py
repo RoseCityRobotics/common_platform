@@ -55,8 +55,8 @@ class QoSRelay(Node):
         # Create a new message to ensure correct topic type hash
         relay_msg = Odometry()
         
-        # Pass through the original timestamp from firmware (after firmware fix)
-        relay_msg.header = msg.header
+        # Override timestamp with current system time (fixes microcontroller time issues)
+        relay_msg.header.stamp = self.get_clock().now().to_msg()
         relay_msg.header.frame_id = self.namespace + '/' + msg.header.frame_id
         relay_msg.child_frame_id = self.namespace + '/' + msg.child_frame_id
         relay_msg.pose = msg.pose
