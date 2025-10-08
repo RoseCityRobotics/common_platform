@@ -1,7 +1,15 @@
 # SLAM Operations
 
-This section covers Simultaneous Localization and Mapping (SLAM) operations for the common platform robot. Learn how to create maps of your environment using Cartographer, localize your robot within existing maps
-then plan and execute navigation paths
+This section covers Simultaneous Localization and Mapping (SLAM) operations for the common platform robot. Learn how to create maps of your environment using Cartographer, localize your robot within existing maps, then plan and execute navigation paths.
+
+## Prerequisites
+
+- **Discovery Server Running**: Ensure a ROS discovery server is running (see [Discovery Server Setup](../operations/discovery_server.md))
+- LiDAR sensor functioning correctly
+- Odometry system working (wheel encoders and/or IMU)
+- Sufficient battery charge for mapping session
+- Robot control setup (see [Keyboard Teleoperation Setup](../operations/keyboard_teleoperation.md))
+- LIDAR node is started (see [Lidar Operations](../lidar_operations.md))
 
 ## Topics
 
@@ -12,13 +20,3 @@ mapping
 localization
 path_planning
 ```
-
-## Quick Start
-
-For a complete SLAM workflow, start with mapping to create your environment map, then use localization to navigate within that map.
-
-## Related Documentation
-
-- [Hardware Setup](../hardware.md) - Ensure your robot hardware is properly configured
-- [Lidar Operations](../operations/sensors/lidar_operations.md) - Lidar setup for SLAM
-- [Troubleshooting](../operations/troubleshooting/index.md) - Common SLAM issues and solutions
