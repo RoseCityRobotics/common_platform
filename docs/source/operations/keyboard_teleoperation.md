@@ -9,7 +9,7 @@ This document outlines essential commands for setting up a ROS2 environment, par
 Before starting keyboard teleoperation, ensure you have:
 
 1. **Discovery Server Running**: See [Discovery Server Setup](discovery_server.md) for setup instructions
-2. **Robot Powered On**: Ensure your robot is powered and connected
+2. **Robot Powered On**: Ensure your both the Pi and Teensy are powered and connected
 3. **Network Connectivity**: Verify connection between your computer and the robot
 
 -----
@@ -20,7 +20,7 @@ The Raspberry Pi will host the micro-ROS agent and other ROS2 nodes. Ensure it's
 
 You will need a separate terminal window 📟 for each process below:
 
-1. **Get your Teensy serial number**:
+## Get your Teensy serial number**
 
 Open a new terminal window 📟
 
@@ -32,7 +32,7 @@ basename "$(find /dev/serial/by-id/ -name 'usb-Teensyduino*if0[02]' | head -1)" 
 echo "Teensy serial: $SERIAL_NUM"
 ```
 
-2. **Setup a terminal with miniterm to monitor Teensy debug output**:
+## Setup a terminal with miniterm to monitor Teensy debug output
 
 Open a new terminal window 📟
 
@@ -43,7 +43,7 @@ python3 -m serial.tools.miniterm "/dev/serial/by-id/usb-Teensyduino_Dual_Serial_
 
 This command starts a `miniterm` session to display debug messages from the Teensy. The path identifies your Teensy and the {SERIAL_NUM} command pulls your serial number, and `115200` sets the baud rate. You should expect to see "**WAITING\_AGENT**" if the Teensy is awaiting a connection.
 
-3. **Start the micro-ROS Agent**
+## Start the micro-ROS Agent
 
 Open a new terminal window 📟
 
@@ -79,7 +79,7 @@ This Docker command starts the micro-ROS agent:
   * **`serial --dev ...`**: Instructs the agent to connect via a serial port, specifying the Teensy's serial device path.
   * **`-v4`**: Sets the verbosity level for the agent's output.
 
-## 4. Start the Keyboard Monitor Node
+## Start the Keyboard Monitor Node
 
 Open a new terminal window 📟
 
@@ -93,7 +93,7 @@ ros2 launch evdev_teleop evdev_teleop.launch.py
 
 This command launches the `evdev_teleop` package, which sets up a ROS2 node to read keyboard input and publish corresponding control commands.
 
-## 5. Keyboard Commands 🎮
+## Keyboard Commands 🎮
 
 > ⚠️ **Important:** Put your robot on the ground before starting teleoperation!
 
@@ -107,7 +107,7 @@ This command launches the `evdev_teleop` package, which sets up a ROS2 node to r
 
 -----
 
-## 6. Shutdown Procedure 🔌
+## Shutdown Procedure 🔌
 
 When you're finished with teleoperation, properly shut down the system:
 

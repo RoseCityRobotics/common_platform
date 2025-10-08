@@ -6,7 +6,7 @@ This document outlines the proper procedure for starting up your PARTS Common Ro
 
 Before starting the robot, verify:
 
-- [ ] Battery is charged (check voltage with multimeter)
+- [ ] Battery is charged
 - [ ] All connections are secure
 - [ ] Robot is in a safe operating environment
 - [ ] Emergency stop is accessible
@@ -15,45 +15,40 @@ Before starting the robot, verify:
 ## Startup Sequence
 
 ### 1. Power On
-
-1. **Battery Check**
-   ```bash
-   # Check battery voltage (should be >11V)
-   # Connect multimeter to battery terminals
-   ```
-
-2. **Power Switch**
-   - Turn on main power switch
-   - Verify power LED indicators are on
-   - Check that all systems receive power
+- Add batteries to Teensy
+- Connect Pi Battery
+- Turn on main Teensy power switch
+- Verify Teensy and Pi power LED indicators are on
 
 ### 2. System Initialization
 
-1. **Controller Boot**
+**Controller Boot**
    - Wait for controller to complete boot sequence
    - Verify boot messages on console (if available)
    - Check for any error messages
 
-2. **Sensor Initialization**
+**Sensor Initialization**
    - LiDAR should begin spinning
    - Camera should initialize
    - IMU should calibrate automatically
 
 ### 3. Software Launch
 
-1. **ROS2 Launch**
+**ROS2 Launch**
    ```bash
    # Launch the main robot system
    ros2 launch common_platform launch_robot.launch.py
    ```
 
-2. **Verify Topics**
+Open a new terminal window 📟
+
+**Verify Topics**
    ```bash
    # Check that all expected topics are publishing
    ros2 topic list
    ```
 
-3. **Check Node Status**
+**Check Node Status**
    ```bash
    # Verify all nodes are running
    ros2 node list
@@ -61,17 +56,17 @@ Before starting the robot, verify:
 
 ### 4. System Verification
 
-1. **Sensor Data**
+ **Sensor Data**
    - Verify LiDAR data is being published
    - Check camera feed
    - Confirm IMU data is available
 
-2. **Motor System**
+ **Motor System**
    - Test motor responsiveness
    - Verify encoder data
    - Check for any unusual sounds
 
-3. **Navigation System**
+ **Navigation System**
    - Confirm localization is working
    - Check map loading (if applicable)
    - Verify path planning capabilities
@@ -86,41 +81,16 @@ Before starting the robot, verify:
 
 ### Common Problems
 
-**Robot Won't Power On**
-- Check battery voltage
-- Verify power switch operation
-- Check for loose connections
+**Battery Check**
+   ```bash
+   # Check battery voltage (should be >9V)
+   # Connect multimeter to battery terminals
+   ```
 
-**Software Won't Launch**
-- Check network connectivity
-- Verify ROS2 installation
-- Review launch file parameters
-
-**Sensors Not Responding**
-- Check sensor connections
-- Verify power to sensors
-- Review sensor configuration files
-
-**Motor Issues**
-- Check motor driver connections
-- Verify encoder wiring
-- Test motor drivers individually
-
-## Safety Reminders
-
-- Always perform startup in a controlled environment
-- Keep emergency stop accessible
-- Monitor system during startup
-- Stop immediately if any unusual behavior is observed
-
-## Next Steps
-
-After successful startup:
-
-1. Perform basic movement tests
-2. Check sensor data quality
-3. Verify navigation capabilities
-4. Proceed with intended operations
+**Discovery Server Running**
+   - Ensure a ROS discovery server is running before starting robot operations
+   - See [Discovery Server Setup](discovery_server.md) for detailed setup instructions
+   - If at Rose City Robotics Lab, a discovery server is already running on the network
 
 ---
 
