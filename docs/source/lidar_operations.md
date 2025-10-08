@@ -4,71 +4,25 @@ This guide covers LiDAR sensor operations, setup, and troubleshooting for the Co
 
 ## Launch ROS Node
 
-- **Discovery Server Running**: Ensure a ROS discovery server is running (see [Discovery Server Setup](../operations/discovery_server.md))
-- LiDAR hardware properly connected
-- ROS2 environment sourced
-- Sufficient battery charge
+> ⚠️ **Important**: Ensure a ROS discovery server is running (see [Discovery Server Setup](../operations/discovery_server.md))
 
 **Launch LiDAR:**
 ```bash
-# Launch LiDAR node
 cd ~/repos/common_platform/common_platform_ws/
 source install/setup.bash
 ros2 launch sensors rplidar.launch.py
 ```
 
-**Verify Data:**
+**Verify LiDAR Data:**
 ```bash
-# Check LiDAR data
 ros2 topic echo /${ROS_NAME}/scan
+```
+You should see a stream of data points here if your LiDAR is publishing data to ROS.
 
-# Monitor data rate
+**Monitor data rate**
+```bash
 ros2 topic hz /${ROS_NAME}/scan
 ```
-
-## Hardware Connection
-
-1. **Physical Mounting**
-   - Mount LiDAR on designated mounting point
-   - Ensure clear 360° rotation
-   - Secure mounting to prevent vibration
-
-2. **Power Connection**
-   - Connect power cable to robot power system
-   - Verify voltage requirements (5V)
-   - Check for proper grounding
-
-3. **Data Connection**
-   - Connect USB cable to robot controller
-   - Verify serial communication
-   - Test connection stability
-
-## LiDAR Calibration
-
-### 1. Mounting Calibration
-
-**Check Mounting:**
-- Verify LiDAR is level
-- Ensure no obstructions
-- Check for vibration
-
-**Test Rotation:**
-```bash
-ros2 service call /${ROS_NAME}/stop_motor std_srvs/srv/Empty {}
-ros2 service call /${ROS_NAME}/start_motor std_srvs/srv/Empty {}
-```
-
-### 2. Range Calibration
-
-**Test Range Accuracy:**
-1. Place known objects at known distances
-2. Compare LiDAR readings with actual distances
-3. Adjust calibration if needed
-
-**Verify Range Limits:**
-- Test minimum range (0.15m)
-- Test maximum range (12m)
-- Check for blind spots
 
 ## LiDAR Data Analysis
 
@@ -91,29 +45,7 @@ float32[] intensities
  - No missing data points
  - Reasonable intensity values
 
-## Troubleshooting
-
-### Common Issues
-
-**No LiDAR Data:**
-- Check USB connection
-- Verify power supply
-- Check device permissions
-- Test with different USB port
-
-**Poor Data Quality:**
-- Clean LiDAR lens
-- Check for obstructions
-- Verify mounting stability
-- Test in different environments
-
-**Inconsistent Readings:**
-- Check for vibration
-- Verify mounting
-- Test rotation mechanism
-- Check for interference
-
-### Diagnostic Commands
+**Diagnostic Commands**
 
 ```bash
 # Check USB devices
@@ -130,12 +62,57 @@ ros2 topic echo /${ROS_NAME}/scan
 ros2 topic hz /${ROS_NAME}/scan
 ```
 
-### Error Codes
+## Troubleshooting
 
-**Common Error Messages:**
-- "Failed to open serial port" - Check USB connection
-- "No data received" - Check power and connections
-- "Invalid data" - Check for interference or damage
+**No LiDAR Data:**
+- Check USB connection
+- Verify Teensy is powered and running
+- Ensure a discovery server is running
+- Connect Cursor to your Pi via SSH and ask for diagnosis help
+
+## Hardware Connection
+
+1. **Physical Mounting**
+   - Mount LiDAR on designated mounting point
+   - Ensure clear 360° rotation
+   - Secure mounting to prevent vibration
+
+2. **Power Connection**
+   - Connect power cable to robot power system
+   - Verify voltage requirements (5V)
+   - Check for proper grounding
+
+3. **Data Connection**
+   - Connect USB cable to robot controller
+   - Verify serial communication
+   - Test connection stability
+
+## Calibration
+
+### Mounting Calibration
+
+**Check Mounting:**
+- Verify LiDAR is level
+- Ensure no obstructions
+- Check for vibration
+
+**Test Rotation:**
+```bash
+ros2 service call /${ROS_NAME}/stop_motor std_srvs/srv/Empty {}
+ros2 service call /${ROS_NAME}/start_motor std_srvs/srv/Empty {}
+```
+
+### Range Calibration
+
+**Test Range Accuracy:**
+1. Place known objects at known distances
+2. Compare LiDAR readings with actual distances
+3. Adjust calibration if needed
+
+**Verify Range Limits:**
+- Test minimum range (0.15m)
+- Test maximum range (12m)
+- Check for blind spots
 
 ## LiDAR Specifications
 

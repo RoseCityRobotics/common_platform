@@ -162,25 +162,20 @@ ros2 run rqt_image_view rqt_image_view
 # - Consistent frame rate
 ```
 
-**OpenCV Integration:**
-- Process images
-- Detect features
-- Implement algorithms
-
-**ROS2 Integration:**
-- Use cv_bridge
-- Convert between formats
-- Process in real-time
-
 ## Troubleshooting
 
 ### Common Issues
 
+Check the camera hardware is present
+```bash
+cam -l
+```
+
 **No Camera Data:**
 - Check USB connection
-- Verify power supply
-- Check device permissions
-- Test with different USB port
+- Verify Teensy is powered and running
+- Ensure a discovery server is running
+- Connect Cursor to your Pi via SSH and ask for diagnosis help
 
 **Poor Image Quality:**
 - Clean camera lens
@@ -221,21 +216,12 @@ ros2 topic hz /camera/image_raw
 ## Maintenance
 
 ### Regular Maintenance
-
-**Daily:**
 - Visual inspection
 - Check for obstructions
 - Verify image quality
-
-**Weekly:**
 - Clean camera lens
 - Check mounting stability
 - Test focus
-
-**Monthly:**
-- Full calibration check
-- Performance testing
-- Connection inspection
 
 ### Cleaning Procedures
 
@@ -279,23 +265,6 @@ framerate: 30
 - Adjust processing algorithms
 - Optimize for real-time performance
 - Balance accuracy vs. speed
-
-## Safety Considerations
-
-### Operating Safety
-
-- Respect privacy when recording
-- Handle with care during maintenance
-- Follow manufacturer guidelines
-- Consider data security
-
-### Data Safety
-
-- Verify image quality
-- Handle sensor failures gracefully
-- Implement appropriate logging
-- Consider data retention policies
-
 ---
 
 *For LiDAR operations, see [LiDAR Operations](../lidar_operations.md)*
