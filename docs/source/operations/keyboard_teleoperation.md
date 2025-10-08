@@ -4,54 +4,13 @@ This document outlines essential commands for setting up a ROS2 environment, par
 
 -----
 
-## Start the ROS Discovery Server
+## Prerequisites
 
-The ROS discovery server facilitates communication between different ROS2 nodes. It acts as a central point for nodes to discover each other on the network.
+Before starting keyboard teleoperation, ensure you have:
 
-> ⚠️ **Important**
-> If you are using your robot at our Rose City Robotics Lab, you do **not** need to do this step — a discovery server is already running on the lab network!
-
-a.  **Note the IP address of the server**:
-  * `192.168.1.125` for Joe’s laptop on RoseCityRobotics WiFi
-  * `127.0.0.1` for local host (your own machine)
-
-b. **Start the discovery server**:
-
-Open a new terminal window 📟
-
-```bash
-fastdds discovery --server-id 0
-```
-
-This command initiates the Fast DDS discovery server with a server ID of 0.
-
-c. **Update the address field of the discovery server config file**:
-
-Open a new terminal window 📟
-
-```bash
-nano ~/ros2_ws/super_client_configuration_file_rcr.xml
-```
-
-Edit line 11 of the **`super_client_configuration_file_rcr.xml`** file to set the discovery server's address to `127.0.0.1` if running locally.
-
-d. **Start the micro ros agent docker container**
-  ```bash
-  cd ~
-  SERIAL_TEENSY_DEVICE=`find /dev/serial/by-id/ -name "usb-Teensyduino*if00"|head -1`
-  sudo docker run -it --rm -v /dev:/dev --privileged --net=host --env-file ./env.list --name agent microros/micro-ros-agent:kilted serial --dev ${SERIAL_TEENSY_DEVICE} -v4
-  ```
-
-e. **Update the DDS configuration file inside the container**
-
-Open a new terminal window 📟
-
-  ```
-  sudo docker cp ~/ros2_ws/super_client_configuration_file_rcr.xml agent:/uros_ws/
-  sudo docker commit agent microros/micro-ros-agent:kilted
-  ```
-
-  Restart the micro ros agent after updating the configuration file inside the container (<CTRL-C> in the terminal window 📟 that is running the agent. You can use the up arrow to repeat the sudo docker run command).
+1. **Discovery Server Running**: See [Discovery Server Setup](discovery_server.md) for setup instructions
+2. **Robot Powered On**: Ensure your robot is powered and connected
+3. **Network Connectivity**: Verify connection between your computer and the robot
 
 -----
 

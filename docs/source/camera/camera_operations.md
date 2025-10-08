@@ -14,6 +14,13 @@ The robot uses a camera for visual perception, navigation, and object detection.
 - **Interface**: USB 2.0
 - **Field of View**: 60° (approximate)
 
+## Prerequisites
+
+- **Discovery Server Running**: Ensure a ROS discovery server is running (see [Discovery Server Setup](../operations/discovery_server.md))
+- Camera hardware properly connected
+- ROS2 environment sourced
+- Sufficient battery charge
+
 ## Camera Setup
 
 ### 1. Hardware Connection

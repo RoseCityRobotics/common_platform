@@ -8,12 +8,13 @@ Mapping is the process of creating a representation of the robot's environment u
 
 ## Prerequisites
 
+- **Discovery Server Running**: Ensure a ROS discovery server is running (see [Discovery Server Setup](../operations/discovery_server.md))
 - Robot hardware properly assembled and calibrated
 - LiDAR sensor functioning correctly
 - Odometry system working (wheel encoders and/or IMU)
 - Sufficient battery charge for mapping session
-- Robot control setup (see [Keyboard Teleoperation Setup](../../daily_operations/KeyboardTeleop.md))
-- LIDAR node is started (see [Lidar Operations](../../sensors/lidar_operations.md))
+- Robot control setup (see [Keyboard Teleoperation Setup](../operations/keyboard_teleoperation.md))
+- LIDAR node is started (see [Lidar Operations](../lidar_operations.md))
 
 ## Mapping Methods
 
@@ -88,7 +89,7 @@ SLAM allows the robot to build a map while simultaneously tracking its position 
    # Save the map using Cartographer's built-in functionality
    ros2 service call ${ROS_NAMESPACE}/finish_trajectory cartographer_ros_msgs/srv/FinishTrajectory "{trajectory_id: 0}"
    ros2 service call ${ROS_NAMESPACE}/write_state cartographer_ros_msgs/srv/WriteState "{filename: 'my_map.pbstream'}"
-   
+
    # Convert to standard map format (optional)
    ros2 run cartographer_ros cartographer_pbstream_to_ros_map -pbstream_filename my_map.pbstream -map_filename my_map
    ```

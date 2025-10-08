@@ -2,6 +2,14 @@
 
 This section covers navigation-related operations for the PARTS Common Robotics Platform.
 
+## Prerequisites
+
+- **Discovery Server Running**: Ensure a ROS discovery server is running (see [Discovery Server Setup](../discovery_server.md))
+- Robot hardware properly assembled and calibrated
+- LiDAR sensor functioning correctly
+- Odometry system working (wheel encoders and/or IMU)
+- Sufficient battery charge
+
 ## Navigation Procedures
 
 ### Mapping and Localization

@@ -14,6 +14,13 @@ The robot uses a LiDAR sensor for obstacle detection, mapping, and navigation. T
 - **Scan Rate**: 5.5 Hz
 - **Interface**: Serial (USB)
 
+## Prerequisites
+
+- **Discovery Server Running**: Ensure a ROS discovery server is running (see [Discovery Server Setup](../operations/discovery_server.md))
+- LiDAR hardware properly connected
+- ROS2 environment sourced
+- Sufficient battery charge
+
 ## LiDAR Setup
 
 ### 1. Hardware Connection
@@ -46,10 +53,10 @@ ros2 launch sensors rplidar.launch.py
 **Verify Data:**
 ```bash
 # Check LiDAR data
-ros2 topic echo /scan
+ros2 topic echo /${ROS_NAME}/scan
 
 # Monitor data rate
-ros2 topic hz /scan
+ros2 topic hz /${ROS_NAME}/scan
 ```
 
 ## LiDAR Calibration
@@ -63,8 +70,8 @@ ros2 topic hz /scan
 
 **Test Rotation:**
 ```bash
-ros2 service call /rcr001/stop_motor std_srvs/srv/Empty {}
-ros2 service call /rcr001/start_motor std_srvs/srv/Empty {}
+ros2 service call /${ROS_NAME}/stop_motor std_srvs/srv/Empty {}
+ros2 service call /${ROS_NAME}/start_motor std_srvs/srv/Empty {}
 ```
 
 ### 2. Range Calibration
@@ -135,8 +142,8 @@ ls /dev/tty*
 ros2 run rplidar_ros rplidar_node --ros-args -p serial_port:=/dev/ttyUSB0
 
 # Monitor data quality
-ros2 topic echo /scan
-ros2 topic hz /scan
+ros2 topic echo /${ROS_NAME}/scan
+ros2 topic hz /${ROS_NAME}/scan
 ```
 
 ### Error Codes
