@@ -21,7 +21,7 @@ git pull origin main
 ```
 
 ## Host Settings
-<img src="_static/img/raspberry_pi.png" alt="Raspberry Pi" width="20">
+<img src="/_static/img/raspberry-pi.png" alt="Raspberry Pi" width="20">
 The host has been preset for you as `rcr00_` with your specific ID. To update the hostname:
 
 1. Tell cloud-init to preserve your hostname:
@@ -53,7 +53,7 @@ The host has been preset for you as `rcr00_` with your specific ID. To update th
    ```
 
 ## Network Configuration
-<img src="_static/img/raspberry_pi.png" alt="Raspberry Pi" width="20">
+<img src="/_static/img/raspberry-pi.png" alt="Raspberry Pi" width="20">
 
 In this section we will set a custom IP address, set up networking and add WiFi access points. The Pi will try access points in order from top to bottom until it is successful connecting.
 
@@ -98,7 +98,7 @@ ssh rcr@192.168.1.n
 Replace `n` with your robot number.
 
 ### Troubleshooting SSH Connections
-**<img src="_static/img/raspberry_pi.png" alt="Raspberry Pi" width="16"> On the Pi:** Make sure the IP address is assigned:
+**<img src="/_static/img/raspberry-pi.png" alt="Raspberry Pi" width="16"> On the Pi:** Make sure the IP address is assigned:
 ```bash
 hostname -I
 ```
@@ -116,7 +116,7 @@ ping google.com
 Make sure your development machine 🖥️ is on the same network.
 
 ## Accessing the Pi from your development machine via SSH
-<img src="_static/img/raspberry_pi.png" alt="Raspberry Pi" width="20"> 🖥️
+<img src="/_static/img/raspberry-pi.png" alt="Raspberry Pi" width="20"> 🖥️
 Both the external device and the robot must be on the same WiFi for SSH to work. Use the static IP address of your Pi to SSH. The command will look something like `ssh rcr@192.168.1.n` where `n` is your ID, for example `ssh rcr@192.168.1.9`.
 
 ## Robot Namespacing Setup

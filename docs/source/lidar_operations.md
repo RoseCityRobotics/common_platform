@@ -1,46 +1,13 @@
 # LiDAR Operations
 
-This guide covers LiDAR sensor operations, setup, and troubleshooting for the PARTS Common Robotics Platform.
+This guide covers LiDAR sensor operations, setup, and troubleshooting for the Common Robotics Platform. The robot uses a  2-dimensional LiDAR sensor for obstacle detection, mapping, and navigation. The LiDAR provides 360-degree range measurements around the robot.
 
-## Overview
-
-The robot uses a LiDAR sensor for obstacle detection, mapping, and navigation. The LiDAR provides 360-degree range measurements around the robot.
-
-## LiDAR Specifications
-
-- **Model**: RPLidar A1M8
-- **Range**: 0.15m - 12m
-- **Angular Resolution**: 0.33°
-- **Scan Rate**: 5.5 Hz
-- **Interface**: Serial (USB)
-
-## Prerequisites
+## Launch ROS Node
 
 - **Discovery Server Running**: Ensure a ROS discovery server is running (see [Discovery Server Setup](../operations/discovery_server.md))
 - LiDAR hardware properly connected
 - ROS2 environment sourced
 - Sufficient battery charge
-
-## LiDAR Setup
-
-### 1. Hardware Connection
-
-1. **Physical Mounting**
-   - Mount LiDAR on designated mounting point
-   - Ensure clear 360° rotation
-   - Secure mounting to prevent vibration
-
-2. **Power Connection**
-   - Connect power cable to robot power system
-   - Verify voltage requirements (5V)
-   - Check for proper grounding
-
-3. **Data Connection**
-   - Connect USB cable to robot controller
-   - Verify serial communication
-   - Test connection stability
-
-### 2. Software Configuration
 
 **Launch LiDAR:**
 ```bash
@@ -58,6 +25,23 @@ ros2 topic echo /${ROS_NAME}/scan
 # Monitor data rate
 ros2 topic hz /${ROS_NAME}/scan
 ```
+
+## Hardware Connection
+
+1. **Physical Mounting**
+   - Mount LiDAR on designated mounting point
+   - Ensure clear 360° rotation
+   - Secure mounting to prevent vibration
+
+2. **Power Connection**
+   - Connect power cable to robot power system
+   - Verify voltage requirements (5V)
+   - Check for proper grounding
+
+3. **Data Connection**
+   - Connect USB cable to robot controller
+   - Verify serial communication
+   - Test connection stability
 
 ## LiDAR Calibration
 
@@ -152,6 +136,14 @@ ros2 topic hz /${ROS_NAME}/scan
 - "Failed to open serial port" - Check USB connection
 - "No data received" - Check power and connections
 - "Invalid data" - Check for interference or damage
+
+## LiDAR Specifications
+
+- **Model**: RPLidar A1M8
+- **Range**: 0.15m - 12m
+- **Angular Resolution**: 0.33°
+- **Scan Rate**: 5.5 Hz
+- **Interface**: Serial (USB)
 
 ## Performance Optimization
 
