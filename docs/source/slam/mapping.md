@@ -81,7 +81,7 @@ ros2 run cartographer_ros cartographer_occupancy_grid_node \
 
 2. **Teleop Control**
 
-   See [Keyboard Teleoperation Setup](../../daily_operations/KeyboardTeleop.md) for robot control setup.
+   See [Keyboard Teleoperation Setup](../operations/keyboard_teleoperation.md) for robot control setup.
 
 3. **Drive the Robot**
    - Use keyboard controls to drive the robot

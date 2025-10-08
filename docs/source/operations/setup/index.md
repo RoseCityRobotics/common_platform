@@ -7,7 +7,7 @@ This section covers the initial setup and configuration procedures for your PART
 ### Hardware Setup
 - [Hardware Setup Guide](hardware_setup.md) - Complete hardware assembly and connection procedures
 
-### Software Setup  
+### Software Setup
 - [Software Setup Guide](software_setup.md) - Software installation, configuration, and initial setup
 
 ### Calibration
@@ -36,6 +36,6 @@ Follow these procedures in order:
 
 After completing setup:
 
-- Review [Daily Operations](../daily_operations/index.md) for routine procedures
+- Review [Key Operations](../index.md) for routine procedures
 - Check [Troubleshooting](../troubleshooting/index.md) if you encounter issues
 - Refer to [Advanced Operations](../advanced/index.md) for advanced configurations

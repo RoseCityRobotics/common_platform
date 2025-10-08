@@ -22,7 +22,19 @@ setup/index
 slam/index
 camera/index
 data_annotation/index
-operations/index
+```
+
+## Daily Operations
+
+```{toctree}
+:maxdepth: 1
+:caption: Robot Operations
+
+operations/keyboard_teleoperation
+operations/ros2_joystick
+operations/startup_procedure
+operations/shutdown_procedure
+operations/maintenance
 ```
 
 ## Getting Help

@@ -68,4 +68,4 @@ If you need additional assistance:
 ---
 
 *For setup procedures, see [Setup](../setup/index.md)*
-*For daily operations, see [Daily Operations](../daily_operations/index.md)*
+*For daily operations, see [Key Operations](index.md)*

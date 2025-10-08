@@ -4,16 +4,16 @@ Welcome to the Robot Operations Manual for the PARTS Common Robotics Platform. T
 
 > 🔗 **GitHub Repository**: [https://github.com/RoseCityRobotics/common_platform](https://github.com/RoseCityRobotics/common_platform) - Source code and issue tracking
 
-## Daily Operations
+## Key Operations
 
 ```{toctree}
 :maxdepth: 1
 
-daily_operations/KeyboardTeleop
-daily_operations/startup_procedure
-daily_operations/shutdown_procedure
-daily_operations/ROS2_Joystick
-daily_operations/maintenance
+keyboard_teleoperation
+ros2_joystick
+startup_procedure
+shutdown_procedure
+maintenance
 ```
 
 ## Navigation Operations

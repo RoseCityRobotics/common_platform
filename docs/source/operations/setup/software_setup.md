@@ -120,7 +120,7 @@ After completing software setup:
 
 1. Proceed to [Calibration](calibration.md)
 2. Run initial system tests
-3. Review [Daily Operations](../daily_operations/index.md)
+3. Review [Key Operations](../index.md)
 
 ---
 
