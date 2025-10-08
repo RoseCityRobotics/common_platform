@@ -22,6 +22,7 @@ setup/index
 slam/index
 camera/index
 data_annotation/index
+lidar_operations
 ```
 
 ## Daily Operations
