@@ -1,4 +1,4 @@
-# Robot Shutdown Procedure
+# Shutdown Procedure
 
 Simple shutdown procedure for the Common Robotics Platform.
 
@@ -49,12 +49,6 @@ If you notice heat, smoke, or fire from the batteries:
    - Dispose of damaged batteries properly at a hazardous waste facility
    - Report the incident immediately
 
----
-
-*For startup procedures, see [Startup Procedure](startup_procedure.md)*
-
----
-
-*For startup procedures, see [Startup Procedure](startup_procedure.md)*
-*For maintenance, see [Routine Maintenance](maintenance.md)*
-*For troubleshooting, see [Troubleshooting](../troubleshooting/index.md)*
+# Safety Best Practices
+- Never leave your batteries in your robot when its not in use, leave them in your battery chargers
+- Remove batteries before plugging into external power

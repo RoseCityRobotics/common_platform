@@ -1,4 +1,4 @@
-# Robot Startup Procedure
+# Startup Procedure
 
 This document outlines the proper procedure for starting up your PARTS Common Robotics Platform.
 

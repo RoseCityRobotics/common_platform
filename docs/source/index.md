@@ -36,6 +36,7 @@ hardware
 operations/startup_procedure
 operations/shutdown_procedure
 operations/reboot_procedure
+operations/emergency_shutdown
 operations/maintenance
 ```
 

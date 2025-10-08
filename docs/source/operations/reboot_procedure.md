@@ -1,4 +1,4 @@
-# Reboot Raspberry Pi
+# Reboot Procedure
 ```bash
 sudo reboot
 ```
