@@ -29,6 +29,7 @@ struct OdometryContext {
 struct RosContext {
   RobotState* robotState;
   OdometryContext odomContext;
+  rcl_clock_t clock;
 };
 
 // ROS Agent States

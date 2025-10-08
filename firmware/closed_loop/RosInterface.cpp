@@ -3,6 +3,10 @@
 #include "Motion.h"
 #include "MotorControl.h"
 
+#include <rmw/qos_profiles.h>
+#include <cstring>
+#include <time.h>
+
 #if ROS
 rcl_subscription_t subscriber;
 geometry_msgs__msg__Twist msg;
@@ -25,6 +29,15 @@ RosContext* global_ros_context = nullptr;
       error_loop("Failed status on line %d: %d. Aborting.\n", __LINE__,        \
                  (int)temp_rc);                                                \
       return false;                                                            \
+    }                                                                          \
+  }
+#define RCCHECK_VOID(fn)                                                       \
+  {                                                                            \
+    rcl_ret_t temp_rc = fn;                                                    \
+    if ((temp_rc != RCL_RET_OK)) {                                             \
+      error_loop("Failed status on line %d: %d. Aborting.\n", __LINE__,        \
+                 (int)temp_rc);                                                \
+      return;                                                                  \
     }                                                                          \
   }
 #define EXECUTE_EVERY_N_MS(MS, X)                                              \
@@ -94,13 +107,25 @@ void odom_timer_callback(rcl_timer_t *timer, int64_t last_call_time) {
     return;
   }
 
-  // Set timestamp
-  odom_msg.header.stamp.sec = uxr_millis() / 1000;
-  odom_msg.header.stamp.nanosec = (uxr_millis() % 1000) * 1000000;
-  odom_msg.header.frame_id.data = (char*)"odom";
-  odom_msg.header.frame_id.size = 4;
-  odom_msg.child_frame_id.data = (char*)"base_link";
-  odom_msg.child_frame_id.size = 8;
+  // Set timestamp - use ROS system time
+  rcl_time_point_value_t now;
+  rcl_ret_t ret = rcl_clock_get_now(&global_ros_context->clock, &now);
+  if (ret == RCL_RET_OK) {
+    odom_msg.header.stamp.sec = now / 1000000000;  // Convert nanoseconds to seconds
+    odom_msg.header.stamp.nanosec = now % 1000000000;  // Get remaining nanoseconds
+  } else {
+    // Fallback to system time if ROS clock fails
+    odom_msg.header.stamp.sec = time(NULL);
+    odom_msg.header.stamp.nanosec = 0;
+  }
+  
+  // Set frame IDs - use relative frame IDs since node is already namespaced
+  const char* frame_id_str = "odom";
+  const char* child_frame_id_str = "base_link";
+  odom_msg.header.frame_id.data = (char*)frame_id_str;
+  odom_msg.header.frame_id.size = strlen(frame_id_str) + 1;  // Include null terminator
+  odom_msg.child_frame_id.data = (char*)child_frame_id_str;
+  odom_msg.child_frame_id.size = strlen(child_frame_id_str) + 1;  // Include null terminator
 
   // Set pose
   odom_msg.pose.pose.position.x = global_ros_context->odomContext.motion->getX();
@@ -148,10 +173,19 @@ void odom_timer_callback(rcl_timer_t *timer, int64_t last_call_time) {
 #endif
 
   // Publish the message
-  rcl_ret_t ret = rcl_publish(&odom_publisher, &odom_msg, NULL);
-  if (ret != RCL_RET_OK) {
+  rcl_ret_t publish_ret = rcl_publish(&odom_publisher, &odom_msg, NULL);
+  if (publish_ret != RCL_RET_OK) {
     SERIAL_OUT.print("Failed to publish odometry: ");
-    SERIAL_OUT.println(ret);
+    SERIAL_OUT.print(publish_ret);
+    SERIAL_OUT.print(" (");
+    switch(publish_ret) {
+      case RCL_RET_ERROR: SERIAL_OUT.print("RCL_RET_ERROR"); break;
+      case RCL_RET_BAD_ALLOC: SERIAL_OUT.print("RCL_RET_BAD_ALLOC"); break;
+      case RCL_RET_INVALID_ARGUMENT: SERIAL_OUT.print("RCL_RET_INVALID_ARGUMENT"); break;
+      case RCL_RET_PUBLISHER_INVALID: SERIAL_OUT.print("RCL_RET_PUBLISHER_INVALID"); break;
+      default: SERIAL_OUT.print("Unknown error"); break;
+    }
+    SERIAL_OUT.println(")");
   } else {
 #if PRINT_MOVES > 1
     SERIAL_OUT.println("Odometry published successfully");
@@ -166,22 +200,44 @@ bool create_entities(void *context) {
   // Set global context for timer callback
   global_ros_context = (RosContext*)context;
 
+  // Initialize ROS clock with system time
+  RCCHECK(rcl_clock_init(RCL_SYSTEM_TIME, &global_ros_context->clock, &allocator));
+
   RCCHECK(rclc_support_init(&support, 0, NULL, &allocator));
   RCCHECK(
       rclc_node_init_default(&node, "micro_ros_arduino_node", "rcr001", &support));
   RCCHECK(rclc_subscription_init_default(
       &subscriber, &node,
       ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist), "cmd_vel"));
+  // Get type support for odometry message
+  const rosidl_message_type_support_t * odom_type_support = 
+      ROSIDL_GET_MSG_TYPE_SUPPORT(nav_msgs, msg, Odometry);
+  
+  // Debug: Print type support info
+  SERIAL_OUT.print("ROS: Type support name: ");
+  SERIAL_OUT.println(odom_type_support->typesupport_identifier);
+  
+  // Initialize publisher with explicit type support
   RCCHECK(rclc_publisher_init_default(
-      &odom_publisher, &node,
-      ROSIDL_GET_MSG_TYPE_SUPPORT(nav_msgs, msg, Odometry), "odom"));
+      &odom_publisher, &node, odom_type_support, "odom_uros"));
+  
+  // Initialize odometry message
+  nav_msgs__msg__Odometry__init(&odom_msg);
   RCCHECK(rclc_timer_init_default(
       &odom_timer, &support, RCL_MS_TO_NS(50), odom_timer_callback));
+  SERIAL_OUT.println("ROS: Timer initialized successfully");
+  
   RCCHECK(rclc_executor_init(&executor, &support.context, 2, &allocator));
+  SERIAL_OUT.println("ROS: Executor initialized successfully");
+  
   RCCHECK(rclc_executor_add_subscription_with_context(
       &executor, &subscriber, &msg, &subscription_callback, context,
       ON_NEW_DATA));
+  SERIAL_OUT.println("ROS: Subscription added to executor");
+  
   RCCHECK(rclc_executor_add_timer(&executor, &odom_timer));
+  SERIAL_OUT.println("ROS: Timer added to executor successfully");
+  
   return true;
 }
 
@@ -190,12 +246,20 @@ void destroy_entities() {
   rmw_context_t *rmw_context = rcl_context_get_rmw_context(&support.context);
   (void)rmw_uros_set_context_entity_destroy_session_timeout(rmw_context, 0);
 
-  rcl_subscription_fini(&subscriber, &node);
-  rcl_publisher_fini(&odom_publisher, &node);
-  rcl_timer_fini(&odom_timer);
-  rclc_executor_fini(&executor);
-  rcl_node_fini(&node);
-  rclc_support_fini(&support);
+  RCCHECK_VOID(rcl_subscription_fini(&subscriber, &node));
+  RCCHECK_VOID(rcl_publisher_fini(&odom_publisher, &node));
+  RCCHECK_VOID(rcl_timer_fini(&odom_timer));
+  RCCHECK_VOID(rclc_executor_fini(&executor));
+  RCCHECK_VOID(rcl_node_fini(&node));
+  RCCHECK_VOID(rclc_support_fini(&support));
+  
+  // Clean up clock
+  if (global_ros_context) {
+    RCCHECK_VOID(rcl_clock_fini(&global_ros_context->clock));
+  }
+  
+  // Cleanup odometry message
+  nav_msgs__msg__Odometry__fini(&odom_msg);
 }
 
 // Handle agent connection state machine
@@ -236,7 +300,19 @@ void handleRosAgentState(void *context) {
                                     ? AGENT_CONNECTED
                                     : AGENT_DISCONNECTED;);
     if (currentRosAgentStatus == AGENT_CONNECTED) {
-      rclc_executor_spin_some(&executor, RCL_MS_TO_NS(10));
+      rcl_ret_t spin_ret = rclc_executor_spin_some(&executor, RCL_MS_TO_NS(10));
+      if (spin_ret != RCL_RET_OK) {
+        SERIAL_OUT.print("ROS: Executor spin error: ");
+        SERIAL_OUT.println(spin_ret);
+      }
+      if (PRINT_MOVES > 1) {
+        // Add periodic debug to see if executor is running
+        static int executor_debug_count = 0;
+        if (++executor_debug_count > 1000) { // Every ~10 seconds
+          SERIAL_OUT.println("ROS: Executor is running...");
+          executor_debug_count = 0;
+        }
+      }
     }
   } break;
   case AGENT_DISCONNECTED:
