@@ -12,6 +12,8 @@ Mapping is the process of creating a representation of the robot's environment u
 - LiDAR sensor functioning correctly
 - Odometry system working (wheel encoders and/or IMU)
 - Sufficient battery charge for mapping session
+- Robot control setup (see [Keyboard Teleoperation Setup](../../daily_operations/KeyboardTeleop.md))
+- LIDAR node is started (see [Lidar Operations](../../sensors/lidar_operations.md))
 
 ## Mapping Methods
 
@@ -20,29 +22,21 @@ Mapping is the process of creating a representation of the robot's environment u
 SLAM allows the robot to build a map while simultaneously tracking its position within that map.
 
 1. **Launch SLAM**
-```bash
-cd ros2_ws/
-```
+   ```bash
+   cd repos/common_platform/common_platform_ws/
+   source install/setup.bash
+   ros2 launch common_platform pub_robot_state.launch.py use_sim_time:=false
+   ```
 
-**Launch the robot state publisher**
-```bash
-ros2 launch common_platform pub_robot_state.launch.py use_sim_time:=false
-```
+   ```bash
+   cd ros2_ws/
+   ros2 launch cartographer_ros cartographer_simple.launch.py
+   ```
 
-**Run Cartographer node with remapped scan topic**
-```bash
-ros2 run cartographer_ros cartographer_node \
--configuration_directory . \
--configuration_basename common_platform.lua \
---ros-args --remap scan:=${ROS_NAMESPACE}/scan -r __ns:=${ROS_NAMESPACE}
-```
-
-**Run occupancy grid node**
-```bash
-ros2 run cartographer_ros cartographer_occupancy_grid_node \
---ros-args -p resolution:=0.05 -p publish_period_sec:=1.0 \
--r __ns:=${ROS_NAMESPACE}
-```
+   ```bash
+   cd ros2_ws/
+   ros2 run cartographer_ros cartographer_occupancy_grid_node --ros-args -p resolution:=0.05 -p publish_period_sec:=1.0 -r __ns:=${ROS_NAMESPACE}
+   ```
 
    **Nodes Created:**
    - `robot_state_publisher` - Publishes robot transforms
@@ -92,9 +86,9 @@ ros2 run cartographer_ros cartographer_occupancy_grid_node \
 4. **Save the Map**
    ```bash
    # Save the map using Cartographer's built-in functionality
-   ros2 service call /finish_trajectory cartographer_ros_msgs/srv/FinishTrajectory "{trajectory_id: 0}"
-   ros2 service call /write_state cartographer_ros_msgs/srv/WriteState "{filename: 'my_map.pbstream'}"
-
+   ros2 service call ${ROS_NAMESPACE}/finish_trajectory cartographer_ros_msgs/srv/FinishTrajectory "{trajectory_id: 0}"
+   ros2 service call ${ROS_NAMESPACE}/write_state cartographer_ros_msgs/srv/WriteState "{filename: 'my_map.pbstream'}"
+   
    # Convert to standard map format (optional)
    ros2 run cartographer_ros cartographer_pbstream_to_ros_map -pbstream_filename my_map.pbstream -map_filename my_map
    ```

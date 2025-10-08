@@ -19,9 +19,13 @@ def generate_launch_description():
         default_value='115200',
         description='Serial baudrate for RPLidar')
 
+    # Get namespace for frame_id
+    ns = os.environ.get('ROS_NAMESPACE', '').strip().lstrip('/')
+    default_frame_id = f"{ns}/laser_frame" if ns else "laser_frame"
+    
     declare_frame_id = DeclareLaunchArgument(
         'frame_id',
-        default_value='laser_frame',
+        default_value=default_frame_id,
         description='Frame id for the laser scans')
 
     lidar_node = Node(
@@ -37,7 +41,6 @@ def generate_launch_description():
         }]
     )
 
-    ns = os.environ.get('ROS_NAMESPACE', '').strip()
     if ns:
         return LaunchDescription([
             declare_serial_port,

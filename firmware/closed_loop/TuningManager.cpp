@@ -116,27 +116,27 @@ void TuningManager::resetToDefaults() {
 }
 
 bool TuningManager::setLeftMotorScale(float scale) {
-  if (scale > 0.5f && scale < 2.0f) {
+  if (scale >= 0.2f && scale <= 5.0f) {
     leftMotorScale = scale;
     SERIAL_OUT.print("Left motor scale set to: ");
     SERIAL_OUT.println(scale);
     saveToEEPROM();  // Auto-save to EEPROM
     return true;
   } else {
-    SERIAL_OUT.println("Error: Scale must be between 0.5 and 2.0");
+    SERIAL_OUT.println("Error: Scale must be between 0.2 and 5.0");
     return false;
   }
 }
 
 bool TuningManager::setRightMotorScale(float scale) {
-  if (scale > 0.5f && scale < 2.0f) {
+  if (scale >= 0.2f && scale <= 5.0f) {
     rightMotorScale = scale;
     SERIAL_OUT.print("Right motor scale set to: ");
     SERIAL_OUT.println(scale);
     saveToEEPROM();  // Auto-save to EEPROM
     return true;
   } else {
-    SERIAL_OUT.println("Error: Scale must be between 0.5 and 2.0");
+    SERIAL_OUT.println("Error: Scale must be between 0.2 and 5.0");
     return false;
   }
 }

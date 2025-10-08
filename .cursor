@@ -61,4 +61,7 @@ Update `docs/source/index.md` to include new directories in the toctree.
 2. Test documentation build: `cd docs && sphinx-build -b html source build/html`
 3. Verify all links work in the generated documentation
 4. Check that all code blocks and commands remain unchanged
+<<<<<<< HEAD
 
+=======
+>>>>>>> main

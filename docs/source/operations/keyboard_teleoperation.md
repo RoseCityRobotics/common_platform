@@ -102,7 +102,7 @@ echo "Teensy serial: $SERIAL_NUM"
 cd ~
 sudo docker run -it --rm \
   -v /dev:/dev --privileged --net=host \
-  --env-file ./env.list \
+  --env-file ./env.list --name agent\
   microros/micro-ros-agent:kilted \
   serial --dev "/dev/serial/by-id/usb-Teensyduino_Dual_Serial_${SERIAL_NUM}-if00" -v4
 ```

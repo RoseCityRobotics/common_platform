@@ -185,7 +185,7 @@ void MotorControl::motionUpdate() {
 #if PRINT_MOVES
     char message[100]; // Smaller buffer
     snprintf(message, sizeof(message),
-             "%c: Tgt=%.2f Cur=%.2f Err=%.2f PIDOut=%.2f PWM=%d", label,
+             "%s: Tgt=%.2f Cur=%.2f Err=%.2f PIDOut=%.2f PWM=%d", label,
              targetSpeed, lastSpeed, err, mpwm, setspeed);
     SERIAL_OUT.println(message);
 #endif
