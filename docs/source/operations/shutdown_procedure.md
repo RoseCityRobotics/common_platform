@@ -2,16 +2,13 @@
 
 Simple shutdown procedure for the Common Robotics Platform.
 
-## Quick Shutdown Steps
-
-
-### 1. Stop Software
+## Stop Software
 ```bash
 # Kill all running processes
 Ctrl+C
 ```
 
-### 2. Shutdown Raspberry Pi
+## Shutdown Raspberry Pi
 ```bash
 sudo shutdown now
 ```
@@ -20,22 +17,16 @@ This command will safely power down the Raspberry Pi and all connected systems.
 
 > 💡 **Tip:** Always use the proper shutdown command to avoid data corruption and ensure the system starts cleanly next time.
 
-
-## Or reboot if needed
-```bash
-sudo reboot
-```
-
-### 3. Turn Off Hardware
+## Turn Off Hardware
 - Turn off Teensy power switch
 - Remove Pi battery
 - Remove Teensy battery
 
-### 4. Recharge Batteries
+## Recharge Batteries
 - Recharge both Pi and Teensy batteries
 - Store in designated charging area
 
-## Emergency Shutdown
+# Emergency Shutdown
 
 **⚠️ LITHIUM-ION BATTERY SAFETY**
 

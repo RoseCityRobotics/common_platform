@@ -12,15 +12,14 @@ Before starting the robot, verify:
 - [ ] Emergency stop is accessible
 - [ ] No obstacles in immediate area
 
-## Startup Sequence
 
-### 1. Power On
+## Power On
 - Add batteries to Teensy
 - Connect Pi Battery
 - Turn on main Teensy power switch
 - Verify Teensy and Pi power LED indicators are on
 
-### 2. System Initialization
+## System Initialization
 
 **Controller Boot**
    - Wait for controller to complete boot sequence
@@ -32,7 +31,7 @@ Before starting the robot, verify:
    - Camera should initialize
    - IMU should calibrate automatically
 
-### 3. Software Launch
+## Software Launch
 
 **ROS2 Launch**
    ```bash
@@ -54,7 +53,7 @@ Open a new terminal window 📟
    ros2 node list
    ```
 
-### 4. System Verification
+## System Verification
 
  **Sensor Data**
    - Verify LiDAR data is being published
