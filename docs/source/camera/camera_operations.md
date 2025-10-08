@@ -35,6 +35,8 @@ The robot uses a camera for visual perception, navigation, and object detection.
 
 ### 2. Software Configuration
 
+Open a new terminal window 📟
+
 **Launch Camera:**
 ```bash
 # Launch camera node
@@ -43,14 +45,24 @@ source install/setup.bash
 ros2 launch sensors camera.launch.py
 ```
 
+Open a new terminal window 📟
+
 **Verify Data:**
 ```bash
 # Check camera data
-ros2 topic echo /camera/image_raw
+ros2 topic echo /${ROS_NAME}/camera/image_raw
 
 # Monitor data rate
-ros2 topic hz /camera/image_raw
+ros2 topic hz /${ROS_NAME}/camera/image_raw
 ```
+
+
+
+
+
+
+
+
 
 ## Camera Calibration
 

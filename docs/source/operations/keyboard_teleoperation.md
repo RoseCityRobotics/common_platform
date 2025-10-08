@@ -59,7 +59,7 @@ Open a new terminal window 📟
 
 The Raspberry Pi will host the micro-ROS agent and other ROS2 nodes. Ensure it's powered on and you're logged in. Required ROS2 environment variables set in the [**`.profile`**](https://github.com/RoseCityRobotics/common_platform/blob/main/.profile) file for automated setup upon login.
 
-You will need a separate terminal window for each process below:
+You will need a separate terminal window 📟 for each process below:
 
 1. **Get your Teensy serial number**:
 
