@@ -121,7 +121,7 @@ Both the external device and the robot must be on the same WiFi for SSH to work.
 
 ## Robot Namespacing Setup
 
-To ensure your robot runs under its unique namespace (e.g., `/rcr001`, `/rcr002`, etc.), follow these steps:
+Since we are running a swarm of many robots we need the ROS nodes and topics to be namespaced. To ensure your robot runs under its unique namespace (e.g., `/rcr001`, `/rcr002`, etc.), follow these steps:
 
 ### Set Your Namespace in `.profile`
 
