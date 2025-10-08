@@ -151,6 +151,13 @@ ros2 run image_view video_recorder --ros-args -p filename:=/tmp/robot_video.avi
 ```
 
 ### 3. Computer Vision
+In order to collect images to annotate in Label Studio, use our custom data_recorder node. This is the first step in fine tuning an existing neural network. Check the [Data Annotation](../data_annotation/label_studio.md) document for information on labeling.
+
+```bash
+cd ~/repos/common_platform/common_platform_ws/
+source install/setup.bash
+ros2 launch data_recorder ramdisk_recorder.launch.py
+```
 
 **OpenCV Integration:**
 - Process images
