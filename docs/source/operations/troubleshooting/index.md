@@ -33,9 +33,9 @@ journalctl -u ros2
 ros2 launch common_platform launch_robot.launch.py
 
 # Check sensor data
-ros2 topic echo /scan
-ros2 topic echo /camera/image_raw
-ros2 topic echo /imu/data
+ros2 topic echo /${ROS_NAME}/scan
+ros2 topic echo /${ROS_NAME}/camera/image_raw
+ros2 topic echo /${ROS_NAME}/imu/data
 
 # Monitor system performance
 htop

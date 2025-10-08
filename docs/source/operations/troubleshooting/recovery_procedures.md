@@ -292,9 +292,9 @@ ros2 service list
 **Functionality Test:**
 ```bash
 # Test sensors
-ros2 topic echo /scan
-ros2 topic echo /camera/image_raw
-ros2 topic echo /imu/data
+ros2 topic echo /${ROS_NAME}/scan
+ros2 topic echo /${ROS_NAME}/camera/image_raw
+ros2 topic echo /${ROS_NAME}/imu/data
 
 # Test motors
 ros2 topic pub /cmd_vel geometry_msgs/msg/Twist "{}"

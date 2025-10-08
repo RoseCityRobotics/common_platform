@@ -215,7 +215,7 @@ Now, while holding down your enable button (the left bumper in the config above)
 To see if it's working, open a **new terminal** (and remember to source `install/setup.bash` again) and use the following command to watch the velocity commands being published:
 
 ```bash
-ros2 topic echo /cmd_vel
+ros2 topic echo /${ROS_NAME}/cmd_vel
 ```
 
 You should see messages appear as you move the joystick.

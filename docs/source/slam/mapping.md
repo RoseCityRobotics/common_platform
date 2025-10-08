@@ -334,11 +334,11 @@ Cartographer uses Lua configuration files located in `config/cartographer/`. The
 **Monitoring Commands:**
 ```bash
 # Monitor Cartographer topics
-ros2 topic echo /constraint_list
-ros2 topic echo /trajectory_node_list
+ros2 topic echo /${ROS_NAME}/constraint_list
+ros2 topic echo /${ROS_NAME}/trajectory_node_list
 
 # Check for optimization events
-ros2 topic hz /constraint_list
+ros2 topic hz /${ROS_NAME}/constraint_list
 ```
 
 3. **Adjust Based on Environment**

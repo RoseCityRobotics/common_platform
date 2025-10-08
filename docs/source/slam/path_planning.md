@@ -80,7 +80,7 @@ global_costmap:
     # Costmap parameters
     inflation_radius: 0.2
     cost_scaling_factor: 10.0
-    
+
     # Obstacle parameters
     obstacle_range: 2.5
     raytrace_range: 3.0
@@ -94,7 +94,7 @@ local_costmap:
     # Update parameters
     update_frequency: 5.0
     publish_frequency: 2.0
-    
+
     # Inflation parameters
     inflation_radius: 0.2
     cost_scaling_factor: 10.0
@@ -151,10 +151,10 @@ local_costmap:
 
 ```bash
 # Monitor planning frequency
-ros2 topic hz /plan
+ros2 topic hz /${ROS_NAME}/plan
 
 # Check goal status
-ros2 topic echo /navigate_to_pose/_action/status
+ros2 topic echo /${ROS_NAME}/navigate_to_pose/_action/status
 ```
 
 ## Troubleshooting
@@ -183,14 +183,14 @@ ros2 topic echo /navigate_to_pose/_action/status
 
 ```bash
 # Check planning status
-ros2 topic echo /navigate_to_pose/_action/status
+ros2 topic echo /${ROS_NAME}/navigate_to_pose/_action/status
 
 # Monitor path planning
-ros2 topic echo /plan
+ros2 topic echo /${ROS_NAME}/plan
 
 # Check costmaps
-ros2 topic echo /global_costmap/costmap
-ros2 topic echo /local_costmap/costmap
+ros2 topic echo /${ROS_NAME}/global_costmap/costmap
+ros2 topic echo /${ROS_NAME}/local_costmap/costmap
 ```
 
 ## Path Planning Optimization

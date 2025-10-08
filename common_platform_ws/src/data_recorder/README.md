@@ -261,15 +261,15 @@ val_labels = labels[split_idx:]
 ```bash
 # Check if topics are publishing
 ros2 topic list
-ros2 topic hz /camera/image_raw
-ros2 topic hz /cmd_vel
+ros2 topic hz /${ROS_NAME}/camera/image_raw
+ros2 topic hz /${ROS_NAME}/cmd_vel
 
 # Monitor recording status
-ros2 topic echo /data_recorder/status
+ros2 topic echo /${ROS_NAME}/data_recorder/status
 
 # Check node status
 ros2 node list
-ros2 node info /data_recorder
+ros2 node info /${ROS_NAME}/data_recorder
 ```
 
 ## Performance Considerations

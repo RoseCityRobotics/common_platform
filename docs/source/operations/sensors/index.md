@@ -30,9 +30,9 @@ The robot is equipped with several key sensors:
 ros2 topic list | grep -E "(scan|camera|imu|odom)"
 
 # Check sensor data rates
-ros2 topic hz /scan
-ros2 topic hz /camera/image_raw
-ros2 topic hz /imu/data
+ros2 topic hz /${ROS_NAME}/scan
+ros2 topic hz /${ROS_NAME}/camera/image_raw
+ros2 topic hz /${ROS_NAME}/imu/data
 ```
 
 ### Common Commands
@@ -42,9 +42,9 @@ ros2 launch common_platform camera.launch.py
 ros2 launch common_platform rplidar.launch.py
 
 # Monitor sensor data
-ros2 topic echo /scan
-ros2 topic echo /camera/image_raw
-ros2 topic echo /imu/data
+ros2 topic echo /${ROS_NAME}/scan
+ros2 topic echo /${ROS_NAME}/camera/image_raw
+ros2 topic echo /${ROS_NAME}/imu/data
 ```
 
 ## Troubleshooting

@@ -18,7 +18,7 @@ This guide covers the calibration procedures for sensors and systems on the PART
 ros2 launch common_platform launch_robot.launch.py
 
 # Monitor IMU data
-ros2 topic echo /imu/data
+ros2 topic echo /${ROS_NAME}/imu/data
 ```
 
 ### 2. Calibration Steps
@@ -49,10 +49,10 @@ ros2 topic echo /imu/data
 
 ```bash
 # Monitor LiDAR data
-ros2 topic echo /scan
+ros2 topic echo /${ROS_NAME}/scan
 
 # Check for consistent readings
-ros2 run rqt_plot rqt_plot /scan/ranges
+ros2 run rqt_plot rqt_plot /${ROS_NAME}/scan/ranges
 ```
 
 ### 3. Angular Calibration
@@ -85,7 +85,7 @@ ros2 run camera_calibration cameracalibrator --size 8x6 --square 0.108 image:=/c
 
 ```bash
 # Test encoder counts
-ros2 topic echo /wheel_odom
+ros2 topic echo /${ROS_NAME}/wheel_odom
 
 # Verify counts per revolution
 ros2 run motor_calibration calibrate_encoders

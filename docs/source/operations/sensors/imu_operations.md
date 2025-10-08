@@ -45,10 +45,10 @@ ros2 launch common_platform imu.launch.py
 **Verify Data:**
 ```bash
 # Check IMU data
-ros2 topic echo /imu/data
+ros2 topic echo /${ROS_NAME}/imu/data
 
 # Monitor data rate
-ros2 topic hz /imu/data
+ros2 topic hz /${ROS_NAME}/imu/data
 ```
 
 ## IMU Calibration

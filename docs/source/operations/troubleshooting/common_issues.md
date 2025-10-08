@@ -63,7 +63,7 @@ This document addresses frequently encountered problems with the PARTS Common Ro
    ```bash
    # Check network connectivity
    ping <robot_ip>
-   
+
    # Verify ROS2 environment
    echo $ROS_DOMAIN_ID
    ```
@@ -214,7 +214,7 @@ ip addr show
 ros2 node list
 
 # Check topic rates
-ros2 topic hz /topic_name
+ros2 topic hz /${ROS_NAME}/topic_name
 
 # Monitor system performance
 ros2 run rqt_graph rqt_graph

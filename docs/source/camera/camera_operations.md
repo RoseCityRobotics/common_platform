@@ -100,7 +100,6 @@ ros2 run image_view video_recorder --ros-args -p filename:=/tmp/robot_video.avi
 ros2 run rqt_image_view rqt_image_view
 ```
 
-
 ## Camera Calibration
 
 ### 1. Intrinsic Calibration
@@ -202,8 +201,8 @@ ls /dev/video*
 ros2 run usb_cam usb_cam_node --ros-args -p video_device:=/dev/video0
 
 # Monitor data quality
-ros2 topic echo /camera/image_raw
-ros2 topic hz /camera/image_raw
+ros2 topic echo /${ROS_NAME}/camera/image_raw
+ros2 topic hz /${ROS_NAME}/camera/image_raw
 ```
 
 ### Error Codes

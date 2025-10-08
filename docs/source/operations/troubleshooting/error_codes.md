@@ -239,8 +239,8 @@ ros2 topic list
 ros2 service list
 
 # Monitor topics
-ros2 topic hz /topic_name
-ros2 topic echo /topic_name
+ros2 topic hz /${ROS_NAME}/topic_name
+ros2 topic echo /${ROS_NAME}/topic_name
 ```
 
 ### Hardware Diagnostics

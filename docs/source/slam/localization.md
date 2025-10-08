@@ -54,10 +54,10 @@ ros2 topic pub /initialpose geometry_msgs/msg/PoseWithCovarianceStamped "{}"
 
 ```bash
 # Monitor pose estimate
-ros2 topic echo /amcl_pose
+ros2 topic echo /${ROS_NAME}/amcl_pose
 
 # Check pose covariance
-ros2 topic echo /amcl_pose | grep covariance
+ros2 topic echo /${ROS_NAME}/amcl_pose | grep covariance
 ```
 
 ## Localization Parameters
@@ -72,11 +72,11 @@ amcl:
     # Particle filter parameters
     min_particles: 500
     max_particles: 2000
-    
+
     # Update parameters
     update_min_d: 0.2
     update_min_a: 0.5
-    
+
     # Laser model parameters
     laser_max_range: 10.0
     laser_min_range: 0.1
@@ -117,7 +117,7 @@ Low covariance values indicate good localization.
 
 ```bash
 # Check localization status
-ros2 topic echo /localization_status
+ros2 topic echo /${ROS_NAME}/localization_status
 ```
 
 ## Troubleshooting
@@ -146,11 +146,11 @@ ros2 topic echo /localization_status
 
 ```bash
 # Check sensor data quality
-ros2 topic hz /scan
-ros2 topic hz /odom
+ros2 topic hz /${ROS_NAME}/scan
+ros2 topic hz /${ROS_NAME}/odom
 
 # Monitor localization performance
-ros2 topic echo /amcl_pose
+ros2 topic echo /${ROS_NAME}/amcl_pose
 
 # Check for errors
 ros2 log list
