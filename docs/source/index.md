@@ -17,7 +17,7 @@ Welcome to the comprehensive documentation for the RCR Common Robotics Platform!
 :caption: Getting Started
 
 intro
-setup/index
+setup/host_and_software
 operations/keyboard_teleoperation
 lidar_operations
 slam/index

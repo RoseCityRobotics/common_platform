@@ -1,11 +1,5 @@
 # Host and Software Setup
 
-## Arduino CLI Setup
-
-For programming the Teensy microcontroller, we use the Arduino CLI tool. This allows you to compile and upload firmware directly from the command line on the Raspberry Pi.
-
-See our detailed guide: [Arduino CLI Setup](software_arduino_cli)
-
 ## Pull the Latest Changes from GitHub
 
 Change to the correct git-enabled directory:
@@ -27,7 +21,7 @@ git pull origin main
 ```
 
 ## Host Settings
-<img src="_static/img/raspberry-pi.png" alt="Raspberry Pi" width="20">
+<img src="_static/img/raspberry_pi.png" alt="Raspberry Pi" width="20">
 The host has been preset for you as `rcr00_` with your specific ID. To update the hostname:
 
 1. Tell cloud-init to preserve your hostname:
@@ -59,7 +53,7 @@ The host has been preset for you as `rcr00_` with your specific ID. To update th
    ```
 
 ## Network Configuration
-<img src="_static/img/raspberry-pi.png" alt="Raspberry Pi" width="20">
+<img src="_static/img/raspberry_pi.png" alt="Raspberry Pi" width="20">
 
 In this section we will set a custom IP address, set up networking and add WiFi access points. The Pi will try access points in order from top to bottom until it is successful connecting.
 
@@ -104,7 +98,7 @@ ssh rcr@192.168.1.n
 Replace `n` with your robot number.
 
 ### Troubleshooting SSH Connections
-**<img src="_static/img/raspberry-pi.png" alt="Raspberry Pi" width="16"> On the Pi:** Make sure the IP address is assigned:
+**<img src="_static/img/raspberry_pi.png" alt="Raspberry Pi" width="16"> On the Pi:** Make sure the IP address is assigned:
 ```bash
 hostname -I
 ```
@@ -122,14 +116,14 @@ ping google.com
 Make sure your development machine 🖥️ is on the same network.
 
 ## Accessing the Pi from your development machine via SSH
-<img src="_static/img/raspberry-pi.png" alt="Raspberry Pi" width="20"> 🖥️
+<img src="_static/img/raspberry_pi.png" alt="Raspberry Pi" width="20"> 🖥️
 Both the external device and the robot must be on the same WiFi for SSH to work. Use the static IP address of your Pi to SSH. The command will look something like `ssh rcr@192.168.1.n` where `n` is your ID, for example `ssh rcr@192.168.1.9`.
 
 ## Robot Namespacing Setup
 
 To ensure your robot runs under its unique namespace (e.g., `/rcr001`, `/rcr002`, etc.), follow these steps:
 
-### 1. Set Your Namespace in `.profile`
+### Set Your Namespace in `.profile`
 
 Edit your shell profile to define your robot's namespace:
 
@@ -147,7 +141,7 @@ Save and close the file. This ensures that your environment variables are set on
 
 ---
 
-### 2. Set Namespace in `env.list`
+### Set Namespace in `env.list`
 
 Update the environment variable file used for Docker and ROS:
 
@@ -163,7 +157,7 @@ ROS_NAMESPACE=/rcr00n
 
 ---
 
-### 3. Update Firmware Source Code
+### Update Firmware Source Code
 
 In your firmware directory, update the namespace inside the `ros_interface.cpp` file:
 
