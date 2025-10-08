@@ -17,22 +17,22 @@ Welcome to the comprehensive documentation for the RCR Common Robotics Platform!
 :caption: Getting Started
 
 intro
-hardware
 setup/index
-slam/index
-camera/index
-data_annotation/index
+operations/keyboard_teleoperation
 lidar_operations
+slam/index
+camera/camera_operations
+data_annotation/index
+operations/ros2_joystick
+hardware
 ```
 
-## Daily Operations
+## Robot Operations
 
 ```{toctree}
 :maxdepth: 1
 :caption: Robot Operations
 
-operations/keyboard_teleoperation
-operations/ros2_joystick
 operations/startup_procedure
 operations/shutdown_procedure
 operations/maintenance

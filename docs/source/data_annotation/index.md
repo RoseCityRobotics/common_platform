@@ -1,30 +1,81 @@
-# Data Annotation
+# Label Studio for Data Annotation
 
-This section covers tools and procedures for annotating robot datasets for machine learning and analysis with Label Studio.
+Label Studio is a data labeling tool that students will use to annotate their robot datasets. Label Studio allows you to visually annotate your robot's data—such as teleoperation image sequences—so that you can later use it for training machine learning models or conducting analysis. You'll access Label Studio through a browser (while SSH'd to the Pi), connect it to the image data stored on your Raspberry Pi, and annotate that data with bounding boxes and classifications (purple whiffle, green whiffle).
 
-## Topics
+🔗 Full Labeling Guide – [Label Studio Documentation](https://labelstud.io/guide/labeling)
 
-```{toctree}
-:maxdepth: 1
+## Setup and Usage
 
-label_studio
+**1. <img src="_static/img/raspberry-pi.png" alt="Raspberry Pi" width="16"> Make folders:**
+```bash
+mkdir -p "$HOME/teleop_data/images"
+mkdir -p "$HOME/teleop_data/annotations"
 ```
 
-## Quick Start
+**2. <img src="_static/img/raspberry-pi.png" alt="Raspberry Pi" width="16"> Enable Local File Serving (for accessing images on the Pi):**
+```bash
+export LABEL_STUDIO_LOCAL_FILES_SERVING_ENABLED=true
+```
 
-1. Set up your data collection folders
-2. Configure Label Studio for your annotation tasks
-3. Begin labeling your robot datasets
-4. Export and share your annotated data
+**3. <img src="_static/img/raspberry-pi.png" alt="Raspberry Pi" width="16"> Start Label Studio:**
+```bash
+cd ~/LabelMaker
+source bin/activate
+label-studio start
+```
 
-## Use Cases
+**4. 🖥️ Access Label Studio:**
+- Open a web browser and navigate to: `http://192.168.1.n:8800` (replace `n` with your robot number)
+- Create a Label Studio Account
+- Create a new Label Studio Project
 
-- **Teleoperation Data** - Annotate images from robot teleoperation sessions
-- **Object Detection** - Label objects for training detection models
-- **Behavior Analysis** - Mark robot actions and behaviors for analysis
+**5. <img src="_static/img/raspberry-pi.png" alt="Raspberry Pi" width="16"> (Optional) Make it persistent for future terminals:**
+```bash
+grep -q LABEL_STUDIO_LOCAL_FILES_DOCUMENT_ROOT ~/.bashrc || cat >> ~/.bashrc <<'EOF'
+export LABEL_STUDIO_LOCAL_FILES_SERVING_ENABLED=true
+EOF
+```
 
-## Related Documentation
+**6. 🖥️ Configure Label Studio Storage:**
 
-- [Camera Operations](../camera/index.md) - Setting up cameras for data collection
-- [SLAM Operations](../slam/index.md) - Collecting data during mapping and navigation
-- [Hardware Setup](../hardware.md) - Hardware requirements for data collection
+In your browser visit: `http://192.168.1.n:8800`
+
+*Add Source storage (the images to label):*
+- Storage type: **Local Files**
+- Storage Title: **Teleop Images**
+- Absolute local path: `/home/rcr/teleop_data`
+- Path: **images** ← (must be a child folder of the absolute path)
+- Import method: **Files** ← important for images (not "Tasks")
+- Click **Add Storage** → **Sync**
+
+*If you see UnsupportedFileFormatError ... Only .json/.jsonl/.parquet... you picked Tasks. Edit storage and switch Import method to Files.*
+
+*Add Target storage (where your annotations are saved):*
+- Storage type: **Local Files**
+- Storage Title: **Annotations**
+- Absolute local path: `/home/rcr/teleop_data/annotations/`
+- Path:
+- Click **Add Storage**
+
+*(Later, press Sync on this target storage to export annotations there.)*
+
+**7. 🖥️ Label Your Image Data from the Maze:**
+- Open your synced image dataset collected from the maze run
+- Begin labeling key events, robot actions, or objects of interest by drawing bounding boxes and assigning appropriate labels
+- Use overlapping annotations, region duplication, and set up annotation relationships if needed
+- For a full overview of labeling features, see the [Label Studio Labeling Guide](https://labelstud.io/guide/)
+
+**8. 🖥️ Upload Your Annotated Dataset:**
+- Press **Sync** in the target storage tab in Label Studio to export the annotations to your local `annotations/` folder
+- Zip the annotations folder and leave it in the ~/teleop_data/:
+  ```bash
+  cd /home/rcr/teleop_data
+  zip -r annotations.zip annotations/
+  ```
+- Leave your Pi on and connected to the RCR internet and tell Joe he can grab your annotated dataset from your IP address.
+
+---
+
+*For camera operations, see [Camera Operations](../camera/camera_operations.md)*
+*For SLAM operations, see [SLAM Operations](../slam/index.md)*
+*For hardware setup, see [Hardware Setup](../hardware.md)*

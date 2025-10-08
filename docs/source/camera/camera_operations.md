@@ -298,6 +298,6 @@ framerate: 30
 
 ---
 
-*For LiDAR operations, see [LiDAR Operations](lidar_operations.md)*
-*For IMU operations, see [IMU Operations](imu_operations.md)*
-*For troubleshooting, see [Troubleshooting](../troubleshooting/index.md)*
+*For LiDAR operations, see [LiDAR Operations](../lidar_operations.md)*
+*For IMU operations, see [IMU Operations](../operations/sensors/imu_operations.md)*
+*For troubleshooting, see [Troubleshooting](../operations/troubleshooting/index.md)*

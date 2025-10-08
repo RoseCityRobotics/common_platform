@@ -8,7 +8,7 @@ This section covers sensor operations and maintenance for the PARTS Common Robot
 - [LiDAR Operations](lidar_operations.md) - LiDAR setup and troubleshooting
 
 ### Camera Operations
-- [Camera Operations](camera_operations.md) - Camera configuration and usage
+- [Camera Operations](../../camera/camera_operations.md) - Camera configuration and usage
 
 ### IMU Operations
 - [IMU Operations](imu_operations.md) - IMU calibration and monitoring

@@ -1,6 +1,6 @@
 Of course\! Here is an expanded and nicely formatted markdown version of the text you provided.
 
-# Using a Bluetooth Gamepad to Drive a ROS2 Robot 🎮
+# Using a Bluetooth Gamepad
 
 This guide walks you through configuring a standard Bluetooth (BT) gamepad to control a ROS2-based robot. The process involves creating a custom ROS2 package to launch and configure the necessary nodes that translate your joystick movements into robot motion commands.
 

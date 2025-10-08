@@ -4,6 +4,7 @@ Simple shutdown procedure for the Common Robotics Platform.
 
 ## Quick Shutdown Steps
 
+
 ### 1. Stop Software
 ```bash
 # Kill all running processes
@@ -12,10 +13,16 @@ Ctrl+C
 
 ### 2. Shutdown Raspberry Pi
 ```bash
-# Shutdown the Pi
 sudo shutdown now
+```
 
-# Or reboot if needed
+This command will safely power down the Raspberry Pi and all connected systems.
+
+> 💡 **Tip:** Always use the proper shutdown command to avoid data corruption and ensure the system starts cleanly next time.
+
+
+## Or reboot if needed
+```bash
 sudo reboot
 ```
 

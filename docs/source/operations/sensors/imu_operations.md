@@ -268,5 +268,5 @@ angular_velocity_stddev: 0.01
 ---
 
 *For LiDAR operations, see [LiDAR Operations](lidar_operations.md)*
-*For camera operations, see [Camera Operations](camera_operations.md)*
+*For camera operations, see [Camera Operations](../../camera/camera_operations.md)*
 *For troubleshooting, see [Troubleshooting](../troubleshooting/index.md)*

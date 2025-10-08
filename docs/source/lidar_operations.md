@@ -184,6 +184,6 @@ range_max: 12.0
 
 ---
 
-*For camera operations, see [Camera Operations](camera_operations.md)*
+*For camera operations, see [Camera Operations](../camera/camera_operations.md)*
 *For IMU operations, see [IMU Operations](imu_operations.md)*
 *For troubleshooting, see [Troubleshooting](../troubleshooting/index.md)*

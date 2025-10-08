@@ -1,4 +1,4 @@
-# Commands for Starting Keyboard Teleoperation of Your Robot
+# Keyboard Teleoperation
 
 This document outlines essential commands for setting up a ROS2 environment, particularly focusing on micro-ROS integration with a Teensy microcontroller and keyboard teleoperation.
 
@@ -20,7 +20,7 @@ The Raspberry Pi will host the micro-ROS agent and other ROS2 nodes. Ensure it's
 
 You will need a separate terminal window 📟 for each process below:
 
-## Get your Teensy serial number**
+## Get your Teensy serial number
 
 Open a new terminal window 📟
 
@@ -106,15 +106,3 @@ This command launches the `evdev_teleop` package, which sets up a ROS2 node to r
 | ⏸️ | **Spacebar** | Stop/Emergency brake |
 
 -----
-
-## Shutdown Procedure 🔌
-
-When you're finished with teleoperation, properly shut down the system:
-
-```bash
-sudo shutdown now
-```
-
-This command will safely power down the Raspberry Pi and all connected systems.
-
-> 💡 **Tip:** Always use the proper shutdown command to avoid data corruption and ensure the system starts cleanly next time.
