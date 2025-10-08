@@ -56,12 +56,42 @@ ros2 topic echo /${ROS_NAME}/camera/image_raw
 ros2 topic hz /${ROS_NAME}/camera/image_raw
 ```
 
+## Camera Applications
 
+### Computer Vision
+In order to collect images to annotate in Label Studio, use our custom data_recorder node. This is the first step in fine tuning an existing neural network. Check the [Data Annotation](../data_annotation/label_studio.md) document for information on labeling.
 
+```bash
+cd ~/repos/common_platform/common_platform_ws/
+source install/setup.bash
+ros2 launch data_recorder ramdisk_recorder.launch.py
+```
 
+The recorder needs to be stopped manually using <CTRL-C>. It should automatically copy the recorded frames from the RAM disk to the following location on your micro SD card: ~/teleop_data/ . Check for a folder called session_<DATE>_<TIME> .
 
+### Recording Video Files
 
+```bash
+ros2 run image_view video_recorder --ros-args -p filename:=/tmp/robot_video.avi
+```
 
+### Visual Navigation
+
+**Feature Detection:**
+- Detect visual features
+- Use for localization
+- Implement visual SLAM
+
+**Object Recognition:**
+- Identify objects
+- Navigate to targets
+- Avoid obstacles
+
+### Real-time Monitoring
+```bash
+# View camera feed - you need a virtual environment running to do this - more details soon but in the meantime run this on Joe's computer.
+ros2 run rqt_image_view rqt_image_view
+```
 
 
 ## Camera Calibration
@@ -124,42 +154,6 @@ ros2 run rqt_image_view rqt_image_view
 # - No distortion
 # - Consistent frame rate
 ```
-
-## Camera Applications
-
-### 1. Visual Navigation
-
-**Feature Detection:**
-- Detect visual features
-- Use for localization
-- Implement visual SLAM
-
-**Object Recognition:**
-- Identify objects
-- Navigate to targets
-- Avoid obstacles
-
-### 2. Monitoring
-
-**Real-time Monitoring:**
-```bash
-# View camera feed
-ros2 run rqt_image_view rqt_image_view
-
-# Record video
-ros2 run image_view video_recorder --ros-args -p filename:=/tmp/robot_video.avi
-```
-
-### 3. Computer Vision
-In order to collect images to annotate in Label Studio, use our custom data_recorder node. This is the first step in fine tuning an existing neural network. Check the [Data Annotation](../data_annotation/label_studio.md) document for information on labeling.
-
-```bash
-cd ~/repos/common_platform/common_platform_ws/
-source install/setup.bash
-ros2 launch data_recorder ramdisk_recorder.launch.py
-```
-
-The recorder needs to be stopped manually using <CTRL-C>. It should automatically copy the recorded frames from the RAM disk to the following location on your micro SD card: ~/teleop_data/ . Check for a folder called session_<DATE>_<TIME> .
 
 **OpenCV Integration:**
 - Process images
