@@ -48,7 +48,7 @@ sudo shutdown -h now
 - Dispose of damaged batteries properly at a hazardous waste facility
 - Report the incident immediately
 
-## Battery Safety Best Practices
+### Battery Safety Best Practices
 
 **Always follow these safety guidelines:**
 
