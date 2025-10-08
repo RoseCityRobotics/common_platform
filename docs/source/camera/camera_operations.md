@@ -159,6 +159,8 @@ source install/setup.bash
 ros2 launch data_recorder ramdisk_recorder.launch.py
 ```
 
+The recorder needs to be stopped manually using <CTRL-C>. It should automatically copy the recorded frames from the RAM disk to the following location on your micro SD card: ~/teleop_data/ . Check for a folder called session_<DATE>_<TIME> .
+
 **OpenCV Integration:**
 - Process images
 - Detect features
