@@ -63,10 +63,12 @@ ros2 topic echo /${ROS_NAME}/camera/image_raw
 ros2 topic hz /${ROS_NAME}/camera/image_raw
 ```
 
-Once you have checked the data stream, you can close this window as this is just for testing and diagnosis. You want to get in the habit of looking for the ros topic to verify data is streaming. You can do this with.
+Once you have checked the data stream, you can close this window as this is just for testing and diagnosis. You want to get in the habit of looking for the ros topic to verify data is streaming. You can do this with:
 
 **View all ROS topics**
- `ros2 topic list`
+ ```bash
+ ros2 topic list
+ ```
 
 ## Camera Applications
 

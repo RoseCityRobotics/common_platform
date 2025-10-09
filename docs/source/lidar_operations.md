@@ -13,6 +13,8 @@ source install/setup.bash
 ros2 launch sensors rplidar.launch.py
 ```
 
+You will need to leave this window open for as long as you want the LiDAR running. If you want to verify that the LiDar data is streaming you can echo the topic, to do so open a new terminal window 📟
+
 **Verify LiDAR Data:**
 ```bash
 ros2 topic echo /${ROS_NAME}/scan
@@ -23,6 +25,13 @@ You should see a stream of data points here if your LiDAR is publishing data to 
 ```bash
 ros2 topic hz /${ROS_NAME}/scan
 ```
+
+Once you have checked the data stream, you can close this window as this is just for testing and diagnosis. You want to get in the habit of looking for the ros topic to verify data is streaming. You can do this with:
+
+**View all ROS topics**
+ ```bash
+ ros2 topic list
+ ```
 
 ## LiDAR Data Analysis
 
