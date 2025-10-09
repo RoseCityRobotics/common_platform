@@ -17,7 +17,7 @@ Stash any changes you have made:
 git stash
 ```
 
-Update the Git remote for the public repo so you don't need credentials:
+Update the Git remote for the public repo so you don't need credentials. You should only need to do this step once.
 
 ```bash
 git remote set-url origin "https://github.com/RoseCityRobotics/common_platform.git"
@@ -112,6 +112,10 @@ ssh rcr@192.168.1.n
 ```
 Replace `n` with your robot number.
 
+### Accessing the Pi from your development machine via SSH
+<img src="/_static/img/raspberry-pi.png" alt="Raspberry Pi" width="20"> 🖥️
+Both the external device and the robot must be on the same WiFi for SSH to work. Use the static IP address of your Pi to SSH. The command will look something like `ssh rcr@192.168.1.n` where `n` is your ID, for example `ssh rcr@192.168.1.9`.
+
 ### Troubleshooting SSH Connections
 **<img src="/_static/img/raspberry-pi.png" alt="Raspberry Pi" width="16"> On the Pi:** Make sure the IP address is assigned:
 ```bash
@@ -129,10 +133,6 @@ ping google.com
 ```
 
 Make sure your development machine 🖥️ is on the same network.
-
-## Accessing the Pi from your development machine via SSH
-<img src="/_static/img/raspberry-pi.png" alt="Raspberry Pi" width="20"> 🖥️
-Both the external device and the robot must be on the same WiFi for SSH to work. Use the static IP address of your Pi to SSH. The command will look something like `ssh rcr@192.168.1.n` where `n` is your ID, for example `ssh rcr@192.168.1.9`.
 
 ## Robot Namespacing Setup
 
@@ -172,7 +172,7 @@ ROS_NAMESPACE=/rcr00n
 
 ---
 
-### Update Firmware Namespace
+### Set Firmware Namespace
 
 In your firmware directory, update the namespace inside the `ros_interface.cpp` file:
 
