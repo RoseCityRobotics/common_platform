@@ -52,16 +52,21 @@ source install/setup.bash
 ros2 launch sensors camera.launch.py
 ```
 
-Open a new terminal window 📟
+You will need to leave this window open for as long as you want the camera running. If you want to verify that the camera data is streaming you can echo the topic, to do so open a new terminal window 📟
 
-**Verify Data:**
+**Check camera data stream:**
 ```bash
-# Check camera data
 ros2 topic echo /${ROS_NAME}/camera/image_raw
-
-# Monitor data rate
+```
+**Monitor data rate (in hertz):**
+```bash
 ros2 topic hz /${ROS_NAME}/camera/image_raw
 ```
+
+Once you have checked the data stream, you can close this window as this is just for testing and diagnosis. You want to get in the habit of looking for the ros topic to verify data is streaming. You can do this with.
+
+**View all ROS topics**
+ `ros2 topic list`
 
 ## Camera Applications
 
