@@ -75,19 +75,34 @@ Once you have checked the data stream, you can close this window as this is just
 ### Computer Vision
 In order to collect images to annotate in Label Studio, use our custom data_recorder node. This is the first step in fine tuning an existing neural network. Check the [Data Annotation](../data_annotation/label_studio.md) document for information on labeling.
 
+
+## Recording Image Files
+
+Open a new terminal window 📟. Launch the image recorder program with:
+
 ```bash
 cd ~/repos/common_platform/common_platform_ws/
 source install/setup.bash
 ros2 launch data_recorder ramdisk_recorder.launch.py
 ```
 
-The recorder needs to be stopped manually using <CTRL-C>. It should automatically copy the recorded frames from the RAM disk to the following location on your micro SD card: ~/teleop_data/ . Check for a folder called session_<DATE>_<TIME> .
+The recorder needs to be stopped manually using `Ctrl+C`. It should automatically copy the recorded frames from the RAM disk to the following location on your micro SD card: ~/teleop_data/ . Check for a folder called session_<DATE>_<TIME> .
 
-### Recording Video Files
+You should see it with:
+```bash
+cd ~/teleop_data/
+ls
+```
+
+## Recording Video Files
+
+Open a new terminal window 📟
 
 ```bash
 ros2 run image_view video_recorder --ros-args -p filename:=/tmp/robot_video.avi
 ```
+
+The video file will be saved to /tmp/robot_video.avi on your Raspberry Pi.
 
 ### Visual Navigation
 
