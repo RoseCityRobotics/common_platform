@@ -1,6 +1,6 @@
 # Recovery Procedures
 
-This guide provides step-by-step recovery procedures for various system failures in the PARTS Common Robotics Platform.
+This guide provides step-by-step recovery procedures for various system failures in the RCR Common Robotics Platform.
 
 ## Emergency Recovery
 

@@ -1,6 +1,6 @@
 # Camera Operations
 
-This guide covers camera operations, setup, and troubleshooting for the PARTS Common Robotics Platform.
+This guide covers camera operations, setup, and troubleshooting for the RCR Common Robotics Platform.
 
 ## Overview
 

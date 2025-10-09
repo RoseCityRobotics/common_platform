@@ -1,6 +1,6 @@
 # Software Setup Guide
 
-This guide covers the software installation and configuration for the PARTS Common Robotics Platform.
+This guide covers the software installation and configuration for the RCR Common Robotics Platform.
 
 ## Prerequisites
 

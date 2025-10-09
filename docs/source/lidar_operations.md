@@ -1,6 +1,6 @@
 # LiDAR Operations
 
-This guide covers LiDAR sensor operations, setup, and troubleshooting for the Common Robotics Platform. The robot uses a  2-dimensional LiDAR sensor for obstacle detection, mapping, and navigation. The LiDAR provides 360-degree range measurements around the robot.
+This guide covers LiDAR sensor operations, setup, and troubleshooting for the RCR Common Robotics Platform. The robot uses a  2-dimensional LiDAR sensor for obstacle detection, mapping, and navigation. The LiDAR provides 360-degree range measurements around the robot.
 
 ## Launch ROS Node
 

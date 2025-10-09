@@ -1,6 +1,6 @@
 # Robot Operations Manual
 
-Welcome to the Robot Operations Manual for the PARTS Common Robotics Platform. This section contains detailed instructions for operating, maintaining, and troubleshooting your robot.
+Welcome to the Robot Operations Manual for the RCR Common Robotics Platform. This section contains detailed instructions for operating, maintaining, and troubleshooting your robot.
 
 > 🔗 **GitHub Repository**: [https://github.com/RoseCityRobotics/common_platform](https://github.com/RoseCityRobotics/common_platform) - Source code and issue tracking
 

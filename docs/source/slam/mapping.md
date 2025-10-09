@@ -1,6 +1,6 @@
 # Mapping Operations
 
-This guide covers creating, updating, and managing maps for the PARTS Common Robotics Platform.
+This guide covers creating, updating, and managing maps for the RCR Common Robotics Platform.
 
 ## Overview
 

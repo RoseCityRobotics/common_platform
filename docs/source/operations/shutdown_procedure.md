@@ -1,6 +1,6 @@
 # Shutdown Procedure
 
-Simple shutdown procedure for the Common Robotics Platform.
+Simple shutdown procedure for the RCR Common Robotics Platform.
 
 ## Stop Software
 ```bash

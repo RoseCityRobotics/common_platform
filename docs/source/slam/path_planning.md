@@ -1,6 +1,6 @@
 # Path Planning Operations
 
-This guide covers path planning and navigation procedures for the PARTS Common Robotics Platform.
+This guide covers path planning and navigation procedures for the RCR Common Robotics Platform.
 
 ## Overview
 

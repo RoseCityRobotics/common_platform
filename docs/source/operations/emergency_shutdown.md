@@ -1,6 +1,6 @@
 # Emergency Shutdown
 
-Emergency procedures for the Common Robotics Platform when immediate shutdown is required.
+Emergency procedures for the RCR Common Robotics Platform when immediate shutdown is required.
 
 ## When to Use Emergency Shutdown
 

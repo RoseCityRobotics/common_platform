@@ -1,6 +1,6 @@
 # Testing and Validation
 
-This section covers testing procedures for the Common Robotics Platform to ensure proper functionality.
+This section covers testing procedures for the RCR Common Robotics Platform to ensure proper functionality.
 
 ## Basic Smoke Test
 

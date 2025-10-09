@@ -1,6 +1,6 @@
 # Common Issues and Solutions
 
-This document addresses frequently encountered problems with the PARTS Common Robotics Platform and their solutions.
+This document addresses frequently encountered problems with the RCR Common Robotics Platform and their solutions.
 
 ## Communication with Teensy 4.0 Microcontroller
 **View debug output**

@@ -1,6 +1,6 @@
 # Advanced Operations
 
-This section covers advanced operations and configurations for the PARTS Common Robotics Platform.
+This section covers advanced operations and configurations for the RCR Common Robotics Platform.
 
 ## Advanced Procedures
 

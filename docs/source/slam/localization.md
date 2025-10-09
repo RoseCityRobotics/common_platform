@@ -1,6 +1,6 @@
 # Localization Operations
 
-This guide covers robot localization procedures for the PARTS Common Robotics Platform.
+This guide covers robot localization procedures for the RCR Common Robotics Platform.
 
 ## Overview
 

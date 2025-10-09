@@ -1,6 +1,6 @@
 # IMU Operations
 
-This guide covers IMU (Inertial Measurement Unit) operations, setup, and troubleshooting for the PARTS Common Robotics Platform.
+This guide covers IMU (Inertial Measurement Unit) operations, setup, and troubleshooting for the RCR Common Robotics Platform.
 
 ## Overview
 

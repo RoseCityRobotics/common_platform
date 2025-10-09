@@ -1,6 +1,6 @@
 # Performance Tuning Guide
 
-This guide covers advanced performance tuning techniques for the PARTS Common Robotics Platform, focusing on motor calibration for straight driving and PID tuning for optimal dynamic response.
+This guide covers advanced performance tuning techniques for the RCR Common Robotics Platform, focusing on motor calibration for straight driving and PID tuning for optimal dynamic response.
 
 ## Table of Contents
 

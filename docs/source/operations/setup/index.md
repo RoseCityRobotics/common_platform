@@ -1,6 +1,6 @@
 # Setup and Initial Configuration
 
-This section covers the initial setup and configuration procedures for your PARTS Common Robotics Platform.
+This section covers the initial setup and configuration procedures for your RCR Common Robotics Platform.
 
 ## Setup Procedures
 

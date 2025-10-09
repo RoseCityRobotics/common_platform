@@ -1,6 +1,6 @@
 # Custom Controllers
 
-This guide covers advanced controller configuration and customization for the PARTS Common Robotics Platform.
+This guide covers advanced controller configuration and customization for the RCR Common Robotics Platform.
 
 ## Overview
 
@@ -72,11 +72,11 @@ from controller_interface import ControllerInterface
 class CustomController(ControllerInterface):
     def __init__(self):
         super().__init__()
-    
+
     def init(self, controller_name):
         # Initialize controller
         pass
-    
+
     def update(self):
         # Update controller
         pass
@@ -91,12 +91,12 @@ custom_controller:
     # Controller parameters
     update_rate: 100.0
     control_mode: velocity
-    
+
     # PID parameters
     p_gain: 1.0
     i_gain: 0.0
     d_gain: 0.0
-    
+
     # Safety parameters
     max_velocity: 1.0
     max_acceleration: 2.0
@@ -111,7 +111,7 @@ hardware:
     joints:
       - left_wheel
       - right_wheel
-    
+
     interfaces:
       - position
       - velocity
@@ -123,7 +123,7 @@ hardware:
 controller_manager:
   ros__parameters:
     update_rate: 100
-    
+
     controllers:
       custom_controller:
         type: custom_controller/CustomController
@@ -140,7 +140,7 @@ class PIDController
 public:
   PIDController(double p, double i, double d);
   double update(double error, double dt);
-  
+
 private:
   double p_gain_, i_gain_, d_gain_;
   double integral_, previous_error_;

@@ -1,6 +1,6 @@
 # Introduction
 
-Welcome to the [Rose City Robotics](https://rosecityrobotics.com) documentation for our fork of the PARTS Common Robotics Platform! This project builds on the outstanding work of the PARTS team—many thanks to them for their contributions and for making this platform possible. Here you'll find an introduction to our implementation of the Romi Chassis, a versatile and compact robotic platform, along with details on how we've customized it for our robotics education and development needs.
+Welcome to the [Rose City Robotics](https://rosecityrobotics.com) documentation for our fork of the RCR Common Robotics Platform! This project builds on the outstanding work of the PARTS team—many thanks to them for their contributions and for making this platform possible. Here you'll find an introduction to our implementation of the Romi Chassis, a versatile and compact robotic platform, along with details on how we've customized it for our robotics education and development needs.
 
 > 📦 **Source Code**: All code, hardware designs, and documentation for this project are available in our [GitHub repository](https://github.com/RoseCityRobotics/common_platform)
 
@@ -19,7 +19,7 @@ The Romi Chassis is perfect for learning robotics concepts, prototyping autonomo
 
 ## About Rose City Robotics' Implementation
 
-This is Rose City Robotics' fork of the PARTS Common Robotics Platform, customized for our specific educational and development needs.
+This is Rose City Robotics' fork of the RCR Common Robotics Platform, customized for our specific educational and development needs.
 
 - **Project Goals**: Provide hands-on robotics education, enable rapid prototyping of autonomous systems, and create a standardized platform for our robotics programs and competitions.
 - **Custom Features**: Our implementation includes ROS2 integration, custom carrier board modifications, onboard AI inference and enhanced sensor capabilities for advanced navigation and perception tasks.
@@ -58,4 +58,4 @@ Need help or want to contribute to the project?
 
 ## Conclusion
 
-You're now ready to explore the Rose City Robotics PARTS Common Robotics Platform! This documentation will guide you through setup, operation, and advanced usage of our robotics platform. Start with the [Hardware Setup](hardware) guide to begin building your robot, and don't hesitate to reach out if you need assistance along the way.
+You're now ready to explore the Rose City Robotics RCR Common Robotics Platform! This documentation will guide you through setup, operation, and advanced usage of our robotics platform. Start with the [Hardware Setup](hardware) guide to begin building your robot, and don't hesitate to reach out if you need assistance along the way.

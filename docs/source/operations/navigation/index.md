@@ -1,6 +1,6 @@
 # Navigation Operations
 
-This section covers navigation-related operations for the PARTS Common Robotics Platform.
+This section covers navigation-related operations for the RCR Common Robotics Platform.
 
 ## Prerequisites
 

@@ -1,6 +1,6 @@
 # 3D Printed Parts
 
-This section will provide information about the 3D printed parts used in the Common Robotics Platform.
+This section will provide information about the 3D printed parts used in the RCR Common Robotics Platform.
 
 ## Coming Soon
 

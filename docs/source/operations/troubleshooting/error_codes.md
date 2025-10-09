@@ -1,6 +1,6 @@
 # Error Codes Reference
 
-This document provides a reference for error codes and messages that may appear in the PARTS Common Robotics Platform.
+This document provides a reference for error codes and messages that may appear in the RCR Common Robotics Platform.
 
 ## ROS2 Error Codes
 

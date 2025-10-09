@@ -1,6 +1,6 @@
 # Calibration Procedures
 
-This guide covers the calibration procedures for sensors and systems on the PARTS Common Robotics Platform.
+This guide covers the calibration procedures for sensors and systems on the RCR Common Robotics Platform.
 
 ## Prerequisites
 

@@ -1,6 +1,6 @@
 # Robot Operations Documentation
 
-This directory contains the robot operations documentation for the PARTS Common Robotics Platform. The documentation is integrated into the main Sphinx documentation system and can be built alongside the rest of the project documentation.
+This directory contains the robot operations documentation for the RCR Common Robotics Platform. The documentation is integrated into the main Sphinx documentation system and can be built alongside the rest of the project documentation.
 
 ## File Structure
 

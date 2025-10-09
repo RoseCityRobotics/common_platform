@@ -1,6 +1,6 @@
 # Hardware Setup Guide
 
-This guide walks you through the complete hardware assembly and connection process for the PARTS Common Robotics Platform.
+This guide walks you through the complete hardware assembly and connection process for the RCR Common Robotics Platform.
 
 ## Prerequisites
 

@@ -1,6 +1,6 @@
 # Sensor Operations
 
-This section covers sensor operations and maintenance for the PARTS Common Robotics Platform.
+This section covers sensor operations and maintenance for the RCR Common Robotics Platform.
 
 ## Sensor Types
 

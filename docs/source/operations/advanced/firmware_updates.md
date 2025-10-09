@@ -1,6 +1,6 @@
 # Firmware Updates
 
-This guide covers firmware update procedures for the PARTS Common Robotics Platform.
+This guide covers firmware update procedures for the RCR Common Robotics Platform.
 
 ## Overview
 

@@ -1,6 +1,6 @@
 # Troubleshooting
 
-This section provides comprehensive troubleshooting guides for the PARTS Common Robotics Platform.
+This section provides comprehensive troubleshooting guides for the RCR Common Robotics Platform.
 
 ## Troubleshooting Guides
 

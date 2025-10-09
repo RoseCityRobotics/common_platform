@@ -1,6 +1,6 @@
 # Startup Procedure
 
-This document outlines the proper procedure for starting up your PARTS Common Robotics Platform.
+This document outlines the proper procedure for starting up your RCR Common Robotics Platform.
 
 ## Pre-Startup Checklist
 

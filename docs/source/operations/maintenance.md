@@ -1,6 +1,6 @@
 # Routine Maintenance
 
-This guide covers regular maintenance procedures for the PARTS Common Robotics Platform.
+This guide covers regular maintenance procedures for the RCR Common Robotics Platform.
 
 ## Maintenance Schedule
 
