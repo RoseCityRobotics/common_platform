@@ -4,18 +4,25 @@ This section covers advanced operations and configurations for the RCR Common Ro
 
 ## Advanced Procedures
 
-### Custom Controllers
-- [Custom Controllers](custom_controllers.md) - Advanced controller configuration
+```{toctree}
+:maxdepth: 1
 
-### Firmware Updates
-- [Firmware Updates](firmware_updates.md) - Updating robot firmware
+custom_controllers
+firmware_updates
+performance_tuning
+```
+
+### Quick Reference
+- [Custom Controllers](custom_controllers.md) - Advanced controller configuration
+- [Flashing the Teensy Microcontroller](firmware_updates.md) - Flashing firmware to the Teensy
+- [Performance Tuning](performance_tuning.md) - System optimization
 
 ## Advanced Overview
 
 Advanced operations include:
 
 1. **Custom Controllers** - Advanced control system configuration
-2. **Firmware Updates** - System and component firmware updates
+2. **Flashing the Teensy Microcontroller** - Flashing firmware to the Teensy 4.0
 3. **Performance Tuning** - System optimization
 4. **Custom Development** - Advanced software development
 

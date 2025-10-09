@@ -1,12 +1,12 @@
-# Firmware Updates
+# Flashing the Teensy Microcontroller
 
-This guide covers firmware update procedures for the RCR Common Robotics Platform.
+This guide covers how to flash firmware to the Teensy 4.0 microcontroller on the RCR Common Robotics Platform.
 
 ## Overview
 
 Firmware runs on the Teensy 4.0 microcontroller. It sets up ROS2 nodes that run on the Teensy, but communicate with the larger ROS2 environment via a bridge node called the microros agent that runs on the RPi5.
 
-## Procedure
+## Flashing Procedure
 
 ### 1. Navigate to the firmware directory and create build folder
    ```bash
