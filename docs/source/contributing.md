@@ -2,16 +2,8 @@
 
 Thank you for your interest in contributing to the RCR Common Platform! This guide will walk you through the process of making contributions to the project.
 
-## Prerequisites
 
-Before contributing, make sure you have:
-- A GitHub account
-- Git installed on your development machine
-- Basic familiarity with Git and GitHub (see our [Git Guide](https://github.com/RoseCityRobotics/rcr-foundations) for detailed instructions)
-
-## Contribution Workflow
-
-### 1. Fork and Clone the Repository
+## Fork and Clone the Repository
 
 First, fork the repository on GitHub, then clone your fork locally:
 
@@ -24,7 +16,7 @@ cd common_platform
 git remote add upstream https://github.com/RoseCityRobotics/common_platform.git
 ```
 
-### 2. Create a New Branch
+## Create a New Branch
 
 Create a new branch for your contribution:
 
@@ -42,15 +34,47 @@ git checkout -b fix/issue-description
 - `docs/` - for documentation updates
 - `refactor/` - for code refactoring
 
-### 3. Make Your Changes
+## Set Up Development Environment
+
+Before making changes, set up your development environment:
+
+#### Documentation Build Setup
+
+```bash
+# Navigate to the docs directory
+cd docs
+
+# Install Python dependencies (if not already installed)
+pip install -r requirements.txt
+
+# Build the documentation locally
+make html
+
+# View the documentation in your browser
+# Open docs/build/html/index.html in your browser
+```
+
+#### Python Environment (if needed)
+
+```bash
+# Create a virtual environment (recommended)
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+```
+
+## Make Your Changes
 
 Make your changes to the code, documentation, or other project files. For documentation changes:
 
 - Edit the relevant `.md` files in the `docs/source/` directory
 - Test your changes by building the documentation locally
 - Ensure your changes follow the existing style and format
+- View the built documentation in your browser to verify formatting
 
-### 4. Commit Your Changes
+## Commit Your Changes
 
 Stage and commit your changes with a clear, descriptive message:
 
@@ -65,13 +89,7 @@ git commit -m "Add new feature: brief description of what you added"
 git commit -m "docs: update setup instructions for new hardware"
 ```
 
-**Commit Message Guidelines:**
-- Use present tense ("Add feature" not "Added feature")
-- Keep the first line under 50 characters
-- Use the body to explain what and why, not how
-- Reference issues with "Fixes #123" or "Closes #456"
-
-### 5. Push to Your Fork
+## Push to Your Fork
 
 Push your branch to your GitHub fork:
 
@@ -80,7 +98,7 @@ Push your branch to your GitHub fork:
 git push origin feature/your-feature-name
 ```
 
-### 6. Create a Pull Request
+## Create a Pull Request
 
 1. **Go to your fork** on GitHub (https://github.com/yourusername/common_platform)
 2. **Click "Compare & pull request"** for your new branch
