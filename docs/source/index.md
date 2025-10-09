@@ -10,6 +10,7 @@ Welcome to the comprehensive documentation for the RCR Common Robotics Platform!
 
 * All the required parts from the BOM on hand. [BOM](https://github.com/RoseCityRobotics/BOM.csv)
 * Windows/Mac/Linux PC
+* Computer Monitor
 * Soldering supplies
 
 ```{toctree}
@@ -28,8 +29,6 @@ hardware
 3dprint
 ```
 
-## Robot Operations
-
 ```{toctree}
 :maxdepth: 1
 :caption: Robot Operations
@@ -40,8 +39,6 @@ operations/reboot_procedure
 operations/emergency_shutdown
 operations/maintenance
 ```
-
-## Testing and Validation
 
 ```{toctree}
 :maxdepth: 1
