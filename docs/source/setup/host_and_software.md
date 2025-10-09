@@ -65,23 +65,23 @@ sudo nano /etc/netplan/50-cloud-init.yaml
 Add the following configuration (replace `n` with your robot number):
 ```yaml
 network:
-   version: 2
-   wifis:
-      wlan0:
+  version: 2
+  wifis:
+    wlan0:
       optional: true
       dhcp4: no
       addresses:
-         - 192.168.1.n/24
+        - 192.168.1.n/24
       routes:
-         - to: default
-            via: 192.168.1.1
+        - to: default
+          via: 192.168.1.1
       nameservers:
-         addresses: [8.8.8.8, 1.1.1.1]
+        addresses: [8.8.8.8, 1.1.1.1]
       access-points:
-         "robot_overlord_wifi":
-            password: "siliconforest"
-         "RoseCityRobotics":
-            password: "QW260go80.."
+        "robot_overlord_wifi":
+          password: "siliconforest"
+        "RoseCityRobotics":
+          password: "QW260go80.."
 ```
 **Note:** `n` = the robot number. Add your home WiFi access point as well.
 

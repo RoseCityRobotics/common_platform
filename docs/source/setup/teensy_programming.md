@@ -54,7 +54,7 @@ a. Set up Arduino libraries directory:
    ```bash
    cd ~
    mkdir -p Arduino/libraries/
-   cp repos/firmware/libraries/micro_ros_arduino.zip Arduino/libraries/
+   cp repos/common_platform/firmware/libraries/micro_ros_arduino.zip Arduino/libraries/
    cd ~/Arduino/libraries/
    ```
 

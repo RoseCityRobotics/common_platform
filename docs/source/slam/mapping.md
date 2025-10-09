@@ -78,13 +78,20 @@ SLAM allows the robot to build a map while simultaneously tracking its position 
 
    See [Keyboard Teleoperation Setup](../operations/keyboard_teleoperation.md) for robot control setup.
 
-3. **Drive the Robot**
+3. **Setup a relay for the odom topic**
+   In the linux environment running your DDS server, you need to setup a repeater for the odom topic because the DDS client available on the Teensy is an eXtremely Resource Constrained Environment (XRCE) version that doesn't add all the correct metadata to the published messages. Replace n in rcr00n with your robot number.
+   ```bash
+   cd ~/repos/common_platform/common_platform_ws
+   source install/setup.bash
+   ROS_NAME=rcr00n ros2 launch qos_relay qos_relay.launch.py
+   ```
+4. **Drive the Robot**
    - Use keyboard controls to drive the robot
    - Cover the entire area you want to map
    - Move slowly for better map quality
    - Ensure good LiDAR coverage
 
-4. **Save the Map**
+5. **Save the Map**
    ```bash
    # Save the map using Cartographer's built-in functionality
    ros2 service call ${ROS_NAMESPACE}/finish_trajectory cartographer_ros_msgs/srv/FinishTrajectory "{trajectory_id: 0}"
