@@ -6,18 +6,18 @@ Label Studio is a data labeling tool that students will use to annotate their ro
 
 ## Setup and Usage
 
-**1. <img src="_static/img/raspberry-pi.png" alt="Raspberry Pi" width="16"> Make folders:**
+**1. <img src="/docs/source/_static/img/raspberry-pi.png" alt="Raspberry Pi" width="16"> Make folders:**
 ```bash
 mkdir -p "$HOME/teleop_data/images"
 mkdir -p "$HOME/teleop_data/annotations"
 ```
 
-**2. <img src="_static/img/raspberry-pi.png" alt="Raspberry Pi" width="16"> Enable Local File Serving (for accessing images on the Pi):**
+**2. <img src="/docs/source/_static/img/raspberry-pi.png" alt="Raspberry Pi" width="16"> Enable Local File Serving (for accessing images on the Pi):**
 ```bash
 export LABEL_STUDIO_LOCAL_FILES_SERVING_ENABLED=true
 ```
 
-**3. <img src="_static/img/raspberry-pi.png" alt="Raspberry Pi" width="16"> Start Label Studio:**
+**3. <img src="/docs/source/_static/img/raspberry-pi.png" alt="Raspberry Pi" width="16"> Start Label Studio:**
 ```bash
 cd ~/LabelMaker
 source bin/activate
@@ -29,7 +29,7 @@ label-studio start
 - Create a Label Studio Account
 - Create a new Label Studio Project
 
-**5. <img src="_static/img/raspberry-pi.png" alt="Raspberry Pi" width="16"> (Optional) Make it persistent for future terminals:**
+**5. <img src="/docs/source/_static/img/raspberry-pi.png" alt="Raspberry Pi" width="16"> (Optional) Make it persistent for future terminals:**
 ```bash
 nano ~/.profile
 ```
