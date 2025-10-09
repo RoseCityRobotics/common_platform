@@ -72,3 +72,9 @@ c. Navigate to the common_platform repository, update it, and place the arduino-
   git pull origin main
   scripts/place_arduino-cli_config.sh
   ```
+
+## Next Steps
+
+Now that you have the Arduino CLI configured and the micro-ROS library installed, you're ready to flash firmware to the Teensy microcontroller.
+
+**Next: [Flashing the Teensy Microcontroller](../operations/advanced/firmware_updates.md)** - Complete guide for flashing firmware to the Teensy 4.0

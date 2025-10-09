@@ -18,7 +18,7 @@ Welcome to the comprehensive documentation for the RCR Common Robotics Platform!
 - **[Host Configuration](setup/pi_connection.md)** - Connect to your robot's Raspberry Pi
 - **[Network Configuration](setup/host_and_software.md#network-configuration)** - Configure WiFi and network settings
 - **[Software Setup](setup/index.md)** - Install ROS2 and configure the development environment
-- **[Flash Teensy Firmware](setup/teensy_programming.md)** - Program the robot's microcontroller
+- **[Flash Teensy Firmware](/operations/advanced/firmware_updates.md.md)** - Program the robot's microcontroller
 
 ```{toctree}
 :maxdepth: 2
