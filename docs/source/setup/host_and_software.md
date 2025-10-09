@@ -1,11 +1,20 @@
 # Host and Software Setup
 
+This section covers the complete setup process for the common platform robot, including host configuration, software installation, and firmware programming.
+
+
 ## Pull the Latest Changes from GitHub
 
 Change to the correct git-enabled directory:
 
 ```bash
 cd repos/common_platform
+```
+
+Stash any changes you have made:
+
+```bash
+git stash
 ```
 
 Update the Git remote for the public repo so you don't need credentials:
@@ -18,6 +27,12 @@ Pull the changes
 
 ```bash
 git pull origin main
+```
+
+Re-apply your stashed changes
+
+```bash
+git stash apply
 ```
 
 ## Host Settings
@@ -157,7 +172,7 @@ ROS_NAMESPACE=/rcr00n
 
 ---
 
-### Update Firmware Source Code
+## Update Firmware Namespace
 
 In your firmware directory, update the namespace inside the `ros_interface.cpp` file:
 
@@ -174,53 +189,6 @@ rclc_node_init_default(&node, "micro_ros_arduino_node", "rcr00n", &support));
 
 This sets the micro-ROS node namespace properly for communication with ROS2.
 
+⚠️ **Important:** After updating this firmware, you must re-flash the Teensy. For detailed instructions on flashing the Teensy firmware, see the [Teensy Programming Guide](teensy_programming.md).
+
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-## Flash the Teensy micro-controller with updated firmware
-
-a. Navigate to firmware directory and create build folder:
-   ```bash
-   cd ~/repos/common_platform/firmware/closed_loop/
-   ```
-
-   if the build directory exists, delete it.
-
-   ```
-   rm -rf build
-   ```
-
-   Now make the directory:
-
-   ```
-   mkdir build
-   cd build
-   ```
-
-b. Compile the firmware for Teensy 4.0:
-   ```bash
-   arduino-cli compile --fqbn teensy:avr:teensy40 --build-property build.usbtype=USB_DUAL_SERIAL --build-path . ../closed_loop.ino
-   ```
-
-c. Find the Teensy device:
-- first power the Teensy - put in the lower-half batteries
-- second turn on the switch for the Teensy
-- make sure the green LED has turned on
-
-```bash
-SERIAL_TEENSY_DEVICE=`find /dev/serial/by-id/ -name "usb-Teensyduino*if00"|head -1`; echo "-> Performing soft reset (baud = 134 hack). $SERIAL_TEENSY_DEVICE"
-```
-
-d. Reset Teensy into programming mode:
-   ```bash
-   stty -F $SERIAL_TEENSY_DEVICE 9600
-   stty -F $SERIAL_TEENSY_DEVICE 134
-   ```
-
-e. Verify Teensy is ready and upload firmware:
-   ```bash
-   lsusb | grep Teensy; echo "-> Should be ready to program…"
-   ```
-   ```bash
-   sudo teensy_loader_cli -v --mcu=TEENSY40 closed_loop.ino.hex
-   ```
-
