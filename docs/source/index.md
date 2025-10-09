@@ -31,7 +31,7 @@ operations/keyboard_teleoperation
 lidar_operations
 slam/index
 camera/camera_operations
-data_annotation/index
+data_annotation/label_studio
 operations/ros2_joystick
 hardware
 3dprint
