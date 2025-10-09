@@ -71,7 +71,28 @@ OR
 - **User:** `rcr`
 - **Password:** `siliconforest`
 
+## 📚 Documentation
 
+> **📖 [Complete Documentation](https://common.rosecityrobotics.com/)** - Comprehensive guides for setup, operation, and development
+
+### Key Documentation Sections
+
+- **🚀 [Getting Started](https://common.rosecityrobotics.com/)** - Complete setup from hardware assembly to first robot movement
+- **⚙️ [Hardware Assembly](https://common.rosecityrobotics.com/hardware.html)** - Step-by-step soldering and assembly instructions
+- **💻 [Software Setup](https://common.rosecityrobotics.com/setup/index.html)** - Host configuration, ROS2 installation, and Teensy programming
+- **🎮 [Robot Operations](https://common.rosecityrobotics.com/operations/index.html)** - Startup, shutdown, teleoperation, and navigation procedures
+- **🧪 [Testing & Validation](https://common.rosecityrobotics.com/testing.html)** - Smoke tests and system verification
+- **🔧 [Troubleshooting](https://common.rosecityrobotics.com/operations/troubleshooting/index.html)** - Common issues and recovery procedures
+
+### Quick Start Highlights
+
+- **Hardware**: Custom PARTS CRP board with integrated motor drivers and Teensy 4.0
+- **Software**: ROS2 with micro-ROS for real-time communication
+- **Sensors**: LiDAR, IMU, and camera support for autonomous navigation
+- **Programming**: Arduino CLI for Teensy firmware development
+- **Testing**: Basic smoke test to verify hardware functionality
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ### Assembly Images
 
