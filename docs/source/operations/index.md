@@ -65,6 +65,7 @@ advanced/index
 advanced/custom_controllers
 advanced/firmware_updates
 advanced/performance_tuning
+discovery_server
 ```
 
 

@@ -17,7 +17,7 @@ Welcome to the comprehensive documentation for the RCR Common Robotics Platform!
 :caption: Getting Started
 
 intro
-setup/host_and_software
+setup/index
 operations/keyboard_teleoperation
 lidar_operations
 slam/index
@@ -25,6 +25,7 @@ camera/camera_operations
 data_annotation/index
 operations/ros2_joystick
 hardware
+3dprint
 ```
 
 ## Robot Operations
@@ -38,6 +39,15 @@ operations/shutdown_procedure
 operations/reboot_procedure
 operations/emergency_shutdown
 operations/maintenance
+```
+
+## Testing and Validation
+
+```{toctree}
+:maxdepth: 1
+:caption: Testing and Validation
+
+testing
 ```
 
 ## Getting Help
