@@ -172,7 +172,7 @@ ROS_NAMESPACE=/rcr00n
 
 ---
 
-## Update Firmware Namespace
+### Update Firmware Namespace
 
 In your firmware directory, update the namespace inside the `ros_interface.cpp` file:
 
@@ -189,6 +189,7 @@ rclc_node_init_default(&node, "micro_ros_arduino_node", "rcr00n", &support));
 
 This sets the micro-ROS node namespace properly for communication with ROS2.
 
+### Reload the Firmware
 ⚠️ **Important:** After updating this firmware, you must re-flash the Teensy. For detailed instructions on flashing the Teensy firmware, see the [Teensy Programming Guide](teensy_programming.md).
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
