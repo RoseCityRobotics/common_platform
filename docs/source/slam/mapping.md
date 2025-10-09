@@ -6,16 +6,6 @@ This guide covers creating, updating, and managing maps for the RCR Common Robot
 
 Mapping is the process of creating a representation of the robot's environment using sensor data, primarily from the LiDAR sensor. This map is essential for navigation and localization.
 
-## Prerequisites
-
-- **Discovery Server Running**: Ensure a ROS discovery server is running (see [Discovery Server Setup](../operations/discovery_server.md))
-- Robot hardware properly assembled and calibrated
-- LiDAR sensor functioning correctly
-- Odometry system working (wheel encoders and/or IMU)
-- Sufficient battery charge for mapping session
-- Robot control setup (see [Keyboard Teleoperation Setup](../operations/keyboard_teleoperation.md))
-- LIDAR node is started (see [Lidar Operations](../lidar_operations.md))
-
 ## Mapping Methods
 
 ### 1. SLAM (Simultaneous Localization and Mapping) Using Cartographer
@@ -24,18 +14,18 @@ SLAM allows the robot to build a map while simultaneously tracking its position 
 
 1. **Launch SLAM**
    ```bash
-   cd repos/common_platform/common_platform_ws/
+   cd ~/repos/common_platform/common_platform_ws/
    source install/setup.bash
    ros2 launch common_platform pub_robot_state.launch.py use_sim_time:=false
    ```
 
    ```bash
-   cd ros2_ws/
+   cd ~/ros2_ws/
    ros2 launch cartographer_ros cartographer_simple.launch.py
    ```
 
    ```bash
-   cd ros2_ws/
+   cd ~/ros2_ws/
    ros2 run cartographer_ros cartographer_occupancy_grid_node --ros-args -p resolution:=0.05 -p publish_period_sec:=1.0 -r __ns:=${ROS_NAMESPACE}
    ```
 

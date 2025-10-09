@@ -5,11 +5,11 @@ This section covers Simultaneous Localization and Mapping (SLAM) operations for 
 ## Prerequisites
 
 - **Discovery Server Running**: Ensure a ROS discovery server is running (see [Discovery Server Setup](../operations/discovery_server.md))
-- LiDAR sensor functioning correctly
 - Odometry system working (wheel encoders and/or IMU)
 - Sufficient battery charge for mapping session
 - Robot control setup (see [Keyboard Teleoperation Setup](../operations/keyboard_teleoperation.md))
 - LIDAR node is started (see [Lidar Operations](../lidar_operations.md))
+- Make sure the cartographer launch file is installed (see [Install Cartographer Launcher](install_carto_launch.md))
 
 ## Topics
 
