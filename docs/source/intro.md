@@ -44,7 +44,7 @@ Our robotics platform consists of several key components:
 This documentation is organized to help you get up and running quickly:
 
 - **Navigation**: Use the sidebar to browse different sections, or start with the [Quick Start](index) section for an overview of available guides.
-- **Getting Started**: New users should begin with the [Introduction](intro) (this page), then follow the [Hardware Setup](hardware) and [Software Setup](software) guides.
+- **Getting Started**: New users should begin with the [Introduction](intro) (this page), then follow the [Software Setup](software) guides and [Hardware Setup](hardware) guides if apporopirate.
 - **Daily Operations**: Once your robot is set up, check out our [Robot Operations](operations/index) section for day-to-day usage instructions.
 
 ## Contact and Support
