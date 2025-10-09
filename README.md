@@ -27,7 +27,7 @@ This project implements a complete robotics platform built on the Pololu Romi Ch
 - **Teensy 4.0 Microcontroller** - High-performance ARM Cortex-M7 processor
 - **TB9051FTG Motor Drivers** - Dual brushed DC motor control
 - **MPU-9250 9DOF IMU** - Nine-axis motion sensing for navigation
-- **Raspberry Pi** - Main computer for ROS2 and autonomous functionality
+- **Raspberry Pi with AI HAT** - Main computer for ROS2 and onboard autonomous vision inferance at 26 TOPS
 - **Power Management** - 5V regulator and battery voltage monitoring
 
 <br>
