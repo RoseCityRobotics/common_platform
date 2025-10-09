@@ -6,13 +6,6 @@ Welcome to the comprehensive documentation for the RCR Common Robotics Platform!
 
 ## Quick Start
 
-### Prerequisites
-
-* All the required parts from the BOM on hand. [BOM](https://github.com/RoseCityRobotics/common_platform/blob/main/BOM.csv)
-* Windows/Mac/Linux PC
-* Computer Monitor
-* Soldering supplies
-
 ### Initial Setup
 
 - **[Host Configuration](setup/pi_connection.md)** - Connect to your robot's Raspberry Pi
@@ -24,6 +17,7 @@ Welcome to the comprehensive documentation for the RCR Common Robotics Platform!
 :maxdepth: 2
 :caption: Getting Started
 
+index
 intro
 setup/index
 operations/advanced/firmware_updates
