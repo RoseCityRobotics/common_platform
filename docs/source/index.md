@@ -8,7 +8,7 @@ Welcome to the comprehensive documentation for the RCR Common Robotics Platform!
 
 ### Prerequisites
 
-* All the required parts from the BOM on hand. [BOM](https://github.com/RoseCityRobotics/BOM.csv)
+* All the required parts from the BOM on hand. [BOM](https://github.com/RoseCityRobotics/common_platform/blob/main/BOM.csv)
 * Windows/Mac/Linux PC
 * Computer Monitor
 * Soldering supplies
@@ -45,6 +45,7 @@ operations/maintenance
 :caption: Testing and Validation
 
 testing
+contributing
 ```
 
 ## Getting Help

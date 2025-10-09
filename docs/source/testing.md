@@ -14,24 +14,24 @@ The first test to perform after hardware assembly is the basic smoke test using 
 
 ### Running the Basic Test
 
-1. **Flash the Basic Test Firmware:**
-   ```bash
-   # Navigate to the firmware directory
-   cd ~/repos/common_platform/firmware/basic_test/
+**Flash the Basic Test Firmware:**
+```bash
+# Navigate to the firmware directory
+cd ~/repos/common_platform/firmware/basic_test/
 
-   # Compile and upload the basic test
-   arduino-cli compile --fqbn teensy:avr:teensy40 basic_test.ino
-   arduino-cli upload -p /dev/ttyACM0 --fqbn teensy:avr:teensy40 basic_test.ino
-   ```
+# Compile and upload the basic test
+arduino-cli compile --fqbn teensy:avr:teensy40 basic_test.ino
+arduino-cli upload -p /dev/ttyACM0 --fqbn teensy:avr:teensy40 basic_test.ino
+```
 
-2. **Expected Behavior:**
-   Upon successful flashing, the robot should exhibit a simple behavior pattern:
-   - Moving forward for a few seconds
-   - Pausing briefly
-   - Moving backward for a few seconds
-   - Repeating this cycle
+**Expected Behavior:**
+Upon successful flashing, the robot should exhibit a simple behavior pattern:
+- Moving forward for a few seconds
+- Pausing briefly
+- Moving backward for a few seconds
+- Repeating this cycle
 
-3. **Verification:**
+**Verification:**
    - ✅ Robot moves forward and backward as expected
    - ✅ Motors are functioning properly
    - ✅ Basic control system is operational
