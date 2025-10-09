@@ -26,7 +26,7 @@ Welcome to the comprehensive documentation for the RCR Common Robotics Platform!
 
 intro
 setup/index
-setup/teensy_programming
+operations/advanced/firmware_updates
 operations/keyboard_teleoperation
 lidar_operations
 slam/index
