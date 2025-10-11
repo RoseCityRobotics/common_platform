@@ -3,7 +3,11 @@
 The ROS discovery server facilitates communication between different ROS2 nodes. It acts as a central point for nodes to discover each other on the network.
 
 > ⚠️ **Important**
-> If you are using your robot at our Rose City Robotics Lab, you do not need to do this step — a discovery server is already running on the lab network. However, if you did change your configuration to run the discovery server on your own Raspberry Pi at home - you will need to reset to Joe's IP address.
+> If you are using your robot at our Rose City Robotics Lab, a discovery server is already running on the lab network.
+
+
+## Run your own discovery server
+If you want to be able to run your robot on your own, without the RCR discovery server, you will need to follow these steps:
 
 ## Note the IP Address
 
@@ -21,7 +25,7 @@ fastdds discovery --server-id 0
 
 This command initiates the Fast DDS discovery server with a server ID of 0.
 
-## Update Configuration File
+## Update Configuration File -
 
 Open a new terminal window 📟
 
