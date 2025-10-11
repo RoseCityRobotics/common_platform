@@ -86,8 +86,6 @@ source install/setup.bash
 ros2 launch data_recorder ramdisk_recorder.launch.py
 ```
 
-The recorder needs to be stopped manually using `Ctrl+C`. It should automatically copy the recorded frames from the RAM disk to the following location on your micro SD card: ~/teleop_data/ . Check for a folder called session_<DATE>_<TIME> .
-
 You should see it with:
 ```bash
 cd ~/teleop_data/
@@ -97,6 +95,8 @@ ls
 ---
 
 Now go check your ~/teleop_data/images folder and you should see some images in there. Recording images will fill up your RAM on your Pi relatively quickly - keep it to about 1-2 minutes total of image capture before annotating your data.
+
+The **recorder needs to be stopped manually using `Ctrl+C`**. It should automatically copy the recorded frames from the RAM disk to the following location on your micro SD card: ~/teleop_data/ . Check for a folder called session_<DATE>_<TIME> .
 
 **Next step:** Annotating your data with [Label Studio](../data_annotation/label_studio.md)
 
