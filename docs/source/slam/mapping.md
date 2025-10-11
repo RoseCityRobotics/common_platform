@@ -20,8 +20,11 @@ SLAM allows the robot to build a map while simultaneously tracking its position 
    ```
 
    ```bash
+   cp ~/repos/common_platform/launch/cartographer_simple.launch.py ~/ros2_ws/src/cartographer_ros/cartographer_ros/launch/
+   ```
+
+   ```bash
    cd ~/ros2_ws/
-   cp ~/repos/common_platform/launch/cartographer_simple.launch.py .
    ros2 launch cartographer_ros cartographer_simple.launch.py
    ```
 
