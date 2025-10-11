@@ -49,9 +49,9 @@ operations/maintenance
 :maxdepth: 1
 :caption: Advanced Operations
 
-operations/advanced/custom_controllers
 operations/advanced/index
 operations/advanced/performance_tuning
+operations/advanced/custom_controllers
 ```
 
 ```{toctree}
