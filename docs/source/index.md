@@ -19,6 +19,7 @@ Welcome to the comprehensive documentation for the RCR Common Robotics Platform!
 
 quick_start
 intro
+setup/pi_connection
 setup/host_and_software
 operations/advanced/firmware_updates
 operations/keyboard_teleoperation

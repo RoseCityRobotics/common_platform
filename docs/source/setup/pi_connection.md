@@ -2,9 +2,7 @@
 
 This guide covers how to connect to your robot's Raspberry Pi for development and operation.
 
-## Connection Methods
-
-### Direct Connection (Recommended for Initial Setup)
+## Direct Connection (Initial Setup)
 
 **Hardware Required:**
 - Micro HDMI cable
@@ -22,7 +20,7 @@ This guide covers how to connect to your robot's Raspberry Pi for development an
 - **Username:** `rcr`
 - **Password:** `siliconforest`
 
-### SSH Connection (Recommended for Development)
+## SSH Connection (Development)
 
 **Prerequisites:**
 - Robot and development computer on the same network
@@ -45,38 +43,3 @@ This guide covers how to connect to your robot's Raspberry Pi for development an
   ```bash
   ssh rcr@<robot_ip_address>
   ```
-
-## Network Configuration
-
-### Lab Environment
-If using the robot at the Rose City Robotics lab:
-- The robot will automatically connect to the lab WiFi
-- Discovery server is already configured
-- No additional network setup required
-
-### Home/Office Environment
-For use outside the lab:
-- **Configure WiFi connection** (see [Network Configuration](host_and_software.md#network-configuration))
-- **Set up discovery server** (see [Discovery Server Setup](../operations/discovery_server.md))
-
-## Verification
-
-### Test SSH Connection
-```bash
-# From your development computer
-ssh rcr@192.168.1.n "echo 'Connection successful'"
-```
-
-### Test ROS2 Communication
-```bash
-# On the robot
-ros2 topic list
-
-# From your development computer (if on same network)
-ros2 topic list
-```
-
-After establishing connection:
-- [Software Setup](host_and_software.md) - Install and configure ROS2
-- [Teensy Programming](teensy_programming.md) - Flash robot firmware
-- [Testing & Validation](../testing.md) - Verify system functionality
