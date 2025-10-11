@@ -1,0 +1,35 @@
+{% extends "!layout.html" %}
+
+{% block extrahead %}
+{{ super() }}
+<style>
+    .wy-nav-content-wrap {
+        margin-bottom: 60px;
+    }
+    .custom-footer {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: #f8f8f8;
+        border-top: 1px solid #e1e4e8;
+        padding: 10px 20px;
+        text-align: center;
+        z-index: 1000;
+    }
+    .custom-footer a {
+        color: #2980B9;
+        text-decoration: none;
+    }
+    .custom-footer a:hover {
+        text-decoration: underline;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+{{ super() }}
+<div class="custom-footer">
+    Open source project. <a href="https://github.com/RoseCityRobotics/common_platform/blob/main/LICENSE">View License</a>
+</div>
+{% endblock %}

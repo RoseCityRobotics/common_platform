@@ -6,7 +6,7 @@
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = 'RCR- Common Robotics Platform'
+project = 'RCR - Common Robotics Platform'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
@@ -27,3 +27,9 @@ html_static_path = ['_static', '../../github']
 # Copy button configuration
 copybutton_prompt_text = r">>> |\.\.\. |\$ |In \[\d*\]: | {2,5}\.\.\.: | {5,8}: "
 copybutton_prompt_is_regexp = True
+
+# Remove copyright notice from footer
+html_show_copyright = False
+
+html_show_sphinx = True
+html_show_sourcelink = False
