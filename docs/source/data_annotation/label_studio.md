@@ -34,7 +34,7 @@ label-studio start
 nano ~/.profile
 ```
 
-An environment variable has been pre-set in your ~/.profile:
+FYI - An environment variable is already set in your ~/.profile:
 
 `LABEL_STUDIO_LOCAL_FILES_SERVING_ENABLED=true`
 
