@@ -17,6 +17,7 @@ Welcome to the comprehensive documentation for the RCR Common Robotics Platform!
 :maxdepth: 2
 :caption: Getting Started
 
+quick_start
 intro
 setup/host_and_software
 operations/advanced/firmware_updates
@@ -34,6 +35,7 @@ hardware
 :maxdepth: 1
 :caption: Robot Operations
 
+operations/discovery_server
 operations/startup_procedure
 operations/shutdown_procedure
 operations/reboot_procedure

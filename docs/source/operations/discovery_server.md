@@ -1,26 +1,17 @@
-# ROS Discovery Server Setup
+# ROS Discovery Server
 
 The ROS discovery server facilitates communication between different ROS2 nodes. It acts as a central point for nodes to discover each other on the network.
 
 > ⚠️ **Important**
-> If you are using your robot at our Rose City Robotics Lab, you do **not** need to do this step — a discovery server is already running on the lab network!
+> If you are using your robot at our Rose City Robotics Lab, you do not need to do this step — a discovery server is already running on the lab network. However, if you did change your configuration to run the discovery server on your own Raspberry Pi at home - you will need to reset to Joe's IP address.
 
-## Prerequisites
-
-Before starting the discovery server, ensure you have:
-- ROS2 installed and sourced
-- Fast DDS discovery server available
-- Network connectivity between your robot and the discovery server
-
-## Discovery Server Setup
-
-### 1. Note the IP Address
+## Note the IP Address
 
 Choose the appropriate IP address for your setup:
 - `192.168.1.125` for Joe's laptop on RoseCityRobotics WiFi
 - `127.0.0.1` for local host (your own machine)
 
-### 2. Start the Discovery Server
+## Start the Discovery Server
 
 Open a new terminal window 📟
 
@@ -30,7 +21,7 @@ fastdds discovery --server-id 0
 
 This command initiates the Fast DDS discovery server with a server ID of 0.
 
-### 3. Update Configuration File
+## Update Configuration File
 
 Open a new terminal window 📟
 
@@ -40,7 +31,7 @@ nano ~/ros2_ws/super_client_configuration_file_rcr.xml
 
 Edit line 11 of the **`super_client_configuration_file_rcr.xml`** file to set the discovery server's address to `127.0.0.1` if running locally.
 
-### 4. Start the Micro ROS Agent
+## Start the Micro ROS Agent
 
 ```bash
 cd ~
@@ -48,7 +39,7 @@ SERIAL_TEENSY_DEVICE=`find /dev/serial/by-id/ -name "usb-Teensyduino*if00"|head 
 sudo docker run -it --rm -v /dev:/dev --privileged --net=host --env-file ./env.list --name agent microros/micro-ros-agent:kilted serial --dev ${SERIAL_TEENSY_DEVICE} -v4
 ```
 
-### 5. Update DDS Configuration in Container
+## Update DDS Configuration in Container
 
 Open a new terminal window 📟
 
