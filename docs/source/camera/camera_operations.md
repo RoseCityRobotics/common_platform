@@ -80,6 +80,7 @@ In order to collect images to annotate in Label Studio, use our custom data_reco
 
 Open a new terminal window 📟. Launch the image recorder program with:
 
+If you have never recorded images before, you will need to first  build the data-recorder package. After running this once you should not need to do it again in the future.
 ```bash
 cd ~/repos/common_platform/common_platform_ws/
 colcon build --packages-select data_recorder
