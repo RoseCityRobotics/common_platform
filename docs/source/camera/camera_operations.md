@@ -96,6 +96,10 @@ ls
 
 ---
 
+Now go check your ~/teleop_data/images folder and you should see some images in there. Recording images will fill up your RAM on your Pi relatively quickly - keep it to about 1-2 minutes total of image capture before annotating your data.
+
+**Next step:** Annotating your data with [Label Studio](../data_annotation/label_studio.md)
+
 ## Recording Video Files
 
 Open a new terminal window 📟
@@ -105,6 +109,8 @@ ros2 run image_view video_recorder --ros-args -p filename:=/tmp/robot_video.avi
 ```
 
 The video file will be saved to /tmp/robot_video.avi on your Raspberry Pi.
+
+---
 
 ### Visual Navigation
 
