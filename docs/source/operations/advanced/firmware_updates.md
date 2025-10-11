@@ -8,9 +8,10 @@ Firmware runs on the Teensy 4.0 microcontroller. It sets up ROS2 nodes that run 
 
 ## Flashing Procedure
 
-### 1. Navigate to the firmware directory and create build folder
+### 1. Navigate to the firmware directory and replace the build folder
    ```bash
    cd ~/repos/common_platform/firmware/closed_loop/
+   rm -rf build
    mkdir build
    cd build
    ```
