@@ -47,6 +47,15 @@ operations/maintenance
 
 ```{toctree}
 :maxdepth: 1
+:caption: Advanced Operations
+
+operations/advanced/custom_controllers
+operations/advanced/index
+operations/advanced/performance_tuning
+```
+
+```{toctree}
+:maxdepth: 1
 :caption: Testing and Validation
 
 testing
