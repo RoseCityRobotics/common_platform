@@ -34,10 +34,12 @@ label-studio start
 nano ~/.profile
 ```
 
-Add the following lines to the end of ~/.profile:
+Add the following environment variable to the end of ~/.profile:
 ```bash
 export LABEL_STUDIO_LOCAL_FILES_SERVING_ENABLED=true
 ```
+
+Then make sure you close and re-open your terminal so the environment variable is picked up.
 
 **6. 🖥️ Configure Label Studio Storage:**
 
