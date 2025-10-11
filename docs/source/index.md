@@ -21,6 +21,7 @@ quick_start
 intro
 setup/pi_connection
 setup/host_and_software
+setup/github
 operations/advanced/firmware_updates
 operations/keyboard_teleoperation
 lidar_operations
