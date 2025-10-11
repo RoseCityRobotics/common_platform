@@ -28,7 +28,7 @@ This guide covers how to connect to your robot's Raspberry Pi for development an
 
 **Connection Steps:**
 
-<img src="/_static/img/raspberry-pi.png" alt="Raspberry Pi" width="20"> on the Raspberry Pi
+<img src="/_static/img/raspberry-pi.png" alt="Raspberry Pi" width="16"> on the Raspberry Pi
 
 **Find your robot's IP address:**
   ```bash
