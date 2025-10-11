@@ -75,12 +75,11 @@ Once you have checked the data stream, you can close this window as this is just
 ### Computer Vision
 In order to collect images to annotate in Label Studio, use our custom data_recorder node. This is the first step in fine tuning an existing neural network. Check the [Data Annotation](../data_annotation/label_studio.md) document for information on labeling.
 
-
 ## Recording Image Files
+Open a new terminal window 📟.
 
-Open a new terminal window 📟. Launch the image recorder program with:
+If you have never recorded images before, you will need to first build the data-recorder package. After running this once you should not need to do it again in the future.
 
-If you have never recorded images before, you will need to first  build the data-recorder package. After running this once you should not need to do it again in the future.
 ```bash
 cd ~/repos/common_platform/common_platform_ws/
 colcon build --packages-select data_recorder
