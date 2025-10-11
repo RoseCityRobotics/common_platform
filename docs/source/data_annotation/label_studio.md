@@ -34,11 +34,9 @@ label-studio start
 nano ~/.profile
 ```
 
-Add the following lines to the end of ~/.profile:
-```bash
-export LABEL_STUDIO_LOCAL_FILES_DOCUMENT_ROOT=/home/rcr/teleop_data/images
-export LABEL_STUDIO_LOCAL_FILES_SERVING_ENABLED=true
-```
+An environment variable has been pre-set in your ~/.profile:
+
+`LABEL_STUDIO_LOCAL_FILES_SERVING_ENABLED=true`
 
 **6. 🖥️ Configure Label Studio Storage:**
 

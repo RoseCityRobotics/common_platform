@@ -22,7 +22,7 @@ fastdds discovery --server-id 0
 
 This command initiates the Fast DDS discovery server with a server ID of 0.
 
-### Update Configuration File -
+### Update Configuration File
 
 Open a new terminal window 📟
 
