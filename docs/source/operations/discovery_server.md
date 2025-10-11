@@ -62,9 +62,7 @@ ps aux | grep fastdds
 ping <discovery_server_ip>
 ```
 
-## Troubleshooting
-
-### Common Issues
+## Common Issues
 
 **Discovery server not starting:**
 - Check if port 11811 is available
