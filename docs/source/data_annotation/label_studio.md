@@ -45,6 +45,10 @@ Then make sure you close and re-open your terminal so the environment variable i
 
 In your browser visit: `http://192.168.1.n:8800`
 
+*Add a New Project*
+- Set a name
+- Choose a template - bounding boxes
+
 *Add Source storage (the images to label):*
 - Storage type: **Local Files**
 - Storage Title: **Teleop Images**
