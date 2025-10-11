@@ -45,8 +45,8 @@ In your browser visit: `http://192.168.1.n:8800`
 *Add Source storage (the images to label):*
 - Storage type: **Local Files**
 - Storage Title: **Teleop Images**
-- Absolute local path: `/home/rcr/teleop_data`
-- Path: **images** ← (must be a child folder of the absolute path)
+- Absolute local path: `/home/rcr/teleop_data/images/`
+<!-- - Path: **images** ← (must be a child folder of the absolute path) -->
 - Import method: **Files** ← important for images (not "Tasks")
 - Click **Add Storage** → **Sync**
 
