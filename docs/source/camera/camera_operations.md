@@ -82,6 +82,7 @@ Open a new terminal window 📟. Launch the image recorder program with:
 
 ```bash
 cd ~/repos/common_platform/common_platform_ws/
+colcon build --packages-select data_recorder
 source install/setup.bash
 ros2 launch data_recorder ramdisk_recorder.launch.py
 ```

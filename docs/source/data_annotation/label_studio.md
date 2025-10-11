@@ -46,8 +46,10 @@ Then make sure you close and re-open your terminal so the environment variable i
 In your browser visit: `http://192.168.1.n:8800`
 
 *Add a New Project*
+See docs here https://labelstud.io/guide/setup_project#Create-a-project
+
 - Set a name
-- Choose a template - bounding boxes
+- Choose a template - "Object Detection with Bounding Boxes"
 
 *Add Source storage (the images to label):*
 - Storage type: **Local Files**
