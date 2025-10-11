@@ -20,10 +20,11 @@ The Raspberry Pi will host the micro-ROS agent and other ROS2 nodes. Ensure it's
 
 You will need a separate terminal window 📟 for each process below:
 
-## Get your Teensy serial number
+## Setup a terminal with miniterm to monitor Teensy debug output
 
 Open a new terminal window 📟
 
+**Get your Teensy serial number**
 ```bash
 SERIAL_NUM=$(
 basename "$(find /dev/serial/by-id/ -name 'usb-Teensyduino*if0[02]' | head -1)" \
@@ -32,8 +33,7 @@ basename "$(find /dev/serial/by-id/ -name 'usb-Teensyduino*if0[02]' | head -1)" 
 echo "Teensy serial: $SERIAL_NUM"
 ```
 
-## Setup a terminal with miniterm to monitor Teensy debug output
-
+**Start Miniterm**
 ```bash
 python3 -m serial.tools.miniterm "/dev/serial/by-id/usb-Teensyduino_Dual_Serial_${SERIAL_NUM}-if02" 115200
 
@@ -47,14 +47,7 @@ Open a new terminal window 📟
 
 The micro-ROS agent acts as a bridge between the micro-ROS client running on the Teensy and the ROS2 network.
 
-```bash
-SERIAL_NUM=$(
-basename "$(find /dev/serial/by-id/ -name 'usb-Teensyduino*if0[02]' | head -1)" \
-| sed -E 's/.*_([0-9A-Za-z]+)-if0[02]/\1/'
-)
-echo "Teensy serial: $SERIAL_NUM"
-```
-
+**Get your Teensy serial number** (you have to do this again since its a new window)
 ```bash
 SERIAL_NUM=$(
 basename "$(find /dev/serial/by-id/ -name 'usb-Teensyduino*if0[02]' | head -1)" \
