@@ -94,6 +94,8 @@ cd ~/teleop_data/
 ls
 ```
 
+---
+
 ## Recording Video Files
 
 Open a new terminal window 📟
