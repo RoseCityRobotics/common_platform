@@ -34,8 +34,6 @@ echo "Teensy serial: $SERIAL_NUM"
 
 ## Setup a terminal with miniterm to monitor Teensy debug output
 
-Open a new terminal window 📟
-
 ```bash
 python3 -m serial.tools.miniterm "/dev/serial/by-id/usb-Teensyduino_Dual_Serial_${SERIAL_NUM}-if02" 115200
 
@@ -48,6 +46,14 @@ This command starts a `miniterm` session to display debug messages from the Teen
 Open a new terminal window 📟
 
 The micro-ROS agent acts as a bridge between the micro-ROS client running on the Teensy and the ROS2 network.
+
+```bash
+SERIAL_NUM=$(
+basename "$(find /dev/serial/by-id/ -name 'usb-Teensyduino*if0[02]' | head -1)" \
+| sed -E 's/.*_([0-9A-Za-z]+)-if0[02]/\1/'
+)
+echo "Teensy serial: $SERIAL_NUM"
+```
 
 ```bash
 SERIAL_NUM=$(
