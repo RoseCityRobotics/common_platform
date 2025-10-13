@@ -36,7 +36,8 @@ Alternatively, there are many cloud annotation software suites available which a
 🔗 **[Full Label Studio Guide](https://labelstud.io/guide/labeling)**
 
 ### Consolidate image files
-Make sure you have followed [instructions above](#image-directory-structure) for moving your image recording files into a central location.
+Make sure you have followed [instructions above](#image-directory-structure) for moving your image recording files into a central location. To verify `ls ~/teleop_data/images`
+should not return an error.
 
 ### Make annotation folder on the Pi
 On the Pi <img src="/_static/img/raspberry-pi.png" alt="Raspberry Pi" width="16">
