@@ -1,12 +1,14 @@
-# Label Studio for Data Annotation
+# Image Classification Data Annotation
 
-Label Studio is the tool students use to annotate robot datasets (e.g., teleop image sequences) for ML training. You’ll access it in a browser, connect it to images on the Pi, and create bounding-box/classification labels (e.g., purple whiffle, green whiffle).
-
-🔗 **[Full Labeling Guide](https://labelstud.io/guide/labeling)**
+In this section we will be annotating robot image datasets (e.g., teleop image sequences) for ML training. We will be fine tuning a YOLO (You Only Look Once) vision model with our purple and green ball image datasets.
 
 ---
 
-## Setup and Usage
+## Label Studio
+
+There are many annotation tools available, we have pre-loaded one of them on your Pi called Label Studio. You will launch a webserver on the Pi and then access it in a browser on your development machine to access the Label Studio UI. There you can create bounding-box/classification labels (e.g., purple whiffle, green whiffle).
+
+🔗 **[Full Label Studio Guide](https://labelstud.io/guide/labeling)**
 
 ### 1) <img src="/_static/img/raspberry-pi.png" alt="Raspberry Pi" width="16"> Make folders on the Pi
 ```bash
@@ -86,10 +88,11 @@ Project → Settings → **Cloud Storage** → **Add Target Storage** → **Loca
   zip -r annotations.zip annotations/
   ```
 
-If you are in the RCR lab - let us know and we will grab the annotated zip file from your ip address.
----
+### 9) Submit your files to the group dataset
+- If you are in the RCR lab - let us know and we will grab the annotated zip file from your ip address.
 
-## Quick troubleshooting
+
+### Quick troubleshooting
 
 - **Broken thumbnails:** open DevTools → Network on a task; image URLs should look like
   `/data/local-files/?d=images/<file>`
@@ -103,7 +106,7 @@ If you are in the RCR lab - let us know and we will grab the annotated zip file 
 
 ---
 
-## Additional Troubleshooting
+### Additional Troubleshooting
 
 - **Broken images not re-syncing**
   If you fixed your configuration but tasks/images still won’t refresh, try deleting all tasks and re-syncing the storage:
@@ -131,9 +134,9 @@ If you are in the RCR lab - let us know and we will grab the annotated zip file 
 
 ---
 
-## Cloud-Based Alternative: Roboflow (if Label Studio is uncooperative)
+## Roboflow
 
-If Label Studio continues to block you, you can annotate in the cloud with **Roboflow**. First, copy your images off the Pi to your computer, then upload to Roboflow.
+If Label Studio on the Pi is uncooperative and continues to block you, you can annotate in the cloud with **Roboflow**. First, copy your images off the Pi to your computer, then upload to Roboflow.
 
 Roboflow is a cloud based platform with a free tier which include 1,000 *public* annotations. Robflow also has other powerful integrated ML tools to help automated your data labeling process with predictive labeling which go beyond the capabilities of Label Studio.
 
