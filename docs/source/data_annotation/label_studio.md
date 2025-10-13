@@ -12,9 +12,9 @@ When you record images, the recorder will automatically create a timestamped fol
 
 ## Image Directory Structure
 
-To help manage your image annotation projects, a good practice is to create a separate directory and move files into it which you want to label.
+To help manage your image annotation projects, a good practice is to create a separate directory and move the image files you want to label into it.
 
-### Make an source images folder on the Pi
+### Make an central images folder on the Pi
 On the Pi <img src="/_static/img/raspberry-pi.png" alt="Raspberry Pi" width="16">
 ```bash
 mkdir -p "/home/rcr/teleop_data/images"
@@ -29,7 +29,7 @@ mv /home/rcr/teleop_data/session_*/*.jpg /home/rcr/teleop_data/images/
 
 ## Label Studio
 
-We have preloaded a software tool called [Label Studio](https://labelstud.io/) onto the Raspberry Pi for data annotation. You can use it by launching a webserver on the Pi and then access it in a browser on your development machine to access the Label Studio UI. There you can create bounding-box/classification labels (e.g., purple whiffle, green whiffle), using the image files directly on your Pi with local storage.
+We have preloaded a software tool called [Label Studio](https://labelstud.io/) onto the Raspberry Pi for data annotation. You can use it by launching a webserver on the Pi and then use a web browser on your development machine to access the Label Studio UI. There you can create bounding-box/classification labels (e.g., purple whiffle, green whiffle), using the image files directly on your Pi with local storage.
 
 Alternatively, there are many cloud annotation software suites available which are continuing to improve and get more powerful. We have also included instructions for [Roboflow](#roboflow) if you do not like working with Label Studio.
 
