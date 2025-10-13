@@ -2,7 +2,7 @@
 
 Label Studio is the tool students use to annotate robot datasets (e.g., teleop image sequences) for ML training. You’ll access it in a browser, connect it to images on the Pi, and create bounding-box/classification labels (e.g., purple whiffle, green whiffle).
 
-🔗 **Full Labeling Guide** – <https://labelstud.io/guide/labeling>
+🔗 **[Full Labeling Guide](https://labelstud.io/guide/labeling)**
 
 ---
 
@@ -75,7 +75,7 @@ Project → Settings → **Cloud Storage** → **Add Target Storage** → **Loca
 ### 7) 🖥️ Label your images
 - Go to **Projects → Your Project**
 - Select a task, assign labels and draw boxes
-- See the Label Studio labeling guide for power tips: <https://labelstud.io/guide/>
+- See the [Label Studio labeling guide](https://labelstud.io/guide/) for power tips
 
 ### 8) 🖥️ Export / Share your annotations
 - If **Sync on submit** is on, results are already in `/home/rcr/teleop_data/annotations`
@@ -135,6 +135,8 @@ If you are in the RCR lab - let us know and we will grab the annotated zip file 
 
 If Label Studio continues to block you, you can annotate in the cloud with **Roboflow**. First, copy your images off the Pi to your computer, then upload to Roboflow.
 
+Roboflow is a cloud based platform with a free tier which include 1,000 *public* annotations. Robflow also has other powerful integrated ML tools to help automated your data labeling process with predictive labeling which go beyond the capabilities of Label Studio.
+
 ### Step A — Copy images from the Pi to your computer
 
 **macOS / Linux / Windows WSL (Terminal):**
@@ -151,8 +153,9 @@ scp -r rcr@192.168.1.n:/home/rcr/teleop_data/images "C:\Users\YourName\Downloads
 > Prefer a GUI? Use **WinSCP**: create a new SFTP connection to `rcr@192.168.1.n`, navigate to `/home/rcr/teleop_data/images`, and drag the folder to your PC.
 
 ### Step B — Upload & Annotate in Roboflow
-1. Go to **Roboflow Annotate**: <https://docs.roboflow.com/annotate>
-2. Create a **New Project** (e.g., *Object Detection* for bounding boxes).
-3. **Upload** your copied images folder.
-4. Use the browser-based annotator to draw boxes and assign labels (e.g., purple whiffle, green whiffle).
-5. When done, you can **Export** in your preferred training format (e.g., YOLO) from Roboflow’s dataset settings.
+- **[Roboflow Annotate Docs](https://docs.roboflow.com/annotate)**
+- Create an account at [Roboflow.com](https://app.roboflow.com/login)
+- Create a **New Project** (e.g., *Object Detection* for bounding boxes).
+- **Upload** your copied images folder.
+- Use the browser-based annotator to draw boxes and assign labels (e.g., purple ball, green ball).
+- When done, you can **Export** in your preferred training format (e.g., YOLO) from Roboflow’s dataset settings.
