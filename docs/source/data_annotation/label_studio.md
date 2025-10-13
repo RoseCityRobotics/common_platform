@@ -6,11 +6,13 @@ In this section we will be annotating robot image datasets (e.g., teleop image s
 
 ## Label Studio
 
-There are many annotation tools available, we have pre-loaded one of them on your Pi called Label Studio. You will launch a webserver on the Pi and then access it in a browser on your development machine to access the Label Studio UI. There you can create bounding-box/classification labels (e.g., purple whiffle, green whiffle).
+We have preloaded a software tool called Label Studio onto the Raspberry Pi for data annotation. You can use it by launching a webserver on the Pi and then access it in a browser on your development machine to access the Label Studio UI. There you can create bounding-box/classification labels (e.g., purple whiffle, green whiffle), using the image files directly on your Pi with local storage.
+
+Alternatively, there are many cloud annotation software suites available which are continuing to improve and get more powerful. We have also included instructions for [Roboflow](#roboflow) if you do not like working with Label Studio.
 
 🔗 **[Full Label Studio Guide](https://labelstud.io/guide/labeling)**
 
-### 1) <img src="/_static/img/raspberry-pi.png" alt="Raspberry Pi" width="16"> Make folders on the Pi
+### <img src="/_static/img/raspberry-pi.png" alt="Raspberry Pi" width="16"> Make folders on the Pi
 ```bash
 mkdir -p "/home/rcr/teleop_data/images"
 mkdir -p "/home/rcr/teleop_data/annotations"
@@ -20,13 +22,13 @@ chmod -R a+rX "/home/rcr/teleop_data"
 chmod -R u+w "/home/rcr/teleop_data/annotations"
 ```
 
-### 2) <img src="/_static/img/raspberry-pi.png" alt="Raspberry Pi" width="16"> Set required environment variables for your terminal session
+### <img src="/_static/img/raspberry-pi.png" alt="Raspberry Pi" width="16"> Set required environment variables for your terminal session
 ```bash
 export LABEL_STUDIO_LOCAL_FILES_SERVING_ENABLED=true
 export LABEL_STUDIO_LOCAL_FILES_DOCUMENT_ROOT="/home/rcr/teleop_data"
 ```
 
-### 3) <img src="/_static/img/raspberry-pi.png" alt="Raspberry Pi" width="16"> (Optional) Make env vars persistent so you can skp step 2 next time
+### <img src="/_static/img/raspberry-pi.png" alt="Raspberry Pi" width="16"> (Optional) Make env vars persistent so you can skp step 2 next time
 ```bash
 nano /home/rcr/.profile
 ```
@@ -37,14 +39,14 @@ export LABEL_STUDIO_LOCAL_FILES_DOCUMENT_ROOT="/home/rcr/teleop_data"
 ```
 Close/reopen terminal (or `source /home/rcr/.profile`) and restart Label Studio.
 
-### 4) <img src="/_static/img/raspberry-pi.png" alt="Raspberry Pi" width="16"> Start Label Studio
+### <img src="/_static/img/raspberry-pi.png" alt="Raspberry Pi" width="16"> Start Label Studio
 ```bash
 cd /home/rcr/LabelMaker
 source bin/activate
 label-studio start -p 8080 -b
 ```
 
-### 5) 🖥️ Open the UI
+### 🖥️ Open the UI
 - In a browser on your laptop: `http://192.168.1.n:8080`
   *(replace `n` with your robot’s number / the Pi’s IP last octet)*
 - Create a Label Studio account
@@ -53,7 +55,7 @@ label-studio start -p 8080 -b
 - In order to merge all the annotated datasets from the whole class, our conventions must align. Add `Purple Ball` as the first class and then `Green Ball` as the second class.
 - You can use the color picker to choose an appropriate color for each class. Then click **Save**.
 
-### 6) 🖥️ Configure Storage in the Project
+### 🖥️ Configure Storage in the Project
 
 **Add Source storage (images to label):**
 Project → Settings → **Cloud Storage** → **Add Source Storage** → **Local files**
@@ -74,12 +76,12 @@ Project → Settings → **Cloud Storage** → **Add Target Storage** → **Loca
 - **Path** leave blank
 - **Save**
 
-### 7) 🖥️ Label your images
+### 🖥️ Label your images
 - Go to **Projects → Your Project**
 - Select a task, assign labels and draw boxes
 - See the [Label Studio labeling guide](https://labelstud.io/guide/) for power tips
 
-### 8) 🖥️ Export / Share your annotations
+### 🖥️ Export / Share your annotations
 - If **Sync on submit** is on, results are already in `/home/rcr/teleop_data/annotations`
 - Otherwise: go to Target Storage and click **Sync**
 - Zip them for handoff:
@@ -88,7 +90,7 @@ Project → Settings → **Cloud Storage** → **Add Target Storage** → **Loca
   zip -r annotations.zip annotations/
   ```
 
-### 9) Submit your files to the group dataset
+### Submit your files to the group dataset
 - If you are in the RCR lab - let us know and we will grab the annotated zip file from your ip address.
 
 
@@ -140,7 +142,7 @@ If Label Studio on the Pi is uncooperative and continues to block you, you can a
 
 Roboflow is a cloud based platform with a free tier which include 1,000 *public* annotations. Robflow also has other powerful integrated ML tools to help automated your data labeling process with predictive labeling which go beyond the capabilities of Label Studio.
 
-### Step A — Copy images from the Pi to your computer
+### Copy images from the Pi to your computer
 
 **macOS / Linux / Windows WSL (Terminal):**
 ```bash
@@ -155,7 +157,7 @@ scp -r rcr@192.168.1.n:/home/rcr/teleop_data/images "C:\Users\YourName\Downloads
 ```
 > Prefer a GUI? Use **WinSCP**: create a new SFTP connection to `rcr@192.168.1.n`, navigate to `/home/rcr/teleop_data/images`, and drag the folder to your PC.
 
-### Step B — Upload & Annotate in Roboflow
+### Upload & Annotate in Roboflow
 - **[Roboflow Annotate Docs](https://docs.roboflow.com/annotate)**
 - Create an account at [Roboflow.com](https://app.roboflow.com/login)
 - Create a **New Project** (e.g., *Object Detection* for bounding boxes).
