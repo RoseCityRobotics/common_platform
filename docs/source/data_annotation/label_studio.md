@@ -36,8 +36,8 @@ Alternatively, there are many cloud annotation software suites available which a
 🔗 **[Full Label Studio Guide](https://labelstud.io/guide/labeling)**
 
 ### Consolidate image files
-Make sure you have followed [instructions above](#image-directory-structure) for moving your image recording files into a central location. To verify `ls ~/teleop_data/images`
-should not return an error.
+Make sure you have followed [instructions above](#image-directory-structure) for moving your image recording files into a central location. To verify, running `ls ~/teleop_data/images`
+on the Pi should not return an error.
 
 ### Make annotation folder on the Pi
 On the Pi <img src="/_static/img/raspberry-pi.png" alt="Raspberry Pi" width="16">
@@ -52,7 +52,14 @@ export LABEL_STUDIO_LOCAL_FILES_SERVING_ENABLED=true
 export LABEL_STUDIO_LOCAL_FILES_DOCUMENT_ROOT="/home/rcr/teleop_data"
 ```
 
-### (Optional) Make env vars persistent so you can skip step 2 next time
+Verify they are set with:
+```bash
+env | grep LABEL_STUDIO
+```
+
+### (Optional) Make env vars persist
+This is helpful so you don't have to manually set the environment variables every time. Once you have done this you can skip this step in the future.
+
 On the Pi <img src="/_static/img/raspberry-pi.png" alt="Raspberry Pi" width="16">
 ```bash
 nano /home/rcr/.profile
@@ -63,6 +70,11 @@ export LABEL_STUDIO_LOCAL_FILES_SERVING_ENABLED=true
 export LABEL_STUDIO_LOCAL_FILES_DOCUMENT_ROOT="/home/rcr/teleop_data"
 ```
 Close/reopen terminal (or `source /home/rcr/.profile`) and restart Label Studio.
+
+Verify they are set with:
+```bash
+env | grep LABEL_STUDIO
+```å
 
 ### Start Label Studio
 On the Pi <img src="/_static/img/raspberry-pi.png" alt="Raspberry Pi" width="16">
