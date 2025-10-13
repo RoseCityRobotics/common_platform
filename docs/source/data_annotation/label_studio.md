@@ -1,89 +1,158 @@
 # Label Studio for Data Annotation
 
-Label Studio is a data labeling tool that students will use to annotate their robot datasets. Label Studio allows you to visually annotate your robot's data—such as teleoperation image sequences—so that you can later use it for training machine learning models or conducting analysis. You'll access Label Studio through a browser (while SSH'd to the Pi), connect it to the image data stored on your Raspberry Pi, and annotate that data with bounding boxes and classifications (purple whiffle, green whiffle).
+Label Studio is the tool students use to annotate robot datasets (e.g., teleop image sequences) for ML training. You’ll access it in a browser, connect it to images on the Pi, and create bounding-box/classification labels (e.g., purple whiffle, green whiffle).
 
-🔗 Full Labeling Guide – [Label Studio Documentation](https://labelstud.io/guide/labeling)
+🔗 **Full Labeling Guide** – <https://labelstud.io/guide/labeling>
+
+---
 
 ## Setup and Usage
 
-**1. <img src="/_static/img/raspberry-pi.png" alt="Raspberry Pi" width="16"> Make folders:**
+### 1) <img src="/_static/img/raspberry-pi.png" alt="Raspberry Pi" width="16"> Make folders on the Pi
 ```bash
-mkdir -p "$HOME/teleop_data/images"
-mkdir -p "$HOME/teleop_data/annotations"
+mkdir -p "/home/rcr/teleop_data/images"
+mkdir -p "/home/rcr/teleop_data/annotations"
+
+# (recommended) sane permissions
+chmod -R a+rX "/home/rcr/teleop_data"
+chmod -R u+w "/home/rcr/teleop_data/annotations"
 ```
 
-**2. <img src="/_static/img/raspberry-pi.png" alt="Raspberry Pi" width="16">  Enable Local File Serving (for accessing images on the Pi):**
+### 2) <img src="/_static/img/raspberry-pi.png" alt="Raspberry Pi" width="16"> Set required environment variables for your terminal session
 ```bash
 export LABEL_STUDIO_LOCAL_FILES_SERVING_ENABLED=true
-export LABEL_STUDIO_LOCAL_FILES_DOCUMENT_ROOT=/home/rcr/teleop_data
+export LABEL_STUDIO_LOCAL_FILES_DOCUMENT_ROOT="/home/rcr/teleop_data"
 ```
 
-**3. <img src="/_static/img/raspberry-pi.png" alt="Raspberry Pi" width="16">  Start Label Studio:**
+### 3) <img src="/_static/img/raspberry-pi.png" alt="Raspberry Pi" width="16"> (Optional) Make env vars persistent so you can skp step 2 next time
 ```bash
-cd ~/LabelMaker
+nano /home/rcr/.profile
+```
+Add to the end:
+```bash
+export LABEL_STUDIO_LOCAL_FILES_SERVING_ENABLED=true
+export LABEL_STUDIO_LOCAL_FILES_DOCUMENT_ROOT="/home/rcr/teleop_data"
+```
+Close/reopen terminal (or `source /home/rcr/.profile`) and restart Label Studio.
+
+### 4) <img src="/_static/img/raspberry-pi.png" alt="Raspberry Pi" width="16"> Start Label Studio
+```bash
+cd /home/rcr/LabelMaker
 source bin/activate
-label-studio start
+label-studio start -p 8080 -b
 ```
 
-**4. 🖥️ Access Label Studio:**
-- Open a web browser and navigate to: `http://192.168.1.n:8080` (replace `n` with your robot number)
-- Create a Label Studio Account
-- Create a new Label Studio Project
+### 5) 🖥️ Open the UI
+- In a browser on your laptop: `http://192.168.1.n:8080`
+  *(replace `n` with your robot’s number / the Pi’s IP last octet)*
+- Create a Label Studio account
+- Create a **New Project** (template: **Object Detection with Bounding Boxes**)
+- In the template setup for your annotation template, delete the existing class names and add your own.
+- In order to merge all the annotated datasets from the whole class, our conventions must align. Add `Purple Ball` as the first class and then `Green Ball` as the second class.
+- You can use the color picker to choose an appropriate color for each class. Then click **Save**.
 
-**5. <img src="/_static/img/raspberry-pi.png" alt="Raspberry Pi" width="16">  (Optional) Make it persistent for future terminals:**
-```bash
-nano ~/.profile
-```
+### 6) 🖥️ Configure Storage in the Project
 
-Add the following environment variable to the end of ~/.profile:
-```bash
-LABEL_STUDIO_LOCAL_FILES_SERVING_ENABLED=true
-LABEL_STUDIO_LOCAL_FILES_DOCUMENT_ROOT=/home/rcr/teleop_data
-```
-
-Then make sure you close and re-open your terminal so the environment variable is picked up and then re-start Label Studio.
-
-**6. 🖥️ Configure Label Studio Storage:**
-
-In your browser visit: `http://192.168.1.n:8800`
-
-*Add a New Project*
-See docs here https://labelstud.io/guide/setup_project#Create-a-project
-
-- Set a name
-- Choose a template - "Object Detection with Bounding Boxes"
-
-*Add Source storage (the images to label):*
-- Storage type: **Local Files**
-- Storage Title: **Teleop Images**
-- Absolute local path: `/home/rcr/teleop_data/images/`
-<!-- - Path: **images** ← (must be a child folder of the absolute path) -->
+**Add Source storage (images to label):**
+Project → Settings → **Cloud Storage** → **Add Source Storage** → **Local files**
+- **Storage Title** Anything you want here (required)
+- **Absolute Local path:** `/home/rcr/teleop_data/images`
+- (Optional) **File mask/regex:** `.*\.(jpg|jpeg|png)$`
+- **Test Connection**
+- **Next**
 - Import method: **Files** ← important for images (not "Tasks")
-- Click **Add Storage** → **Sync**
+- Click **Next** → **Save** → **Sync**
 
-*If you see UnsupportedFileFormatError ... Only .json/.jsonl/.parquet... you picked Tasks. Edit storage and switch Import method to Files.*
+> If you see `UnsupportedFileFormatError ... Only .json/.jsonl/.parquet...` you picked Tasks. Edit storage and switch Import method to Files.
 
-*Add Target storage (where your annotations are saved):*
-- Storage type: **Local Files**
-- Storage Title: **Annotations**
-- Absolute local path: `/home/rcr/teleop_data/annotations/`
-- Path:
-- Click **Add Storage**
+**Add Target storage (where annotations are saved):**
+Project → Settings → **Cloud Storage** → **Add Target Storage** → **Local files**
+- **Storage Title** Anything you want here (required)
+- **Absolute Local path:** `/home/rcr/teleop_data/annotations`
+- **Path** leave blank
+- **Save**
 
-*(Later, press Sync on this target storage to export annotations there.)*
+### 7) 🖥️ Label your images
+- Go to **Projects → Your Project**
+- Select a task, assign labels and draw boxes
+- See the Label Studio labeling guide for power tips: <https://labelstud.io/guide/>
 
-**7. 🖥️ Label Your Image Data from the Maze:**
-- Open your synced image dataset collected from the maze run
-- Begin labeling key events, robot actions, or objects of interest by drawing bounding boxes and assigning appropriate labels
-- Use overlapping annotations, region duplication, and set up annotation relationships if needed
-- For a full overview of labeling features, see the [Label Studio Labeling Guide](https://labelstud.io/guide/)
-
-**8. 🖥️ Upload Your Annotated Dataset:**
-- Press **Sync** in the target storage tab in Label Studio to export the annotations to your local `annotations/` folder
-- Zip the annotations folder and leave it in the ~/teleop_data/:
+### 8) 🖥️ Export / Share your annotations
+- If **Sync on submit** is on, results are already in `/home/rcr/teleop_data/annotations`
+- Otherwise: go to Target Storage and click **Sync**
+- Zip them for handoff:
   ```bash
-  cd /home/rcr/teleop_data
+  cd "/home/rcr/teleop_data"
   zip -r annotations.zip annotations/
   ```
-- Leave your Pi on and connected to the RCR internet and tell Joe he can grab your annotated dataset from your IP address.
 
+If you are in the RCR lab - let us know and we will grab the annotated zip file from your ip address.
+---
+
+## Quick troubleshooting
+
+- **Broken thumbnails:** open DevTools → Network on a task; image URLs should look like
+  `/data/local-files/?d=images/<file>`
+  - **404** → check `LABEL_STUDIO_LOCAL_FILES_DOCUMENT_ROOT` and path mapping
+  - **403** → permissions (ensure read/execute on folders; write on `/home/rcr/teleop_data/annotations`)
+- **Cursor opens `localhost` automatically:** that’s just port-forwarding, its possible that port forwarding might cause an issue so you could directly visit this your Pi IP address (`http://192.168.1.n:8080`)
+- **Verify env vars before start:**
+  ```bash
+  env | grep LABEL_STUDIO
+  ```
+
+---
+
+## Additional Troubleshooting
+
+- **Broken images not re-syncing**
+  If you fixed your configuration but tasks/images still won’t refresh, try deleting all tasks and re-syncing the storage:
+  1. Go to **Projects → Your Project**.
+  2. In the Data Manager, **Select All** tasks.
+  3. In the **Actions** dropdown, choose **Delete Tasks**.
+  4. Return to **Settings → Cloud Storage → Source (Local files)** and click **Sync** again.
+
+- **Nuclear option (reset Label Studio state)**
+  Label Studio stores app state (including your login) in a local **SQLite** database under `/home/rcr/.local/share/label-studio/`. You can wipe and start fresh if something is corrupted. **This does not delete your image/annotation folders** under `/home/rcr/teleop_data/...`.
+  ```bash
+  # Stop Label Studio (ignore errors if not running)
+  pkill -f label-studio || true
+
+  # Remove LS state (DB + caches) and recreate the folder
+  rm -rf /home/rcr/.local/share/label-studio
+  mkdir -p /home/rcr/.local/share/label-studio
+
+  # Restart Label Studio with your env vars set (see setup above)
+  cd ~/LabelMaker && source bin/activate
+  export LABEL_STUDIO_LOCAL_FILES_SERVING_ENABLED=true
+  export LABEL_STUDIO_LOCAL_FILES_DOCUMENT_ROOT="/home/rcr/teleop_data"
+  label-studio start -p 8080 -b
+  ```
+
+---
+
+## Cloud-Based Alternative: Roboflow (if Label Studio is uncooperative)
+
+If Label Studio continues to block you, you can annotate in the cloud with **Roboflow**. First, copy your images off the Pi to your computer, then upload to Roboflow.
+
+### Step A — Copy images from the Pi to your computer
+
+**macOS / Linux / Windows WSL (Terminal):**
+```bash
+# Replace `n` with your robot/Pi's last IP octet and adjust the destination path if desired
+scp -r rcr@192.168.1.n:/home/rcr/teleop_data/images "/Users/$USER/Downloads/teleop_images"
+```
+
+**Windows (PowerShell with OpenSSH):**
+```powershell
+# Replace n with your Pi's last IP octet and YourName with your Windows username
+scp -r rcr@192.168.1.n:/home/rcr/teleop_data/images "C:\Users\YourName\Downloads\teleop_images"
+```
+> Prefer a GUI? Use **WinSCP**: create a new SFTP connection to `rcr@192.168.1.n`, navigate to `/home/rcr/teleop_data/images`, and drag the folder to your PC.
+
+### Step B — Upload & Annotate in Roboflow
+1. Go to **Roboflow Annotate**: <https://docs.roboflow.com/annotate>
+2. Create a **New Project** (e.g., *Object Detection* for bounding boxes).
+3. **Upload** your copied images folder.
+4. Use the browser-based annotator to draw boxes and assign labels (e.g., purple whiffle, green whiffle).
+5. When done, you can **Export** in your preferred training format (e.g., YOLO) from Roboflow’s dataset settings.
