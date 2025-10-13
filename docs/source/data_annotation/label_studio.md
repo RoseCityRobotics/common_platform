@@ -15,6 +15,7 @@ mkdir -p "$HOME/teleop_data/annotations"
 **2. <img src="/_static/img/raspberry-pi.png" alt="Raspberry Pi" width="16">  Enable Local File Serving (for accessing images on the Pi):**
 ```bash
 export LABEL_STUDIO_LOCAL_FILES_SERVING_ENABLED=true
+export LABEL_STUDIO_LOCAL_FILES_DOCUMENT_ROOT=/home/rcr/teleop_data
 ```
 
 **3. <img src="/_static/img/raspberry-pi.png" alt="Raspberry Pi" width="16">  Start Label Studio:**
@@ -36,10 +37,11 @@ nano ~/.profile
 
 Add the following environment variable to the end of ~/.profile:
 ```bash
-export LABEL_STUDIO_LOCAL_FILES_SERVING_ENABLED=true
+LABEL_STUDIO_LOCAL_FILES_SERVING_ENABLED=true
+LABEL_STUDIO_LOCAL_FILES_DOCUMENT_ROOT=/home/rcr/teleop_data
 ```
 
-Then make sure you close and re-open your terminal so the environment variable is picked up.
+Then make sure you close and re-open your terminal so the environment variable is picked up and then re-start Label Studio.
 
 **6. 🖥️ Configure Label Studio Storage:**
 
