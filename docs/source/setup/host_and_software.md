@@ -1,4 +1,4 @@
-# Host and Software Setup
+# Host and Network Setup
 
 This section covers the complete setup process for the common platform robot, including host configuration, software installation, and firmware programming.
 
