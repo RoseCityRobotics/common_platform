@@ -86,6 +86,9 @@ Motion motion;
 // Tuning manager for persistent motor parameters
 TuningManager* tuningManager = nullptr;
 
+// Encoder streaming state
+bool encoderStreaming = false;
+
 #if ROS
 // ROS context instance
 RosContext rosContext;
@@ -448,10 +451,22 @@ void parseCommand(const char *const cmd) {
       }
       break;
 
+case 'J':  // Toggle encoder streaming
+      encoderStreaming = !encoderStreaming;
+      SERIAL_OUT.print("Encoder streaming ");
+      SERIAL_OUT.println(encoderStreaming ? "enabled" : "disabled");
+      if (encoderStreaming) {
+        SERIAL_OUT.println("Streaming format: L:<left_counter>(AB) R:<right_counter>(AB)");
+        SERIAL_OUT.println("AB values show raw encoder pin states (0=low, 1=high)");
+      }
+      commandProcessed = true;
+      break;
+
     case 'H':  // Help - show all commands
       SERIAL_OUT.println("=== Available Commands ===");
       SERIAL_OUT.println("M - Toggle motor drive on/off");
       SERIAL_OUT.println("X - Reset all state");
+      SERIAL_OUT.println("J - Toggle encoder streaming");
 #if !ROS
       SERIAL_OUT.println("L<degrees> - Turn left");
       SERIAL_OUT.println("R<degrees> - Turn right");
@@ -867,6 +882,30 @@ void loop() {
       SERIAL_OUT.println("Error: Command too long");
       cmdbufpos = 0;  // Reset buffer
     }
+  }
+
+  // --- Encoder Streaming ---
+  static auto nextEncoderStream = nowMicros;
+  const unsigned long encoderStreamInterval = 10000;  // 10ms = 100Hz for encoder streaming
+  if (encoderStreaming && nowMicros >= nextEncoderStream) {
+    // Read raw encoder pin states for debugging
+    int leftA = digitalRead(PIN_LENCA);
+    int leftB = digitalRead(PIN_LENCB);
+    int rightA = digitalRead(PIN_RENCA);
+    int rightB = digitalRead(PIN_RENCB);
+    
+    SERIAL_OUT.print("L:");
+    SERIAL_OUT.print(leftMotor.getCounter());
+    SERIAL_OUT.print("(");
+    SERIAL_OUT.print(leftA);
+    SERIAL_OUT.print(leftB);
+    SERIAL_OUT.print(") R:");
+    SERIAL_OUT.print(rightMotor.getCounter());
+    SERIAL_OUT.print("(");
+    SERIAL_OUT.print(rightA);
+    SERIAL_OUT.print(rightB);
+    SERIAL_OUT.println(")");
+    nextEncoderStream = (nowMicros / encoderStreamInterval + 1) * encoderStreamInterval;
   }
 
   // --- Periodic Status Output ---
