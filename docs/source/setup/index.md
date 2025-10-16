@@ -15,6 +15,6 @@ teensy_programming
 ### Quick Reference
 
 - **[Pi Connection](pi_connection.md)** - Connect to your robot's Raspberry Pi via direct connection or SSH
-- **[Host Configuration](host_and_software.md#host-settings)** - Set up your robot's hostname, network, and SSH access
+- **[Host Configuration](host_and_software)** - Set up your robot's hostname, network, and SSH access
 - **[Firmware Programming](teensy_programming.md)** - Flash the Teensy with the latest firmware
-- **[Verification](host_and_software.md#ssh-connection)** - Test all systems before proceeding with operations
+- **[Verification](host_and_software)** - Test all systems before proceeding with operations
