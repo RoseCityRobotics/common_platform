@@ -37,7 +37,7 @@ git stash apply
 
 ## Host Settings
 <img src="/_static/img/raspberry-pi.png" alt="Raspberry Pi" width="20">
-The host has been preset for you as `rcr00_` with your specific ID. To update the hostname:
+The host has been preset for you as `rcr00n` with your specific ID in place of "n". To update the hostname:
 
 1. Tell cloud-init to preserve your hostname:
    ```bash
