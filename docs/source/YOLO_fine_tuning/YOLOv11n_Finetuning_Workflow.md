@@ -248,16 +248,14 @@ Use `best.pt` for inference or export.
 
 ---
 
-## 9. Export the Model for Deployment
-
-Export to ONNX (static 640×640):
+## 9. Export the Model for Hailo Deployment
 
 ```bash
-yolo export model=runs/y11n_finetune/weights/best.pt format=onnx imgsz=640 opset=13 simplify=True dynamic=False
-cp runs/y11n_finetune/weights/best.onnx yolov11n_finetune.onnx
+cd runs/y11n_finetune/weights
+yolo export model=best.pt format=onnx imgsz=640 simplify=True nms=False
+mv best.onnx yolov11n_finetune.onnx
+scp yolov11n_finetune.onnx <USER>@<HOSTNAME>:~
 ```
-
-This creates `yolov11n_finetune.onnx`, ready for conversion to `.hef` using the Hailo compiler.
 
 ---
 
