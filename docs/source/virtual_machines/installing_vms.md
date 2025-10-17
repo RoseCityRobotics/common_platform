@@ -138,7 +138,7 @@ ros2 daemon stop; ros2 daemon start
 ```
 source .profile so the changes take effect in your current session
 ```bash
-source .profile
+source ~/.profile
 ```
 
 #### Set up the Discovery Server
@@ -201,10 +201,10 @@ If you're having trouble connecting your VM to the discovery server, follow thes
 
 Your VM must be configured to use the same network and IP address as your host computer. This requires specific network settings:
 
-**For WSL (Windows):** Configure mirrored networking so your VM shares the same IP address as Windows
+**For WSL (Windows):** Configure **mirrored networking** so your VM shares the same IP address as Windows
 - 📖 [WSL Networking Documentation](https://learn.microsoft.com/en-us/windows/wsl/networking)
 
-**For Parallels (macOS):** Set up bridged networking mode
+**For Parallels (macOS):** Set up **bridged networking mode**
 - 📖 [Parallels Network Settings Documentation](https://docs.parallels.com/pdfm-ug-20/parallels-desktop-for-mac-20-users-guide/parallels-desktop-preferences-and-virtual-machine-settings/virtual-machine-settings/hardware-settings/network-settings)
 
 #### Connectivity Tests
