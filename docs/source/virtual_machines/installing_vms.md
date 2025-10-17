@@ -151,6 +151,48 @@ echo "source /opt/ros/kilted/setup.bash" >> ~/.profile
 source ~/.profile
 ```
 
+## Connecting to Your Robot
+
+### Set up the Discovery Server
+
+Now that you have ROS2 working on your VM, you will need to point it to the proper discovery server so it can communicate with your robot via ROS. To do this, first create the directory if it doesn't already exist:
+
+```bash
+mkdir ~/ros2_ws
+```
+
+Then follow the **[Discovery Server Configuration](../operations/discovery_server)** guide, starting with the "Update Configuration File" section. This will configure your VM to connect to your robot's ROS2 network.
+
+Once you have the discovery server config file set up. Stop and start the ros2 daemon.
+
+```bash
+ros2 daemon stop
+ros2 daemon start
+```
+
+```bash
+ros2 topic list
+```
+
+You should now see the full list of ROS topics publishing from the discovery server.
+
+### Troubleshooting VM connectivity to discovery server
+
+Make sure you have internet access on the VM (you need to set up bridged networking in Parallels - or mirrored in WSL so your VM uses the same IP address as your computer)
+```bash
+ping google.com
+```
+
+Ping your robot
+```bash
+ping 192.168.1.n
+```
+
+Ping the discovery server
+```bash
+ping 192.168.1.125 # for Joe's computer
+```
+
 ## Troubleshooting Graphics Issues
 
 If you encounter graphics or rendering issues when running RViz or other GUI applications in your VM, you may need to enable software rendering.
@@ -161,13 +203,6 @@ Set this environment variable to force software rendering:
 
 ```bash
 export LIBGL_ALWAYS_SOFTWARE=1
-```
-
-To make this permanent, add it to your `.profile`:
-
-```bash
-echo "export LIBGL_ALWAYS_SOFTWARE=1" >> ~/.profile
-source ~/.profile
 ```
 
 **When to use this:**
