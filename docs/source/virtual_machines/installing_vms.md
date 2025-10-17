@@ -225,7 +225,7 @@ ping 192.168.1.125 # for Joe's computer
 ```
 
 #### Other Common Issues:
-- check firewalls - see [Windows Firewall Configuration](#windows-firewall-configuration)
+- check firewalls - see [Firewall Configuration](#windows-firewall-configuration)
 - check your IP address on both your laptop and your VM - they should match. If not, see
 
 ## Troubleshooting Graphics Issues
