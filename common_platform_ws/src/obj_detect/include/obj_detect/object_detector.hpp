@@ -64,7 +64,6 @@ private:
   std::string model_path_;
   std::vector<std::string> class_names_;
   float confidence_threshold_;
-  float nms_threshold_;
   int input_width_;
   int input_height_;
 };

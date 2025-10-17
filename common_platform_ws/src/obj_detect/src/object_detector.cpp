@@ -10,15 +10,19 @@ ObjectDetector::ObjectDetector()
   // Initialize parameters
   this->declare_parameter("model_path", "/home/rcr/repos/common_platform/models/yolov11n_2cls.hef");
   this->declare_parameter("confidence_threshold", 0.5);
-  this->declare_parameter("nms_threshold", 0.4);
   this->declare_parameter("input_width", 640);
   this->declare_parameter("input_height", 640);
+  this->declare_parameter("hailort_log_path", "/tmp/hailort.log");
 
   model_path_ = this->get_parameter("model_path").as_string();
   confidence_threshold_ = this->get_parameter("confidence_threshold").as_double();
-  nms_threshold_ = this->get_parameter("nms_threshold").as_double();
   input_width_ = this->get_parameter("input_width").as_int();
   input_height_ = this->get_parameter("input_height").as_int();
+  
+  // Configure HailoRT logging
+  std::string log_path = this->get_parameter("hailort_log_path").as_string();
+  setenv("HAILORT_LOGGER_PATH", log_path.c_str(), 1);
+  RCLCPP_INFO(this->get_logger(), "HailoRT log path set to: %s", log_path.c_str());
 
   // Initialize class names for 2-class YOLO model
   class_names_ = {"Purple ball", "Green ball"};
@@ -54,11 +58,21 @@ ObjectDetector::ObjectDetector()
 
 ObjectDetector::~ObjectDetector()
 {
-  // Cleanup HailoRT resources
+  // Cleanup HailoRT resources in reverse order of initialization
 #ifdef HAVE_HAILORT
-  if (device_) {
-    device_.reset();
-  }
+  RCLCPP_INFO(this->get_logger(), "Shutting down HailoRT resources");
+  
+  // Clear vstreams first (they depend on network group)
+  output_vstreams_.clear();
+  input_vstreams_.clear();
+  
+  // Reset network group (depends on device)
+  configured_network_group_.reset();
+  
+  // Reset device last
+  device_.reset();
+  
+  RCLCPP_INFO(this->get_logger(), "HailoRT resources cleaned up");
 #endif
 }
 
@@ -164,19 +178,21 @@ void ObjectDetector::initialize_hailo()
 void ObjectDetector::image_callback(const sensor_msgs::msg::Image::SharedPtr msg)
 {
   try {
-    // Convert ROS image to OpenCV Mat manually
+    // Convert ROS image to OpenCV Mat in RGB format (HailoRT expects RGB)
     cv::Mat image;
-    if (msg->encoding == "bgr8") {
+    if (msg->encoding == "rgb8") {
+      // Already RGB, just wrap the data
       image = cv::Mat(msg->height, msg->width, CV_8UC3, (void*)msg->data.data());
-    } else if (msg->encoding == "rgb8") {
-      image = cv::Mat(msg->height, msg->width, CV_8UC3, (void*)msg->data.data());
-      cv::cvtColor(image, image, cv::COLOR_RGB2BGR);
+    } else if (msg->encoding == "bgr8") {
+      // Convert BGR to RGB
+      cv::Mat bgr_image = cv::Mat(msg->height, msg->width, CV_8UC3, (void*)msg->data.data());
+      cv::cvtColor(bgr_image, image, cv::COLOR_BGR2RGB);
     } else {
       RCLCPP_WARN(this->get_logger(), "Unsupported image encoding: %s", msg->encoding.c_str());
       return;
     }
 
-    // Run inference
+    // Run inference (image is already in RGB format)
     auto detections = run_inference(image);
 
     // Publish results
@@ -192,7 +208,7 @@ std::vector<Detection> ObjectDetector::run_inference(const cv::Mat& image)
   std::vector<Detection> detections;
 
   try {
-    // Preprocess image
+    // Preprocess image (resize to model input dimensions)
     cv::Mat resized_image;
     cv::resize(image, resized_image, cv::Size(input_width_, input_height_));
     
@@ -202,19 +218,15 @@ std::vector<Detection> ObjectDetector::run_inference(const cv::Mat& image)
       RCLCPP_DEBUG(this->get_logger(), "Running HailoRT inference on %dx%d image", 
                    image.cols, image.rows);
       
-      // 1. Prepare input data in RGB format
-      cv::Mat rgb_image;
-      cv::cvtColor(resized_image, rgb_image, cv::COLOR_BGR2RGB);
-      
-      // 2. Send data to input vstream
+      // 1. Send RGB data to input vstream (image is already in RGB format)
       auto& input_vstream = input_vstreams_[0];
-      auto status = input_vstream->write(hailort::MemoryView(rgb_image.data, rgb_image.total() * rgb_image.elemSize()));
+      auto status = input_vstream->write(hailort::MemoryView(resized_image.data, resized_image.total() * resized_image.elemSize()));
       if (status != HAILO_SUCCESS) {
         RCLCPP_ERROR(this->get_logger(), "Failed to write to input vstream");
         return detections;
       }
       
-      // 3. Read results from output vstream
+      // 2. Read results from output vstream
       std::vector<uint8_t> output_buffer;
       for (auto& output_vstream : output_vstreams_) {
         auto output_info = output_vstream->get_info();
@@ -228,7 +240,7 @@ std::vector<Detection> ObjectDetector::run_inference(const cv::Mat& image)
           continue;
         }
         
-        // 4. Parse YOLO output and extract detections
+        // 3. Parse YOLO output and extract detections
         // Note: NMS is already applied by the optimized HEF model
         auto parsed_detections = parse_yolo_output(output_buffer, output_info, image.cols, image.rows);
         detections.insert(detections.end(), parsed_detections.begin(), parsed_detections.end());
@@ -304,6 +316,9 @@ std::vector<Detection> ObjectDetector::parse_yolo_output(const std::vector<uint8
   int num_boxes = shape.shape.height;
   int box_size = shape.shape.width; // Should be 6 or 7 for YOLO
   
+  // Preallocate capacity to avoid reallocations
+  detections.reserve(num_boxes);
+  
   for (int i = 0; i < num_boxes; i++) {
     int offset = i * box_size;
     
@@ -332,19 +347,20 @@ std::vector<Detection> ObjectDetector::parse_yolo_output(const std::vector<uint8
     w = std::min(w, orig_width - x);
     h = std::min(h, orig_height - y);
     
-    // Create detection
-    Detection detection;
-    detection.bbox = cv::Rect(x, y, w, h);
-    detection.confidence = confidence;
-    
-    // Set class name
+    // Determine class name
+    std::string class_name;
     if (class_id >= 0 && class_id < static_cast<int>(class_names_.size())) {
-      detection.class_name = class_names_[class_id];
+      class_name = class_names_[class_id];
     } else {
-      detection.class_name = "Unknown";
+      class_name = "Unknown";
     }
     
-    detections.push_back(detection);
+    // Emplace detection directly into vector (construct in place, no copy)
+    Detection detection;
+    detection.class_name = std::move(class_name);
+    detection.confidence = confidence;
+    detection.bbox = cv::Rect(x, y, w, h);
+    detections.emplace_back(std::move(detection));
   }
   
   return detections;

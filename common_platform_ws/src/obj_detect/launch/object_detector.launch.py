@@ -18,11 +18,6 @@ def generate_launch_description():
             description='Confidence threshold for detections'
         ),
         DeclareLaunchArgument(
-            'nms_threshold',
-            default_value='0.4',
-            description='NMS threshold for post-processing'
-        ),
-        DeclareLaunchArgument(
             'input_width',
             default_value='640',
             description='Input image width'
@@ -32,6 +27,11 @@ def generate_launch_description():
             default_value='640',
             description='Input image height'
         ),
+        DeclareLaunchArgument(
+            'hailort_log_path',
+            default_value='/tmp/hailort.log',
+            description='Path for HailoRT log file'
+        ),
         Node(
             package='obj_detect',
             executable='object_detector',
@@ -40,9 +40,9 @@ def generate_launch_description():
             parameters=[{
                 'model_path': LaunchConfiguration('model_path'),
                 'confidence_threshold': LaunchConfiguration('confidence_threshold'),
-                'nms_threshold': LaunchConfiguration('nms_threshold'),
                 'input_width': LaunchConfiguration('input_width'),
                 'input_height': LaunchConfiguration('input_height'),
+                'hailort_log_path': LaunchConfiguration('hailort_log_path'),
             }]
         )
     ])

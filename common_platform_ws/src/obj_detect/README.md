@@ -8,16 +8,19 @@ This ROS2 package provides object detection capabilities using the HailoRT API a
 - Runs inference using HailoRT API with YOLOv11n_2cls.hef model
 - Publishes detection results to `detect` topic
 - Custom message interface for detection results
-- Configurable parameters for confidence threshold, NMS threshold, and input dimensions
+- Detects Purple ball and Green ball objects
+- Configurable parameters for confidence threshold, input dimensions, and log path
 
 ## Message Interface
 
 ### Detection.msg
 ```
 string class_name
-float64 confidence
-geometry_msgs/Point top_left
-geometry_msgs/Point bottom_right
+float32 confidence
+float32 x
+float32 y
+float32 width
+float32 height
 ```
 
 ### DetectionArray.msg
@@ -33,8 +36,7 @@ Detection[] detections
 - sensor_msgs
 - geometry_msgs
 - std_msgs
-- cv_bridge
-- OpenCV
+- OpenCV4
 - HailoRT API
 - rosidl_default_generators
 
@@ -42,7 +44,7 @@ Detection[] detections
 
 ```bash
 cd /home/rcr/repos/common_platform/common_platform_ws
-colcon build --packages-select obj_detect
+colcon build --packages-select obj_detect --symlink-install
 source install/setup.bash
 ```
 
@@ -58,7 +60,7 @@ ros2 launch obj_detect object_detector.launch.py
 ros2 launch obj_detect object_detector.launch.py \
   model_path:=/path/to/your/model.hef \
   confidence_threshold:=0.6 \
-  nms_threshold:=0.5
+  hailort_log_path:=/path/to/hailort.log
 ```
 
 ### Running the node directly
@@ -70,9 +72,9 @@ ros2 run obj_detect object_detector
 
 - `model_path`: Path to the HEF model file (default: `/home/rcr/repos/common_platform/models/yolov11n_2cls.hef`)
 - `confidence_threshold`: Confidence threshold for detections (default: 0.5)
-- `nms_threshold`: NMS threshold for post-processing (default: 0.4)
 - `input_width`: Input image width (default: 640)
 - `input_height`: Input image height (default: 640)
+- `hailort_log_path`: Path for HailoRT log file (default: `/tmp/hailort.log`)
 
 ## Topics
 
@@ -97,8 +99,17 @@ ros2 topic echo /detect
 
 3. To visualize detections, you can use RViz2 or create a visualization node.
 
-## Notes
+## Class Names
 
-- The current implementation includes a framework for HailoRT integration but may need specific adjustments based on your HEF model format
-- Class names are currently set to generic values ("class1", "class2") - update these in the code to match your model's classes
-- The inference implementation is a template that needs to be completed with actual HailoRT API calls for your specific model
+The model detects 2 classes:
+- **Purple ball** (class 0)
+- **Green ball** (class 1)
+
+## Logging
+
+HailoRT logs are written to a configurable location (default: `/tmp/hailort.log`). This prevents log files from cluttering the repository. The log path is printed at node startup.
+
+To use a custom log location:
+```bash
+ros2 launch obj_detect object_detector.launch.py hailort_log_path:=/your/custom/path/hailort.log
+```
