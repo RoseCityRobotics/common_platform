@@ -4,7 +4,7 @@ This ROS2 package provides object detection capabilities using the HailoRT API a
 
 ## Features
 
-- Subscribes to `image_raw` topic for input images
+- Subscribes to `camera/image_raw` topic for input images
 - Runs inference using HailoRT API with YOLOv11n_2cls.hef model
 - Publishes detection results to `detect` topic
 - Custom message interface for detection results
@@ -74,12 +74,12 @@ ros2 run obj_detect object_detector
 - `confidence_threshold`: Confidence threshold for detections (default: 0.5)
 - `input_width`: Input image width (default: 640)
 - `input_height`: Input image height (default: 640)
-- `hailort_log_path`: Path for HailoRT log file (default: `/tmp/hailort.log`)
+- `hailort_log_path`: Directory for HailoRT log file - `hailort.log` will be created here (default: `/tmp`)
 
 ## Topics
 
 ### Subscribed Topics
-- `/image_raw` (sensor_msgs/Image): Input images for detection
+- `/camera/image_raw` (sensor_msgs/Image): Input images for detection
 
 ### Published Topics
 - `/detect` (obj_detect/DetectionArray): Detection results with bounding boxes and class names
@@ -107,9 +107,9 @@ The model detects 2 classes:
 
 ## Logging
 
-HailoRT logs are written to a configurable location (default: `/tmp/hailort.log`). This prevents log files from cluttering the repository. The log path is printed at node startup.
+HailoRT logs are written to a configurable directory (default: `/tmp`). The log file `hailort.log` will be created in this directory. This prevents log files from cluttering the repository. The log directory is printed at node startup.
 
-To use a custom log location:
+To use a custom log directory:
 ```bash
-ros2 launch obj_detect object_detector.launch.py hailort_log_path:=/your/custom/path/hailort.log
+ros2 launch obj_detect object_detector.launch.py hailort_log_path:=/your/custom/directory
 ```

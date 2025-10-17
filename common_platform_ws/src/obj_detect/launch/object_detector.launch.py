@@ -3,12 +3,12 @@
 import os
 from launch import LaunchDescription
 from launch_ros.actions import Node
-from launch.actions import DeclareLaunchArgument
+from launch.actions import DeclareLaunchArgument, SetEnvironmentVariable
 from launch.substitutions import LaunchConfiguration
 
 def generate_launch_description():
     # Get namespace from ROS_NAMESPACE environment variable
-    namespace = os.environ.get('ROS_NAMESPACE', '')
+    namespace = os.environ.get('ROS_NAMESPACE', '').strip()
     
     return LaunchDescription([
         DeclareLaunchArgument(
@@ -33,13 +33,16 @@ def generate_launch_description():
         ),
         DeclareLaunchArgument(
             'hailort_log_path',
-            default_value='/tmp/hailort.log',
-            description='Path for HailoRT log file'
+            default_value='/tmp',
+            description='Directory for HailoRT log file (hailort.log will be created here)'
+        ),
+        # Set HailoRT log directory environment variable using the parameter
+        SetEnvironmentVariable(
+            'HAILORT_LOGGER_PATH', LaunchConfiguration('hailort_log_path')
         ),
         Node(
             package='obj_detect',
             executable='object_detector',
-            name='object_detector',
             namespace=namespace,
             output='screen',
             parameters=[{

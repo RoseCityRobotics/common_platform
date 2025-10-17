@@ -56,6 +56,7 @@ private:
 #ifdef HAVE_HAILORT
   std::shared_ptr<hailort::Device> device_;
   std::shared_ptr<hailort::ConfiguredNetworkGroup> configured_network_group_;
+  std::unique_ptr<hailort::ActivatedNetworkGroup> activated_network_group_;
   std::vector<std::shared_ptr<hailort::InputVStream>> input_vstreams_;
   std::vector<std::shared_ptr<hailort::OutputVStream>> output_vstreams_;
 #endif
@@ -66,6 +67,9 @@ private:
   float confidence_threshold_;
   int input_width_;
   int input_height_;
+  
+  // Heartbeat tracking
+  rclcpp::Time last_publish_time_;
 };
 
 } // namespace obj_detect
