@@ -36,13 +36,6 @@ hardware
 
 ```{toctree}
 :maxdepth: 1
-:caption: ROS2 Desktop Tools
-
-virtual_machines/installing_vms
-```
-
-```{toctree}
-:maxdepth: 1
 :caption: Robot Operations
 
 operations/discovery_server
@@ -60,6 +53,13 @@ operations/maintenance
 operations/advanced/index
 operations/advanced/performance_tuning
 operations/advanced/custom_controllers
+```
+
+```{toctree}
+:maxdepth: 1
+:caption: ROS2 Desktop Tools
+
+
 ```
 
 ```{toctree}
