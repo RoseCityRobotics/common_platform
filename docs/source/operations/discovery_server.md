@@ -30,6 +30,28 @@ Open a new terminal window 📟
 nano ~/ros2_ws/super_client_configuration_file_rcr.xml
 ```
 
+```xml
+<profiles xmlns="http://www.eprosima.com/XMLSchemas/fastRTPS_Profiles">
+  <participant profile_name="super_client_profile" is_default_profile="true">
+    <rtps>
+      <builtin>
+        <discovery_config>
+          <discoveryProtocol>SUPER_CLIENT</discoveryProtocol>
+          <discoveryServersList>
+            <locator>
+              <udpv4>
+                <address>127.0.0.1</address>
+                <port>11811</port>
+              </udpv4>
+            </locator>
+          </discoveryServersList>
+        </discovery_config>
+      </builtin>
+    </rtps>
+  </participant>
+</profiles>
+```
+
 Edit line 11 of the **`super_client_configuration_file_rcr.xml`** file to set the discovery server's address to `127.0.0.1` if running locally.
 
 ### Start the Micro ROS Agent
@@ -70,25 +92,37 @@ If you have updated your discovery server settings above to use your robot at ho
 
 `192.168.1.125` for Joe's laptop at RCR Lab
 
-### Start the Discovery Server
-
-Open a new terminal window 📟
-
-```bash
-fastdds discovery --server-id 0
-```
-
-This command initiates the Fast DDS discovery server with a server ID of 0.
-
 ### Update Configuration File -
 
 Open a new terminal window 📟
 
 ```bash
 nano ~/ros2_ws/super_client_configuration_file_rcr.xml
+
+```xml
+<profiles xmlns="http://www.eprosima.com/XMLSchemas/fastRTPS_Profiles">
+  <participant profile_name="super_client_profile" is_default_profile="true">
+    <rtps>
+      <builtin>
+        <discovery_config>
+          <discoveryProtocol>SUPER_CLIENT</discoveryProtocol>
+          <discoveryServersList>
+            <locator>
+              <udpv4>
+                <address>192.168.1.125</address>
+                <port>11811</port>
+              </udpv4>
+            </locator>
+          </discoveryServersList>
+        </discovery_config>
+      </builtin>
+    </rtps>
+  </participant>
+</profiles>
+```
 ```
 
-Edit line 11 of the **`super_client_configuration_file_rcr.xml`** file to set the discovery server's address to `127.0.0.1` if running locally.
+Edit line 11 of the **`super_client_configuration_file_rcr.xml`** file to set the discovery server's address to `192.168.1.125` for Joe's computer
 
 ### Start the Micro ROS Agent
 
