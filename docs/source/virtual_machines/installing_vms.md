@@ -195,22 +195,36 @@ You should now see the full list of ROS topics publishing from the discovery ser
 
 ### Troubleshooting VM connectivity to discovery server
 
-Make sure you have internet access on the VM (you need to set up bridged networking in Parallels - or mirrored in WSL so your VM uses the same IP address as your computer)
+If you're having trouble connecting your VM to the discovery server, follow these troubleshooting steps:
+
+#### Network Configuration
+
+Your VM must be configured to use the same network and IP address as your host computer. This requires specific network settings:
+
+**For WSL (Windows):** Configure mirrored networking so your VM shares the same IP address as Windows
+- 📖 [WSL Networking Documentation](https://learn.microsoft.com/en-us/windows/wsl/networking)
+
+**For Parallels (macOS):** Set up bridged networking mode
+- 📖 [Parallels Network Settings Documentation](https://docs.parallels.com/pdfm-ug-20/parallels-desktop-for-mac-20-users-guide/parallels-desktop-preferences-and-virtual-machine-settings/virtual-machine-settings/hardware-settings/network-settings)
+
+#### Connectivity Tests
+
+Test internet connectivity:
 ```bash
 ping google.com
 ```
 
-Ping your robot
+Test connection to your robot (replace `n` with your robot's IP):
 ```bash
 ping 192.168.1.n
 ```
 
-Ping the discovery server
+Test connection to the discovery server:
 ```bash
 ping 192.168.1.125 # for Joe's computer
 ```
 
-Other issues:
+#### Other Common Issues:
 - check firewalls - see [Windows Firewall Configuration](#windows-firewall-configuration)
 - check your IP address on both your laptop and your VM - they should match. If not, see
 
