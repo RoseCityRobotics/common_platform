@@ -12,6 +12,30 @@ Both methods will allow you to run Ubuntu 24.04 with full ROS2 Kilted Desktop in
 
 Windows Subsystem for Linux (WSL) is Microsoft's solution for running a full Linux environment directly on Windows. It provides excellent performance and seamless integration with Windows, making it ideal for ROS2 development.
 
+### Windows Firewall Configuration
+
+**Important:** Windows Defender Firewall can block ROS2 communication between WSL and Windows. If you experience connectivity issues with ROS2 nodes or RViz, you may need to temporarily disable the firewall.
+
+#### Check Firewall Status
+
+Open **PowerShell as Administrator** and run:
+
+```powershell
+Get-NetFirewallProfile | Format-Table Name, Enabled
+```
+
+This will show which firewall profiles are enabled.
+
+#### Temporarily Disable Firewall (if needed)
+
+If any profiles show `Enabled = True` and you're experiencing ROS2 connectivity issues, disable them:
+
+```powershell
+Set-NetFirewallProfile -Profile Domain,Public,Private -Enabled False
+```
+
+**⚠️ Security Warning:** Remember to re-enable the firewall after testing. We are working on creating specific firewall rules that allow ROS2 traffic without disabling the entire firewall.
+
 ### Installing WSL with Ubuntu 24.04
 
 1. **Open PowerShell as Administrator** and install WSL with Ubuntu 24.04:
@@ -118,8 +142,6 @@ After completing the ROS2 installation, verify everything is working:
    rviz2
    ```
 
-   If RViz launches successfully, your development environment is ready!
-
 ### Adding ROS2 to Your Shell Profile
 
 To avoid sourcing ROS2 manually every time, add it to your `.profile`:
@@ -135,10 +157,17 @@ If you encounter graphics or rendering issues when running RViz or other GUI app
 
 ### Enable Software Rendering
 
-Add this environment variable to force software rendering:
+Set this environment variable to force software rendering:
 
 ```bash
 export LIBGL_ALWAYS_SOFTWARE=1
+```
+
+To make this permanent, add it to your `.profile`:
+
+```bash
+echo "export LIBGL_ALWAYS_SOFTWARE=1" >> ~/.profile
+source ~/.profile
 ```
 
 **When to use this:**
