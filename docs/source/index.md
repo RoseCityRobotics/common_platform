@@ -60,6 +60,7 @@ operations/advanced/custom_controllers
 :caption: ROS2 Desktop Tools
 
 virtual_machines/installing_vms
+virtual_machines/rviz_sensor_visualization
 ```
 
 ```{toctree}

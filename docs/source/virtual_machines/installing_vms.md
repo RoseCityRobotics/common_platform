@@ -252,5 +252,5 @@ export LIBGL_ALWAYS_SOFTWARE=1
 
 Now that you have your development environment set up, you can:
 
-- Visualize sensor data with RViz (instructions coming soon)
-- Real-time camera feed (instructions coming soon)
+- [Visualize sensor data with RViz](rviz_sensor_visualization.md)
+- [Set up real-time camera feed](realtime_camera_video.md)
