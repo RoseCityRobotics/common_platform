@@ -177,7 +177,7 @@ The config file should look something like this, if not paste the code below int
   </participant>
 </profiles>
 ```
-Edit line 11 to set the proper discovery server IP address. If you are running the discovery server on your own Pi, then it should work as is. If you are at the RCR lab, change it to Joe's IP which is `192.168.1.125`. If neither work, figure out what IP address you can ping the discovery server at and use that. See more troubleshooting tips in the **[Discovery Server documentation](../operations/discovery_server)** under the "Common Issues" section.
+Edit line 11 to set the proper discovery server IP address. If you are running the discovery server on your own Pi, then it should work as is. If you are at the RCR lab, change it to Joe's IP which is `192.168.1.125`. If neither work, figure out what IP address you can ping the discovery server at and use that. See more **[troubleshooting tips here](#troubleshooting-vm-connectivity-to-discovery-server)**.
 
 Save the file above, then stop and start the ros2 daemon
 
