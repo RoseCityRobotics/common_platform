@@ -52,19 +52,6 @@ Set-NetFirewallProfile -Profile Domain,Public,Private -Enabled False
    sudo apt update
    ```
 
-### Installing GUI Support for WSL
-
-To run graphical applications like RViz in WSL, you'll need to enable GUI support:
-
-1. **Ensure you're running WSL 2** (required for GUI apps):
-   ```bash
-   wsl --set-version Ubuntu-24.04 2
-   ```
-
-2. **Install a Windows X server** such as VcXsrv or use Windows 11's built-in WSLg (available by default on Windows 11).
-
-**Note:** WSLg on Windows 11 provides the best experience with automatic display forwarding. On Windows 10, you may need to configure X server settings manually.
-
 ## macOS: Parallels Setup
 
 Parallels Desktop is a powerful virtualization solution for macOS that provides excellent performance for running Ubuntu alongside macOS.
@@ -107,7 +94,7 @@ While WSL and Parallels are our recommended solutions, other virtualization opti
 
 **Note:** These alternatives are not officially documented or tested with this platform, but may work for your needs.
 
-## Installing ROS2 Kilted on Ubuntu 24.04
+## Installing ROS2 Kilted
 
 Once you have Ubuntu 24.04 running (via WSL, Parallels, or another method), you'll need to install ROS2 Kilted Desktop, which includes RViz and all the visualization tools you'll need.
 
@@ -125,51 +112,84 @@ The ROS2 Kilted Desktop installation includes:
 
 ### Verifying Your Installation
 
-After completing the ROS2 installation, verify everything is working:
-
-1. **Source the ROS2 setup file**:
-   ```bash
-   source /opt/ros/kilted/setup.bash
-   ```
-
-2. **Test ROS2**:
+**Test ROS2**
    ```bash
    ros2 --version
    ```
 
-3. **Test RViz** (GUI required):
+**Test RViz**
    ```bash
    rviz2
    ```
 
-### Adding ROS2 to Your Shell Profile
+### After Installing ROS
 
-To avoid sourcing ROS2 manually every time, add it to your `.profile`:
+On the VM you will need to set up a few configuration files and environment variables.
 
+#### Edit the .profile
 ```bash
-echo "source /opt/ros/kilted/setup.bash" >> ~/.profile
-source ~/.profile
+sudo nano ~/.profile
 ```
 
-## Connecting to Your Robot
+Add the following to the bottom of the .profile, then save and exit the file
+```
+export ROS_DOMAIN_ID=0
+export RMW_IMPLEMENTATION=rmw_fastrtps_cpp
+export ROS_SUPER_CLIENT=true
+export FASTDDS_DEFAULT_PROFILES_FILE=/home/${USER}/ros2_ws/super_client_configuration_file_rcr.xml
+source /home/${USER}/ros2_ws/install/setup.bash
+ros2 daemon stop; ros2 daemon start
+```
+source .profile so the changes take effect in your current session
+```bash
+source .profile
+```
 
-### Set up the Discovery Server
+#### Set up the Discovery Server
 
-Now that you have ROS2 working on your VM, you will need to point it to the proper discovery server so it can communicate with your robot via ROS. To do this, first create the directory if it doesn't already exist:
+Now that you have ROS2 on your VM, you will need to point it to the proper discovery server so it can communicate with your robot via ROS. To do this, first create the directory if it doesn't already exist:
 
 ```bash
 mkdir ~/ros2_ws
 ```
+Then edit or create the discovery server xml config file referenced in the environment variable above.
 
-Then follow the **[Discovery Server Configuration](../operations/discovery_server)** guide, starting with the "Update Configuration File" section. This will configure your VM to connect to your robot's ROS2 network.
+```bash
+nano ~/ros2_ws/super_client_configuration_file_rcr.xml
+```
 
-Once you have the discovery server config file set up. Stop and start the ros2 daemon.
+Edit line 11 of the **`super_client_configuration_file_rcr.xml`** file to set the discovery server's IP address.
+
+```xml
+<profiles xmlns="http://www.eprosima.com/XMLSchemas/fastRTPS_Profiles">
+  <participant profile_name="super_client_profile" is_default_profile="true">
+    <rtps>
+      <builtin>
+        <discovery_config>
+          <discoveryProtocol>SUPER_CLIENT</discoveryProtocol>
+          <discoveryServersList>
+            <locator>
+              <udpv4>
+                <address>127.0.0.1</address>
+                <port>11811</port>
+              </udpv4>
+            </locator>
+          </discoveryServersList>
+        </discovery_config>
+      </builtin>
+    </rtps>
+  </participant>
+</profiles>
+```
+
+Save the file above, then stop and start the ros2 daemon
 
 ```bash
 ros2 daemon stop
 ros2 daemon start
 ```
 
+Testing - check for ROS topics
 ```bash
 ros2 topic list
 ```
@@ -192,6 +212,10 @@ Ping the discovery server
 ```bash
 ping 192.168.1.125 # for Joe's computer
 ```
+
+Other issues:
+- check firewalls - see here ### Windows Firewall Configuration
+- check your IP address on both your laptop and your VM - they should match. If not, see
 
 ## Troubleshooting Graphics Issues
 
