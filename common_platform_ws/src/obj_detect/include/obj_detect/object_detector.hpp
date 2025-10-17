@@ -33,7 +33,7 @@ struct Detection
 class ObjectDetector : public rclcpp::Node
 {
 public:
-  ObjectDetector();
+  explicit ObjectDetector(const rclcpp::NodeOptions& options = rclcpp::NodeOptions());
   ~ObjectDetector();
 
 private:

@@ -4,8 +4,8 @@
 
 using namespace obj_detect;
 
-ObjectDetector::ObjectDetector()
-  : Node("object_detector")
+ObjectDetector::ObjectDetector(const rclcpp::NodeOptions& options)
+  : Node("object_detector", options)
 {
   // Initialize parameters
   this->declare_parameter("model_path", "/home/rcr/repos/common_platform/models/yolov11n_2cls.hef");
@@ -371,7 +371,8 @@ std::vector<Detection> ObjectDetector::parse_yolo_output(const std::vector<uint8
 int main(int argc, char* argv[])
 {
   rclcpp::init(argc, argv);
-  auto node = std::make_shared<ObjectDetector>();
+  rclcpp::NodeOptions options;
+  auto node = std::make_shared<ObjectDetector>(options);
   rclcpp::spin(node);
   rclcpp::shutdown();
   return 0;
