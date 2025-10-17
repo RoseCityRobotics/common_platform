@@ -129,11 +129,12 @@ sudo nano ~/.profile
 
 Add the following to the bottom of the .profile, then save and exit the file
 ```
+
+source /opt/ros/kilted/setup.bash
 export ROS_DOMAIN_ID=0
 export RMW_IMPLEMENTATION=rmw_fastrtps_cpp
 export ROS_SUPER_CLIENT=true
 export FASTDDS_DEFAULT_PROFILES_FILE=/home/${USER}/ros2_ws/super_client_configuration_file_rcr.xml
-source /home/${USER}/ros2_ws/install/setup.bash
 ros2 daemon stop; ros2 daemon start
 ```
 source .profile so the changes take effect in your current session
