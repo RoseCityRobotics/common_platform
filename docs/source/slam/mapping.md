@@ -12,15 +12,17 @@ Mapping is the process of creating a representation of the robot's environment u
 
 SLAM allows the robot to build a map while simultaneously tracking its position within that map.
 
+0. **Do this Once for Setup**
+   ```bash
+   cp ~/repos/common_platform/launch/cartographer_simple.launch.py ~/ros2_ws/src/cartographer_ros/cartographer_ros/launch/
+   colcon build --packages-select cartographer_ros --symlink-install
+   ```
+
 1. **Launch SLAM**
    ```bash
    cd ~/repos/common_platform/common_platform_ws/
    source install/setup.bash
    ros2 launch common_platform pub_robot_state.launch.py use_sim_time:=false
-   ```
-
-   ```bash
-   cp ~/repos/common_platform/launch/cartographer_simple.launch.py ~/ros2_ws/src/cartographer_ros/cartographer_ros/launch/
    ```
 
    ```bash
