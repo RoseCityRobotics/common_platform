@@ -59,7 +59,7 @@ operations/advanced/custom_controllers
 :maxdepth: 1
 :caption: ROS2 Desktop Tools
 
-
+virtual_machines/installing_vms
 ```
 
 ```{toctree}
