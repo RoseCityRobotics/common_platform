@@ -38,16 +38,16 @@ Set-NetFirewallProfile -Profile Domain,Public,Private -Enabled False
 
 ### Installing WSL with Ubuntu 24.04
 
-1. **Open PowerShell as Administrator** and install WSL with Ubuntu 24.04:
+**Open PowerShell as Administrator** and install WSL with Ubuntu 24.04:
    ```powershell
    wsl --install -d Ubuntu-24.04
    ```
 
-2. **Restart your computer** when prompted.
+**Restart your computer** when prompted.
 
-3. **Launch Ubuntu** from the Start menu and create your user account when prompted.
+**Launch Ubuntu** from the Start menu and create your user account when prompted.
 
-4. **Update your system packages**:
+**Update your system packages**:
    ```bash
    sudo apt update
    ```
@@ -58,22 +58,22 @@ Parallels Desktop is a powerful virtualization solution for macOS that provides 
 
 ### Installing Parallels and Ubuntu
 
-1. **Download and install Parallels Desktop** from [parallels.com](https://www.parallels.com)
+**Download and install Parallels Desktop** from [parallels.com](https://www.parallels.com)
 
-2. **Create a new virtual machine**:
+**Create a new virtual machine**:
    - Open Parallels Desktop
    - Click "+" to create a new VM
    - Select "Install Windows or another OS from a DVD or image file"
    - Download Ubuntu 24.04 LTS Desktop ISO from [ubuntu.com](https://ubuntu.com/download/desktop)
    - Follow the installation wizard to complete setup
 
-3. **Configure VM resources** (recommended settings):
+**Configure VM resources** (recommended settings):
    - Memory: At least 4GB RAM (8GB recommended)
    - Processors: 2-4 CPU cores
    - Disk space: 40GB or more
    - Graphics: Enable 3D acceleration for better RViz performance
 
-4. **Install Parallels Tools** for better integration:
+**Install Parallels Tools** for better integration:
    - In Parallels menu, select "Install Parallels Tools"
    - Follow the on-screen instructions
    - Restart the VM when complete
@@ -104,23 +104,19 @@ Follow the official ROS2 installation instructions for Ubuntu:
 
 **🔗 Installation Guide**: [https://docs.ros.org/en/kilted/Installation/Ubuntu-Install-Debs.html](https://docs.ros.org/en/kilted/Installation/Ubuntu-Install-Debs.html)
 
-The ROS2 Kilted Desktop installation includes:
-- Core ROS2 packages
-- RViz for 3D visualization
-- RQt tools for debugging and monitoring
-- Common ROS2 packages and dependencies
-
 ### Verifying Your Installation
 
-**Test ROS2**
+Check for ROS2
    ```bash
-   ros2 --version
+   which ros2
    ```
+Should return `/opt/ros/kilted/bin/ros2`
 
-**Test RViz**
+Test RViz
    ```bash
    rviz2
    ```
+This should open up RViz tool GUI, if it does you can close this for now and continue setting up the config.
 
 ### After Installing ROS
 
@@ -152,13 +148,13 @@ Now that you have ROS2 on your VM, you will need to point it to the proper disco
 ```bash
 mkdir ~/ros2_ws
 ```
-Then edit or create the discovery server xml config file referenced in the environment variable above.
+Then edit or create the discovery server config file referenced in the environment variable above.
 
 ```bash
 nano ~/ros2_ws/super_client_configuration_file_rcr.xml
 ```
 
-Edit line 11 of the **`super_client_configuration_file_rcr.xml`** file to set the discovery server's IP address.
+The config file should look something like this, if not paste the code below into your config file.
 
 ```xml
 <profiles xmlns="http://www.eprosima.com/XMLSchemas/fastRTPS_Profiles">
@@ -181,6 +177,7 @@ Edit line 11 of the **`super_client_configuration_file_rcr.xml`** file to set th
   </participant>
 </profiles>
 ```
+Edit line 11 to set the proper discovery server IP address. If you are running the discovery server on your own Pi, then it should work as is. If you are at the RCR lab, change it to Joe's IP which is `192.168.1.125`. If neither work, figure out what IP address you can ping the discovery server at and use that. See more troubleshooting tips in the **[Discovery Server documentation](../operations/discovery_server)** under the "Common Issues" section.
 
 Save the file above, then stop and start the ros2 daemon
 
