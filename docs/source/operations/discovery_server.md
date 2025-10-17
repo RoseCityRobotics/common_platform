@@ -82,7 +82,7 @@ To verify the discovery server is working:
 ps aux | grep fastdds
 
 # Check network connectivity
-ping <discovery_server_ip>
+ping 127.0.0.1
 ```
 
 ## Switch back to RCR discovery server
@@ -152,7 +152,7 @@ To verify the discovery server is working:
 ps aux | grep fastdds
 
 # Check network connectivity
-ping <discovery_server_ip>
+ping 192.168.1.125
 ```
 
 ## Common Issues
