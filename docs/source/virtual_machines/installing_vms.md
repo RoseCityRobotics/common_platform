@@ -122,12 +122,32 @@ After completing the ROS2 installation, verify everything is working:
 
 ### Adding ROS2 to Your Shell Profile
 
-To avoid sourcing ROS2 manually every time, add it to your `.bashrc`:
+To avoid sourcing ROS2 manually every time, add it to your `.profile`:
 
 ```bash
-echo "source /opt/ros/kilted/setup.bash" >> ~/.bashrc
-source ~/.bashrc
+echo "source /opt/ros/kilted/setup.bash" >> ~/.profile
+source ~/.profile
 ```
+
+## Troubleshooting Graphics Issues
+
+If you encounter graphics or rendering issues when running RViz or other GUI applications in your VM, you may need to enable software rendering.
+
+### Enable Software Rendering
+
+Add this environment variable to force software rendering:
+
+```bash
+export LIBGL_ALWAYS_SOFTWARE=1
+```
+
+**When to use this:**
+- RViz crashes on startup with OpenGL errors
+- You see graphics driver warnings
+- 3D visualization is not working properly
+- Running in a VM without proper GPU acceleration
+
+**Note:** Software rendering will be slower than hardware acceleration, but it ensures compatibility across different VM configurations.
 
 ## Next Steps
 

@@ -98,6 +98,7 @@ Open a new terminal window 📟
 
 ```bash
 nano ~/ros2_ws/super_client_configuration_file_rcr.xml
+```
 
 ```xml
 <profiles xmlns="http://www.eprosima.com/XMLSchemas/fastRTPS_Profiles">
@@ -119,7 +120,6 @@ nano ~/ros2_ws/super_client_configuration_file_rcr.xml
     </rtps>
   </participant>
 </profiles>
-```
 ```
 
 Edit line 11 of the **`super_client_configuration_file_rcr.xml`** file to set the discovery server's address to `192.168.1.125` for Joe's computer
