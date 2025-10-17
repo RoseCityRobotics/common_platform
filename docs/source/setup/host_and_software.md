@@ -152,7 +152,13 @@ Add or update this line (replace `n` with your robot number):
 export ROS_NAME=rcr00n
 ```
 
-Save and close the file. This ensures that your environment variables are set on login.
+Save and close the file, then reload your profile:
+
+```bash
+source ~/.profile
+```
+
+This ensures that your environment variables are set on login and immediately available in your current session.
 
 ---
 
