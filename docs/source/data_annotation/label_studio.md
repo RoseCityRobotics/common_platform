@@ -74,7 +74,7 @@ Close/reopen terminal (or `source /home/rcr/.profile`) and restart Label Studio.
 Verify they are set with:
 ```bash
 env | grep LABEL_STUDIO
-```å
+```
 
 ### Start Label Studio
 On the Pi <img src="/_static/img/raspberry-pi.png" alt="Raspberry Pi" width="16">
