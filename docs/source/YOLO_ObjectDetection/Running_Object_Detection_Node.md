@@ -21,11 +21,24 @@ Before running the object detection node, ensure you have:
 
 ## Building the Package
 
-First, build the `obj_detect` package (you only need to do this once):
+Change into the common_platform_ws directory
+```bash
+cd ~/repos/common_platform/common_platform_ws
+```
+
+Only do this once - build the package
+```bash
+colcon build --packages-select obj_detect --symlink-install
+```
+
+Source the package
+```bash
+source install/setup.bash
+```
+
 
 ```bash
 cd ~/repos/common_platform/common_platform_ws
-colcon build --packages-select obj_detect --symlink-install
 source install/setup.bash
 ```
 
