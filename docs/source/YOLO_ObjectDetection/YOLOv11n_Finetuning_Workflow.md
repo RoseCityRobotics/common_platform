@@ -79,7 +79,7 @@ mkdir -p data/images_raw
 cp ~/teleop_data/images/* data/images_raw/
 cp -r ~/teleop_data/annotations data/
 mkdir models
-cp ~/repos/common_platform/models/yolo11n.pt models/
+cp ~/code/common_platform/models/yolo11n.pt models/
 mkdir runs
 pip install ultralytics
 ```
@@ -224,9 +224,9 @@ During training, YOLO prints metrics per epoch:
 | `Instances` | Number of labeled objects in batch |
 
 Validation metrics (computed every few epochs):
-- **Precision** – fraction of predicted boxes that are correct.  
-- **Recall** – fraction of ground truths correctly detected.  
-- **mAP@50** – mean average precision at IoU ≥ 0.50.  
+- **Precision** – fraction of predicted boxes that are correct.
+- **Recall** – fraction of ground truths correctly detected.
+- **mAP@50** – mean average precision at IoU ≥ 0.50.
 - **mAP@50-95** – stricter average over IoU 0.50–0.95.
 
 ---
@@ -269,8 +269,8 @@ scp yolov11n_finetune.onnx <USER>@<HOSTNAME>:~
 | Fine-tune | Train YOLOv11n on 2 classes | Ultralytics YOLO |
 | Export | Produce ONNX for Hailo | `yolo export` |
 
-Final output:  
-✅ `best.pt` (PyTorch weights)  
+Final output:
+✅ `best.pt` (PyTorch weights)
 ✅ `yolov11n_finetune.onnx` (for hardware deployment)
 
 ---
