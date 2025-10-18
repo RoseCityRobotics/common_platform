@@ -44,12 +44,15 @@ def generate_launch_description():
   if ns:
     camera_topic = f'{ns}/camera/image_raw'
     odom_topic = f'{ns}/odom'
+    cmd_vel_topic = f'{ns}/cmd_vel'
   else:
     camera_topic = '/camera/image_raw'
     odom_topic = '/odom'
+    cmd_vel_topic = '/cmd_vel'
 
   print(f"Camera topic with namespace: {camera_topic}")
   print(f"Odometry topic with namespace: {odom_topic}")
+  print(f"Command velocity topic with namespace: {cmd_vel_topic}")
   
   # Note: RAM disk mounting is handled by the data_recorder_node C++ code
   
@@ -63,6 +66,7 @@ def generate_launch_description():
       'output_dir': '/home/rcr/teleop_data',
       'camera_topic': camera_topic,
       'odom_topic': odom_topic,
+      'cmd_vel_topic': cmd_vel_topic,
       'record_rate': 30.0,
       'auto_start': auto_start,
     }],

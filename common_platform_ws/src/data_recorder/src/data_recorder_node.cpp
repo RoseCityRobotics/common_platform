@@ -1,6 +1,7 @@
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/image.hpp>
 #include <nav_msgs/msg/odometry.hpp>
+#include <geometry_msgs/msg/twist.hpp>
 #include <std_msgs/msg/bool.hpp>
 #include <cv_bridge/cv_bridge.hpp>
 #include <opencv2/opencv.hpp>
@@ -39,6 +40,7 @@ public:
     this->declare_parameter("output_dir", "/tmp/teleop_data");
     this->declare_parameter("camera_topic", "/camera/image_raw");
     this->declare_parameter("odom_topic", "/odom");
+    this->declare_parameter("cmd_vel_topic", "/cmd_vel");
     this->declare_parameter("record_rate", 30.0);
     this->declare_parameter("image_width", 640);
     this->declare_parameter("image_height", 480);
@@ -51,6 +53,7 @@ public:
     output_dir_ = this->get_parameter("output_dir").as_string();
     camera_topic_ = this->get_parameter("camera_topic").as_string();
     odom_topic_ = this->get_parameter("odom_topic").as_string();
+    cmd_vel_topic_ = this->get_parameter("cmd_vel_topic").as_string();
     record_rate_ = this->get_parameter("record_rate").as_double();
     image_width_ = this->get_parameter("image_width").as_int();
     image_height_ = this->get_parameter("image_height").as_int();
@@ -73,7 +76,11 @@ public:
     
     // Initialize data file
     data_file_.open(session_dir_ + "/metadata/data_log.csv");
-    data_file_ << "timestamp,image_file,linear_vel,angular_vel,position_x,position_y,orientation_z\n";
+    data_file_ << "timestamp,image_file,linear_vel,angular_vel,position_x,position_y,orientation_z,cmd_linear_x,cmd_angular_z\n";
+    
+    // Create QoS profile for odom (BEST_EFFORT to match publisher)
+    rclcpp::QoS odom_qos(10);
+    odom_qos.best_effort();
     
     // Create subscribers
     camera_sub_ = this->create_subscription<sensor_msgs::msg::Image>(
@@ -81,8 +88,12 @@ public:
       std::bind(&DataRecorder::cameraCallback, this, std::placeholders::_1));
     
     odom_sub_ = this->create_subscription<nav_msgs::msg::Odometry>(
-      odom_topic_, 10,
+      odom_topic_, odom_qos,
       std::bind(&DataRecorder::odomCallback, this, std::placeholders::_1));
+    
+    cmd_vel_sub_ = this->create_subscription<geometry_msgs::msg::Twist>(
+      cmd_vel_topic_, 10,
+      std::bind(&DataRecorder::cmdVelCallback, this, std::placeholders::_1));
     
     // Create recording control subscriber (use relative topic name for namespace support)
     record_control_sub_ = this->create_subscription<std_msgs::msg::Bool>(
@@ -105,6 +116,8 @@ public:
     last_odom_.pose.pose.position.x = 0.0;
     last_odom_.pose.pose.position.y = 0.0;
     last_odom_.pose.pose.orientation.z = 0.0;
+    last_cmd_vel_.linear.x = 0.0;
+    last_cmd_vel_.angular.z = 0.0;
     last_image_ = nullptr;
     
     // Mount RAM disk if output directory is in /mnt/recording_ramdisk
@@ -121,6 +134,7 @@ public:
     RCLCPP_INFO(this->get_logger(), "Camera ID: %s", camera_id_.c_str());
     RCLCPP_INFO(this->get_logger(), "Camera topic: %s", camera_topic_.c_str());
     RCLCPP_INFO(this->get_logger(), "Odometry topic: %s", odom_topic_.c_str());
+    RCLCPP_INFO(this->get_logger(), "Command velocity topic: %s", cmd_vel_topic_.c_str());
     RCLCPP_INFO(this->get_logger(), "Recording rate: %.1f Hz", record_rate_);
     RCLCPP_INFO(this->get_logger(), "Recording: %s", recording_ ? "ON" : "OFF");
     RCLCPP_INFO(this->get_logger(), "Publish to data_recorder/start_stop to control recording");
@@ -340,6 +354,12 @@ private:
     last_odom_ = *msg;
   }
   
+  void cmdVelCallback(const geometry_msgs::msg::Twist::SharedPtr msg)
+  {
+    std::lock_guard<std::mutex> lock(data_mutex_);
+    last_cmd_vel_ = *msg;
+  }
+  
   void recordControlCallback(const std_msgs::msg::Bool::SharedPtr msg)
   {
     recording_ = msg->data;
@@ -390,6 +410,10 @@ private:
       double position_y = last_odom_.pose.pose.position.y;
       double orientation_z = last_odom_.pose.pose.orientation.z;
       
+      // Extract command velocity data
+      double cmd_linear_x = last_cmd_vel_.linear.x;
+      double cmd_angular_z = last_cmd_vel_.angular.z;
+      
       // Get timestamp
       auto now = std::chrono::system_clock::now();
       auto timestamp = std::chrono::duration_cast<std::chrono::microseconds>(
@@ -402,7 +426,9 @@ private:
                  << angular_vel << ","
                  << position_x << ","
                  << position_y << ","
-                 << orientation_z << "\n";
+                 << orientation_z << ","
+                 << cmd_linear_x << ","
+                 << cmd_angular_z << "\n";
       
       frame_count_++;
       
@@ -420,6 +446,7 @@ private:
   std::string output_dir_;
   std::string camera_topic_;
   std::string odom_topic_;
+  std::string cmd_vel_topic_;
   double record_rate_;
   int image_width_;
   int image_height_;
@@ -438,11 +465,13 @@ private:
   // Data storage
   sensor_msgs::msg::Image::SharedPtr last_image_;
   nav_msgs::msg::Odometry last_odom_;
+  geometry_msgs::msg::Twist last_cmd_vel_;
   std::mutex data_mutex_;
   
   // ROS2 components
   rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr camera_sub_;
   rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_sub_;
+  rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr cmd_vel_sub_;
   rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr record_control_sub_;
   rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr status_pub_;
   rclcpp::TimerBase::SharedPtr timer_;
