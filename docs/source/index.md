@@ -65,6 +65,15 @@ virtual_machines/rviz_sensor_visualization
 
 ```{toctree}
 :maxdepth: 1
+:caption: Object Detection (YOLO)
+
+YOLO_ObjectDetection/Running_Object_Detection_Node
+YOLO_ObjectDetection/YOLOv11n_Finetuning_Workflow
+YOLO_ObjectDetection/YOLOv11n_to_Hailo8_Guide
+```
+
+```{toctree}
+:maxdepth: 1
 :caption: Testing and Validation
 
 testing
