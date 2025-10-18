@@ -36,6 +36,7 @@ Source the package
 source install/setup.bash
 ```
 
+To make things easier, after you have built the package, you can combine these into two commands to switch into this repository and source the setup.bash (this launches a virtual environment). Once you have sourced the environment, you can then launch the object detector.
 
 ```bash
 cd ~/repos/common_platform/common_platform_ws
