@@ -1,0 +1,117 @@
+# Imitation Learning Training Configuration
+
+# Dataset configuration
+dataset:
+  data_root: "/home/rcr/teleop_data"  # Root directory containing session directories
+  sequence_length: 10                 # Number of consecutive frames (N)
+  chunk_size: 15                      # Number of future actions to predict (K)
+  stride: 1                           # Step size for sliding window
+  image_size: [224, 224]              # Target image size [height, width]
+  augment: true                       # Whether to apply data augmentation
+  train_ratio: 0.8                    # Fraction of data for training
+  val_ratio: 0.1                      # Fraction of data for validation
+  test_ratio: 0.1                     # Fraction of data for testing
+
+# Model configuration
+model:
+  backbone: "resnet18"                # Vision backbone: resnet18, resnet34, efficientnet_b0
+  pretrained: true                    # Use pretrained backbone weights
+  freeze_backbone: false              # Freeze backbone during training
+  d_model: 512                        # Transformer hidden dimension (matches ResNet18 output)
+  nhead: 4                            # Number of attention heads (ALOHA uses 4 for encoder)
+  num_encoder_layers: 6               # Number of transformer encoder layers (standard transformer)
+  num_decoder_layers: 6               # Number of transformer decoder layers (standard transformer)
+  dim_feedforward: 2048               # Feedforward dimension (4x d_model)
+  dropout: 0.1                        # Dropout rate
+  action_dim: 2                       # Action dimension (linear_x, angular_z)
+  max_seq_len: 100                    # Maximum sequence length for positional encoding
+
+# Training configuration
+training:
+  batch_size: 16                      # Batch size
+  num_epochs: 100                     # Number of training epochs
+  learning_rate: 1e-4                 # Initial learning rate
+  weight_decay: 1e-5                  # Weight decay for regularization
+  gradient_clip_norm: 1.0             # Gradient clipping max norm
+  early_stopping_patience: 10         # Early stopping patience (epochs)
+  mixed_precision: true               # Use mixed precision training
+  
+  # Learning rate schedule
+  lr_schedule:
+    type: "cosine"                    # Schedule type: cosine, step, exponential
+    warmup_epochs: 5                  # Number of warmup epochs
+    min_lr: 1e-6                      # Minimum learning rate
+  
+  # Optimizer
+  optimizer:
+    type: "adamw"                     # Optimizer type: adam, adamw, sgd
+    betas: [0.9, 0.999]              # Adam beta parameters
+    eps: 1e-8                         # Adam epsilon
+
+# Data loading
+dataloader:
+  num_workers: 4                      # Number of data loading workers
+  pin_memory: true                    # Pin memory for faster GPU transfer
+  persistent_workers: true            # Keep workers alive between epochs
+
+# Validation
+validation:
+  val_frequency: 1                    # Validation frequency (epochs)
+  save_best: true                     # Save best model based on validation loss
+  metrics:
+    - "mse"                           # Mean squared error
+    - "mae"                           # Mean absolute error
+    - "rmse"                          # Root mean squared error
+    - "linear_corr"                   # Linear velocity correlation
+    - "angular_corr"                  # Angular velocity correlation
+
+# Checkpointing
+checkpoint:
+  save_dir: "checkpoints"             # Directory to save checkpoints
+  save_frequency: 5                   # Save checkpoint every N epochs
+  keep_last_n: 5                      # Keep last N checkpoints
+  save_best: true                     # Save best model separately
+
+# Logging
+logging:
+  log_dir: "logs"                     # Directory for logs
+  tensorboard: true                   # Enable TensorBoard logging
+  log_frequency: 100                  # Log every N steps
+  log_images: true                    # Log sample images
+  log_actions: true                   # Log action predictions
+  log_frequency_images: 500           # Log images every N steps
+
+# Transfer learning
+transfer_learning:
+  enabled: false                      # Enable transfer learning
+  pretrained_path: ""                 # Path to pretrained model checkpoint
+  freeze_vision: false                # Freeze vision encoder
+  freeze_encoder: false               # Freeze temporal encoder
+  freeze_decoder: false               # Freeze action decoder
+  fine_tune_lr: 1e-5                 # Learning rate for fine-tuning
+
+# Augmentation settings
+augmentation:
+  horizontal_flip: 0.5                # Probability of horizontal flip
+  brightness_range: [0.8, 1.2]       # Brightness adjustment range
+  contrast_range: [0.8, 1.2]         # Contrast adjustment range
+  color_jitter: 0.3                   # Probability of color jitter
+  hue_shift_range: [-10, 10]         # Hue shift range in degrees
+
+# Hardware
+device: "auto"                        # Device: auto, cpu, cuda, mps
+seed: 42                              # Random seed for reproducibility
+
+# Experiment tracking
+experiment:
+  name: "maze_navigation"             # Experiment name
+  tags: ["imitation_learning", "transformer", "maze"]  # Experiment tags
+  notes: ""                           # Additional notes
+  save_config: true                   # Save config with experiment
+
+# Paths
+paths:
+  data_root: "/home/rcr/teleop_data"  # Data root directory
+  output_dir: "outputs"               # Output directory for experiments
+  pretrained_dir: "pretrained"        # Directory for pretrained models
+  results_dir: "results"              # Directory for results and plots
