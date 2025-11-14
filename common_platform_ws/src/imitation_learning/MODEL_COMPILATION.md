@@ -2,11 +2,18 @@
 
 This guide explains how to convert a trained PyTorch imitation learning model to HEF (Hailo Executable Format) for inference on the Raspberry Pi 5 AI Hat.
 
+**⚠️ Important Note:** Complex transformer architectures (like the action chunking transformer used in this project) may not be fully supported by Hailo's ONNX parser. If you encounter parsing errors, you may need to:
+- Simplify the model architecture
+- Replace unsupported operations with Hailo-compatible alternatives
+- Consider alternative deployment strategies (CPU/GPU inference)
+- Contact Hailo support for guidance on custom architectures
+
 ## Prerequisites
 
 1. **Trained PyTorch Model**: A `.pth` checkpoint file from the imitation learning training pipeline
 2. **Hailo Model Zoo Tools**: Hailo's model compilation tools (Hailo Dataflow Compiler)
 3. **Model Architecture Knowledge**: Understanding of your model's input/output shapes
+4. **Hailo Compatibility**: Awareness that complex transformer operations may require modifications
 
 ## Overview
 
@@ -63,7 +70,9 @@ The Hailo compiler will optimize the model regardless, so you can skip this step
 
 ## Step 3: Compile ONNX to HEF using Hailo Dataflow Compiler
 
-The Hailo Dataflow Compiler (HDF) converts ONNX models to HEF format. This tool is typically provided by Hailo and runs on a development machine (not necessarily on the Raspberry Pi).
+The Hailo compilation process is a two-step procedure:
+1. **Parse ONNX to HAR**: Convert ONNX model to Hailo Archive (HAR) format
+2. **Compile HAR to HEF**: Compile HAR to Hailo Executable Format (HEF)
 
 ### Installation
 
@@ -71,25 +80,114 @@ The Hailo Dataflow Compiler (HDF) converts ONNX models to HEF format. This tool 
 2. Follow Hailo's installation instructions
 3. Ensure you have the correct version for your Hailo-8L chip
 
-### Compilation Command
+### Step 3a: Parse ONNX to HAR
+
+First, convert your ONNX model to HAR format:
 
 ```bash
-hailo compile \
-  --input model.onnx \
-  --output model.hef \
-  --input-shape images:1,10,3,224,224 \
-  --output-shape actions:1,15,2 \
-  --quantization-calibration-dataset /path/to/calibration/images \
-  --target hailo8l
+# Check parser help
+hailo parser onnx --help
+```
+
+**First, check the actual tensor names in your ONNX model:**
+
+```bash
+python -c "import onnx; model = onnx.load('model.onnx'); \
+  print('Inputs:', [i.name for i in model.graph.input]); \
+  print('Outputs:', [o.name for o in model.graph.output])"
+```
+
+The parser command syntax:
+
+**Try these options in order:**
+
+**Option 1: Without tensor-shapes** (if ONNX model already has shape information):
+
+```bash
+hailo parser onnx \
+  /path/to/model.onnx \
+  --har-path /path/to/model.har \
+  --hw-arch hailo8l
+```
+
+**Option 2: Colon-separated format** (if shapes need to be specified):
+
+```bash
+hailo parser onnx \
+  /path/to/model.onnx \
+  --har-path /path/to/model.har \
+  --tensor-shapes images:[1,10,3,224,224] \
+  --hw-arch hailo8l
+```
+
+**Option 3: JSON format** (if the above don't work):
+
+```bash
+hailo parser onnx \
+  /path/to/model.onnx \
+  --har-path /path/to/model.har \
+  --tensor-shapes '{"images": [1,10,3,224,224]}' \
+  --hw-arch hailo8l
 ```
 
 **Key Parameters:**
-- `--input`: Input ONNX model path
-- `--output`: Output HEF file path
-- `--input-shape`: Input tensor shape `(batch, seq_len, channels, height, width)`
-- `--output-shape`: Output tensor shape `(batch, chunk_size, action_dim)` - **Note:** The model's forward pass returns `(batch, seq_len, chunk_size, action_dim)`, but for inference we only need the first timestep's chunk, so we extract `(batch, chunk_size, action_dim)`
-- `--quantization-calibration-dataset`: Path to calibration images for quantization
-- `--target`: Target Hailo chip (hailo8l for Raspberry Pi 5 AI Hat)
+- `model_path`: Input ONNX model path (positional argument)
+- `--har-path`: Output HAR file path
+- `--tensor-shapes`: Input tensor shapes (output shapes are inferred from the model)
+  - **Format 1 (JSON):** `'{"images": [1,10,3,224,224]}'` - Only input tensor
+  - **Format 2 (colon-separated):** `images:[1,10,3,224,224]` - Alternative format
+  - Input shape: `[1,10,3,224,224]` = `(batch, seq_len, channels, height, width)`
+  - **Note:** Output shapes are typically inferred automatically from the ONNX model
+- `--hw-arch hailo8l`: Target hardware architecture (hailo8l for Raspberry Pi 5 AI Hat)
+
+**Optional Parameters:**
+- `--net-name`: Network name (optional)
+- `--input-format`: Input format specification (if needed)
+- `--parsing-report-path`: Path to save parsing report (useful for debugging)
+
+**Note:** Calibration for quantization is typically handled during the compilation step (Step 3b), not during parsing.
+
+### Step 3b: Compile HAR to HEF
+
+Once you have a HAR file, compile it to HEF format:
+
+```bash
+hailo compiler \
+  model.har \
+  --hw-arch hailo8l \
+  --output-dir /path/to/output/directory
+```
+
+**Key Parameters:**
+- `har_path`: Path to the HAR file (positional argument)
+- `--hw-arch hailo8l`: Target hardware architecture (hailo8l for Raspberry Pi 5 AI Hat)
+- `--output-dir`: Directory where the HEF file will be saved (defaults to current directory)
+
+**Optional Parameters:**
+- `--model-script`: Path to a custom model script (for advanced post-processing)
+- `--auto-model-script`: Path to save auto-generated model script (useful for debugging)
+
+### Troubleshooting: Model Compatibility Issues
+
+**If you encounter parsing errors** (like `IndexError: list index out of range` or unsupported operations):
+
+This typically means the Hailo parser doesn't fully support some operations in your transformer model. Common issues:
+
+1. **Complex Transformer Operations**: Some transformer operations (attention mechanisms, positional encodings, etc.) may not be directly supported
+2. **Missing Attributes**: Some layers may be missing expected attributes in the ONNX export
+
+**Potential Solutions:**
+
+1. **Check Hailo Documentation**: Verify which ONNX operations are supported for your Hailo chip version
+2. **Simplify the Model**: Consider creating a simplified version without unsupported operations
+3. **Use Hailo Model Zoo**: If possible, adapt your model to use operations supported by Hailo Model Zoo
+4. **Contact Hailo Support**: For custom architectures, Hailo may provide guidance on supported operations
+5. **Alternative Deployment**: Consider running inference on CPU/GPU instead of Hailo for complex transformer models
+
+**Note:** Transformer models with attention mechanisms and complex temporal processing may require significant modifications to work with Hailo's hardware constraints. You may need to:
+- Replace unsupported operations with Hailo-compatible alternatives
+- Simplify the architecture (e.g., remove temporal components, use simpler attention)
+- Use quantization-aware training specifically for Hailo
 
 ### Quantization Calibration
 
@@ -197,16 +295,24 @@ python export_to_onnx.py \
 # 2. Simplify ONNX (optional)
 python -m onnxsim model.onnx model_simplified.onnx
 
-# 3. Compile to HEF
-# Note: Output shape is (batch, chunk_size, action_dim) = (1, 15, 2)
-# The export script extracts the first timestep from the model's output
-hailo compile \
-  --input model_simplified.onnx \
-  --output model.hef \
-  --input-shape images:1,10,3,224,224 \
-  --output-shape actions:1,15,2 \
-  --quantization-calibration-dataset /path/to/calibration/images \
-  --target hailo8l
+# 3a. Parse ONNX to HAR
+# Convert ONNX model to Hailo Archive format
+# Try without tensor-shapes first (if ONNX has shape info):
+hailo parser onnx \
+  model.onnx \
+  --har-path model.har \
+  --hw-arch hailo8l
+# If that fails, try with colon-separated format:
+# --tensor-shapes images:[1,10,3,224,224]
+# Or JSON format:
+# --tensor-shapes '{"images": [1,10,3,224,224]}'
+
+# 3b. Compile HAR to HEF
+# Compile HAR to Hailo Executable Format
+hailo compiler \
+  model.har \
+  --hw-arch hailo8l \
+  --output-dir .
 
 # 4. Verify
 hailo info model.hef
