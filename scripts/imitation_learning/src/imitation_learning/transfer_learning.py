@@ -31,7 +31,7 @@ def load_aloha_checkpoint(checkpoint_path: str, device: str = 'cpu') -> Dict[str
   if not os.path.exists(checkpoint_path):
     raise FileNotFoundError(f"Checkpoint not found: {checkpoint_path}")
   
-  checkpoint = torch.load(checkpoint_path, map_location=device)
+  checkpoint = torch.load(checkpoint_path, map_location=device, weights_only=False)
   
   # Handle different checkpoint formats
   if 'model_state_dict' in checkpoint:
@@ -217,7 +217,7 @@ def transfer_aloha_weights_practical(
     Model with transferred weights
   """
   print("Loading ALOHA checkpoint...")
-  checkpoint = torch.load(aloha_checkpoint_path, map_location=device)
+  checkpoint = torch.load(aloha_checkpoint_path, map_location=device, weights_only=False)
   
   if 'model_state_dict' in checkpoint:
     aloha_state = checkpoint['model_state_dict']

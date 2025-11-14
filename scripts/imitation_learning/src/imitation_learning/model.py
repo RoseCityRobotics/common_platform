@@ -47,21 +47,43 @@ class VisionEncoder(nn.Module):
     self.feature_dim = feature_dim
     
     # Load pretrained backbone
-    if backbone == 'resnet18':
-      self.backbone = models.resnet18(pretrained=pretrained)
-      self.backbone.fc = nn.Identity()  # Remove final classification layer
-      backbone_dim = 512
-    elif backbone == 'resnet34':
-      self.backbone = models.resnet34(pretrained=pretrained)
-      self.backbone.fc = nn.Identity()
-      backbone_dim = 512
-    elif backbone == 'efficientnet_b0':
-      import torchvision.models as models
-      self.backbone = models.efficientnet_b0(pretrained=pretrained)
-      self.backbone.classifier = nn.Identity()
-      backbone_dim = 1280
-    else:
-      raise ValueError(f"Unsupported backbone: {backbone}")
+    # Use 'weights' parameter instead of deprecated 'pretrained' (torchvision >= 0.13)
+    # Fallback to 'pretrained' for older versions
+    try:
+      # Try new API (torchvision >= 0.13)
+      if backbone == 'resnet18':
+        weights = models.ResNet18_Weights.DEFAULT if pretrained else None
+        self.backbone = models.resnet18(weights=weights)
+        self.backbone.fc = nn.Identity()  # Remove final classification layer
+        backbone_dim = 512
+      elif backbone == 'resnet34':
+        weights = models.ResNet34_Weights.DEFAULT if pretrained else None
+        self.backbone = models.resnet34(weights=weights)
+        self.backbone.fc = nn.Identity()
+        backbone_dim = 512
+      elif backbone == 'efficientnet_b0':
+        weights = models.EfficientNet_B0_Weights.DEFAULT if pretrained else None
+        self.backbone = models.efficientnet_b0(weights=weights)
+        self.backbone.classifier = nn.Identity()
+        backbone_dim = 1280
+      else:
+        raise ValueError(f"Unsupported backbone: {backbone}")
+    except (AttributeError, TypeError):
+      # Fallback to old API (torchvision < 0.13)
+      if backbone == 'resnet18':
+        self.backbone = models.resnet18(pretrained=pretrained)
+        self.backbone.fc = nn.Identity()
+        backbone_dim = 512
+      elif backbone == 'resnet34':
+        self.backbone = models.resnet34(pretrained=pretrained)
+        self.backbone.fc = nn.Identity()
+        backbone_dim = 512
+      elif backbone == 'efficientnet_b0':
+        self.backbone = models.efficientnet_b0(pretrained=pretrained)
+        self.backbone.classifier = nn.Identity()
+        backbone_dim = 1280
+      else:
+        raise ValueError(f"Unsupported backbone: {backbone}")
     
     # Projection layer to desired feature dimension
     self.projection = nn.Linear(backbone_dim, feature_dim)
@@ -158,7 +180,8 @@ class ActionChunkingTransformer(nn.Module):
     )
     self.temporal_encoder = nn.TransformerEncoder(
       encoder_layer, 
-      num_layers=num_encoder_layers
+      num_layers=num_encoder_layers,
+      enable_nested_tensor=False  # Disable nested tensor to avoid warning
     )
     
     # Action decoder
@@ -339,7 +362,7 @@ def load_pretrained_weights(
   Returns:
     Model with loaded weights
   """
-  checkpoint = torch.load(checkpoint_path, map_location=device)
+  checkpoint = torch.load(checkpoint_path, map_location=device, weights_only=False)
   
   if 'model_state_dict' in checkpoint:
     state_dict = checkpoint['model_state_dict']
@@ -439,7 +462,7 @@ def transfer_aloha_weights_practical(
     Model with transferred weights
   """
   print("Loading ALOHA checkpoint...")
-  checkpoint = torch.load(aloha_checkpoint_path, map_location=device)
+  checkpoint = torch.load(aloha_checkpoint_path, map_location=device, weights_only=False)
   
   if 'model_state_dict' in checkpoint:
     aloha_state = checkpoint['model_state_dict']
