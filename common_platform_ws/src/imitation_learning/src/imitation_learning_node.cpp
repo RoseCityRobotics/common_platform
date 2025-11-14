@@ -316,12 +316,19 @@ std::vector<float> ImitationLearningNode::run_inference(const cv::Mat& image)
           continue;
         }
         
-        // Parse output (assuming 2 float values: linear_x, angular_z)
+        // Parse output
+        // Expected shape: (batch, chunk_size, action_dim) = (1, chunk_size, 2)
+        // We extract the first action from the chunk: [0, 0, :] = (linear_x, angular_z)
         const float* output_float = reinterpret_cast<const float*>(output_buffer.data());
         int num_outputs = output_size / sizeof(float);
         
-        for (int i = 0; i < num_outputs && i < 2; i++) {
-          predictions.push_back(output_float[i]);
+        // Output is (batch, chunk_size, action_dim), so we need at least 2 values
+        // Extract first action: output[0][0][0] = linear_x, output[0][0][1] = angular_z
+        if (num_outputs >= 2) {
+          predictions.push_back(output_float[0]);  // linear_x (first action, first dim)
+          predictions.push_back(output_float[1]);  // angular_z (first action, second dim)
+        } else {
+          RCLCPP_WARN(this->get_logger(), "Output buffer too small: expected at least 2 floats, got %d", num_outputs);
         }
       }
       

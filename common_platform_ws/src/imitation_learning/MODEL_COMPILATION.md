@@ -33,9 +33,11 @@ python export_to_onnx.py \
   --width 224
 ```
 
-## Step 2: Optimize ONNX Model (Optional but Recommended)
+## Step 2: Optimize ONNX Model (Optional)
 
-Before compilation, you may want to optimize the ONNX model:
+**Note:** This step is optional. The Hailo Dataflow Compiler performs its own optimizations, so onnx-simplifier is not strictly necessary. However, it can help catch ONNX export issues early and sometimes produces a cleaner model for the compiler.
+
+If you want to use onnx-simplifier:
 
 ```bash
 # Install onnx-simplifier if not already installed
@@ -44,6 +46,20 @@ pip install onnx-simplifier
 # Simplify ONNX model
 python -m onnxsim model.onnx model_simplified.onnx
 ```
+
+**What onnx-simplifier does:**
+- Constant folding (evaluates constant expressions at compile time)
+- Removes redundant operations
+- Simplifies graph structure
+- Can help identify ONNX export issues early
+
+**What Hailo Dataflow Compiler does:**
+- Hardware-specific optimizations for Hailo chips
+- Quantization (INT8 conversion) with calibration
+- Resource allocation and scheduling
+- Model translation to HEF format
+
+The Hailo compiler will optimize the model regardless, so you can skip this step if you prefer a simpler workflow.
 
 ## Step 3: Compile ONNX to HEF using Hailo Dataflow Compiler
 
@@ -62,7 +78,7 @@ hailo compile \
   --input model.onnx \
   --output model.hef \
   --input-shape images:1,10,3,224,224 \
-  --output-shape actions:1,10,15,2 \
+  --output-shape actions:1,15,2 \
   --quantization-calibration-dataset /path/to/calibration/images \
   --target hailo8l
 ```
@@ -70,8 +86,8 @@ hailo compile \
 **Key Parameters:**
 - `--input`: Input ONNX model path
 - `--output`: Output HEF file path
-- `--input-shape`: Input tensor shape (batch, seq_len, channels, height, width)
-- `--output-shape`: Output tensor shape (batch, seq_len, chunk_size, action_dim)
+- `--input-shape`: Input tensor shape `(batch, seq_len, channels, height, width)`
+- `--output-shape`: Output tensor shape `(batch, chunk_size, action_dim)` - **Note:** The model's forward pass returns `(batch, seq_len, chunk_size, action_dim)`, but for inference we only need the first timestep's chunk, so we extract `(batch, chunk_size, action_dim)`
 - `--quantization-calibration-dataset`: Path to calibration images for quantization
 - `--target`: Target Hailo chip (hailo8l for Raspberry Pi 5 AI Hat)
 
@@ -182,11 +198,13 @@ python export_to_onnx.py \
 python -m onnxsim model.onnx model_simplified.onnx
 
 # 3. Compile to HEF
+# Note: Output shape is (batch, chunk_size, action_dim) = (1, 15, 2)
+# The export script extracts the first timestep from the model's output
 hailo compile \
   --input model_simplified.onnx \
   --output model.hef \
   --input-shape images:1,10,3,224,224 \
-  --output-shape actions:1,10,15,2 \
+  --output-shape actions:1,15,2 \
   --quantization-calibration-dataset /path/to/calibration/images \
   --target hailo8l
 
