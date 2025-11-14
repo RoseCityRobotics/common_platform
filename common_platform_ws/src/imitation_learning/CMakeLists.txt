@@ -14,27 +14,42 @@ find_package(std_msgs REQUIRED)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(OPENCV REQUIRED opencv4)
 
-# Find HailoRT directly
-find_library(HAILORT_LIBRARY
-  NAMES hailort
-  PATHS /usr/lib /usr/local/lib
+# Find ONNX Runtime
+find_library(ONNXRUNTIME_LIBRARY
+  NAMES onnxruntime
+  PATHS 
+    /usr/lib
+    /usr/local/lib
+    /opt/onnxruntime/lib
+    ${CMAKE_SOURCE_DIR}/../onnxruntime/lib
   NO_DEFAULT_PATH
 )
 
-find_path(HAILORT_INCLUDE_DIR
-  NAMES hailo/hailort.hpp
-  PATHS /usr/include /usr/local/include
+find_path(ONNXRUNTIME_INCLUDE_DIR
+  NAMES onnxruntime_cxx_api.h
+  PATHS
+    /usr/include
+    /usr/local/include
+    /opt/onnxruntime/include
+    ${CMAKE_SOURCE_DIR}/../onnxruntime/include
   NO_DEFAULT_PATH
 )
 
-if(HAILORT_LIBRARY AND HAILORT_INCLUDE_DIR)
-  set(HAILORT_FOUND TRUE)
-  set(HAILORT_LIBRARIES ${HAILORT_LIBRARY})
-  set(HAILORT_INCLUDE_DIRS ${HAILORT_INCLUDE_DIR})
-  message(STATUS "Found HailoRT: ${HAILORT_LIBRARY}")
+if(ONNXRUNTIME_LIBRARY AND ONNXRUNTIME_INCLUDE_DIR)
+  set(ONNXRUNTIME_FOUND TRUE)
+  set(ONNXRUNTIME_LIBRARIES ${ONNXRUNTIME_LIBRARY})
+  set(ONNXRUNTIME_INCLUDE_DIRS ${ONNXRUNTIME_INCLUDE_DIR})
+  message(STATUS "Found ONNX Runtime: ${ONNXRUNTIME_LIBRARY}")
 else()
-  set(HAILORT_FOUND FALSE)
-  message(WARNING "HailoRT not found - building without HailoRT support")
+  set(ONNXRUNTIME_FOUND FALSE)
+  message(WARNING "ONNX Runtime not found - attempting to find via pkg-config")
+  # Try pkg-config as fallback
+  pkg_check_modules(ONNXRUNTIME onnxruntime)
+  if(ONNXRUNTIME_FOUND)
+    message(STATUS "Found ONNX Runtime via pkg-config")
+  else()
+    message(WARNING "ONNX Runtime not found - building without ONNX Runtime support")
+  endif()
 endif()
 
 add_executable(imitation_learning_node src/imitation_learning_node.cpp)
@@ -56,14 +71,18 @@ target_link_libraries(imitation_learning_node PUBLIC
 target_link_libraries(imitation_learning_node PUBLIC ${OPENCV_LIBRARIES})
 target_compile_options(imitation_learning_node PRIVATE ${OPENCV_CFLAGS_OTHER})
 
-if(HAILORT_FOUND)
-  target_link_libraries(imitation_learning_node PUBLIC ${HAILORT_LIBRARIES})
-  target_include_directories(imitation_learning_node PRIVATE ${HAILORT_INCLUDE_DIRS})
-  target_compile_options(imitation_learning_node PRIVATE ${HAILORT_CFLAGS_OTHER})
-  target_compile_definitions(imitation_learning_node PRIVATE HAVE_HAILORT)
+if(ONNXRUNTIME_FOUND)
+  target_link_libraries(imitation_learning_node PUBLIC ${ONNXRUNTIME_LIBRARIES})
+  target_include_directories(imitation_learning_node PRIVATE ${ONNXRUNTIME_INCLUDE_DIRS})
+  if(ONNXRUNTIME_CFLAGS_OTHER)
+    target_compile_options(imitation_learning_node PRIVATE ${ONNXRUNTIME_CFLAGS_OTHER})
+  endif()
+  target_compile_definitions(imitation_learning_node PRIVATE HAVE_ONNXRUNTIME)
+  message(STATUS "Building with ONNX Runtime support")
 else()
-  message(WARNING "HailoRT not found - building without HailoRT support")
-  target_compile_definitions(imitation_learning_node PRIVATE NO_HAILORT)
+  message(WARNING "ONNX Runtime not found - building without ONNX Runtime support")
+  message(WARNING "Install ONNX Runtime: https://onnxruntime.ai/docs/install/")
+  target_compile_definitions(imitation_learning_node PRIVATE NO_ONNXRUNTIME)
 endif()
 
 install(TARGETS imitation_learning_node

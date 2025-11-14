@@ -13,8 +13,8 @@ def generate_launch_description():
     return LaunchDescription([
         DeclareLaunchArgument(
             'model_path',
-            default_value='/home/rcr/repos/common_platform/models/imitation_learning.hef',
-            description='Path to the HEF model file'
+            default_value='/home/rcr/repos/common_platform/models/imitation_learning.onnx',
+            description='Path to the ONNX model file'
         ),
         DeclareLaunchArgument(
             'input_width',
@@ -47,13 +47,14 @@ def generate_launch_description():
             description='Publishing rate for cmd_vel (Hz)'
         ),
         DeclareLaunchArgument(
-            'hailort_log_path',
-            default_value='/tmp',
-            description='Directory for HailoRT log file (hailort.log will be created here)'
+            'stats_report_interval',
+            default_value='10.0',
+            description='Interval for reporting inference statistics (seconds)'
         ),
-        # Set HailoRT log directory environment variable using the parameter
-        SetEnvironmentVariable(
-            'HAILORT_LOGGER_PATH', LaunchConfiguration('hailort_log_path')
+        DeclareLaunchArgument(
+            'max_inference_time_ms',
+            default_value='33.0',
+            description='Maximum expected inference time in milliseconds (for 30 Hz, ~33 ms)'
         ),
         Node(
             package='imitation_learning',
@@ -68,7 +69,8 @@ def generate_launch_description():
                 'max_linear_velocity': LaunchConfiguration('max_linear_velocity'),
                 'max_angular_velocity': LaunchConfiguration('max_angular_velocity'),
                 'publish_rate': LaunchConfiguration('publish_rate'),
-                'hailort_log_path': LaunchConfiguration('hailort_log_path'),
+                'stats_report_interval': LaunchConfiguration('stats_report_interval'),
+                'max_inference_time_ms': LaunchConfiguration('max_inference_time_ms'),
             }]
         )
     ])
