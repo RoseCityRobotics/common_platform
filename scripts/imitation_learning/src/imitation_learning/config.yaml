@@ -24,6 +24,7 @@ model:
   dim_feedforward: 2048               # Feedforward dimension (4x d_model)
   dropout: 0.1                        # Dropout rate
   action_dim: 2                       # Action dimension (linear_x, angular_z)
+  z_dim: 32                           # Dimension of latent Z variable (VAE style variable)
   max_seq_len: 100                    # Maximum sequence length for positional encoding
 
 # Training configuration
@@ -35,6 +36,7 @@ training:
   gradient_clip_norm: 1.0             # Gradient clipping max norm
   early_stopping_patience: 10         # Early stopping patience (epochs)
   mixed_precision: true               # Use mixed precision training
+  kl_weight: 0.01                     # Weight for KL divergence loss (β in ALOHA: L = L_reconst + β * L_KL)
   
   # Learning rate schedule
   lr_schedule:

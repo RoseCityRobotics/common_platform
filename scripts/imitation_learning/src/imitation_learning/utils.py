@@ -137,6 +137,29 @@ def load_checkpoint(
   return checkpoint
 
 
+def compute_kl_loss(z_mean: torch.Tensor, z_logvar: torch.Tensor) -> torch.Tensor:
+  """
+  Compute KL divergence loss between learned distribution and standard normal prior.
+  
+  Following ALOHA paper: L_reg = D_KL(q_φ(z|a_{t:t+k}, ō_t) || N(0, I))
+  
+  Note: With z_mean fixed to 0, the KL simplifies to:
+        KL = -0.5 * sum(1 + logvar - exp(logvar))
+  
+  Args:
+    z_mean: (batch, z_dim) - mean of learned distribution (should be zeros)
+    z_logvar: (batch, z_dim) - log variance of learned distribution
+  
+  Returns:
+    kl_loss: Scalar KL divergence loss
+  """
+  # KL divergence: -0.5 * sum(1 + logvar - mean^2 - exp(logvar))
+  # With z_mean = 0, this simplifies to: -0.5 * sum(1 + logvar - exp(logvar))
+  kl_loss = -0.5 * torch.sum(1 + z_logvar - z_logvar.exp(), dim=1)
+  kl_loss = torch.mean(kl_loss)
+  return kl_loss
+
+
 def compute_metrics(
   predictions: torch.Tensor,
   targets: torch.Tensor,

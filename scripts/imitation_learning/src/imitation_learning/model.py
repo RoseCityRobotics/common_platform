@@ -31,6 +31,95 @@ class PositionalEncoding(nn.Module):
     return x + self.pe[:x.size(0), :]
 
 
+class ActionEncoder(nn.Module):
+  """
+  Action encoder that encodes action chunks into latent Z variable (CVAE).
+  
+  Following ALOHA paper: q_φ(z|a_{t:t+k}, ō_t)
+  Encodes action chunks conditioned on observations into a latent distribution.
+  
+  Note: In ALOHA, ō_t represents non-image observations. For our case,
+  we condition on image features (temporal features from the vision encoder).
+  """
+  
+  def __init__(
+    self,
+    action_dim: int = 2,
+    chunk_size: int = 15,
+    z_dim: int = 32,
+    obs_dim: int = 512,  # Dimension of observation features (d_model)
+    hidden_dim: int = 256
+  ):
+    super().__init__()
+    self.action_dim = action_dim
+    self.chunk_size = chunk_size
+    self.z_dim = z_dim
+    self.obs_dim = obs_dim
+    
+    # Flatten action chunk: (batch, chunk_size, action_dim) -> (batch, chunk_size * action_dim)
+    action_input_dim = chunk_size * action_dim
+    
+    # Combine action and observation features
+    # Use first timestep's observation features (following ALOHA's ō_t notation)
+    combined_input_dim = action_input_dim + obs_dim
+    
+    # Encoder network (conditioned on both actions and observations)
+    self.encoder = nn.Sequential(
+      nn.Linear(combined_input_dim, hidden_dim),
+      nn.ReLU(),
+      nn.Linear(hidden_dim, hidden_dim),
+      nn.ReLU()
+    )
+    
+    # Output log-variance for latent Z (mean is fixed to 0, following ALOHA)
+    # This reduces parameters and aligns with inference using z=0
+    self.fc_logvar = nn.Linear(hidden_dim, z_dim)
+  
+  def forward(self, action_chunks: torch.Tensor, obs_features: torch.Tensor) -> tuple:
+    """
+    Encode action chunks conditioned on observations into latent Z distribution.
+    
+    Following ALOHA: z_mean is fixed to 0, only variance is learned.
+    This reduces parameters and aligns with using z=0 during inference.
+    
+    Args:
+      action_chunks: (batch, chunk_size, action_dim) - action chunks to encode
+      obs_features: (batch, obs_dim) - observation features to condition on
+                    Typically the temporal features from the first timestep
+    
+    Returns:
+      z_mean: (batch, z_dim) - always zeros (fixed)
+      z_logvar: (batch, z_dim) - log variance of latent distribution (learned)
+      z: (batch, z_dim) - sampled latent variable (for training)
+    """
+    batch_size = action_chunks.shape[0]
+    
+    # Flatten action chunks
+    action_flat = action_chunks.view(batch_size, -1)  # (batch, chunk_size * action_dim)
+    
+    # Concatenate actions and observations (CVAE conditioning)
+    combined = torch.cat([action_flat, obs_features], dim=1)  # (batch, action_input_dim + obs_dim)
+    
+    # Encode
+    hidden = self.encoder(combined)  # (batch, hidden_dim)
+    
+    # Get distribution parameters
+    # z_mean is fixed to 0 (reduces parameters, aligns with inference)
+    z_mean = torch.zeros(batch_size, self.z_dim, device=action_chunks.device)
+    z_logvar = self.fc_logvar(hidden)  # (batch, z_dim)
+    
+    # Sample Z using reparameterization trick: z ~ N(0, exp(logvar))
+    if self.training:
+      std = torch.exp(0.5 * z_logvar)
+      eps = torch.randn_like(std)
+      z = z_mean + eps * std  # = eps * std (since z_mean = 0)
+    else:
+      # During inference, use z=0 (as per ALOHA Algorithm 2)
+      z = z_mean  # = zeros
+    
+    return z_mean, z_logvar, z
+
+
 class VisionEncoder(nn.Module):
   """Vision encoder using pretrained backbone."""
   
@@ -123,12 +212,14 @@ class VisionEncoder(nn.Module):
 
 class ActionChunkingTransformer(nn.Module):
   """
-  Action Chunking Transformer for imitation learning.
+  Action Chunking Transformer for imitation learning with CVAE-style latent Z.
   
-  Architecture:
+  Architecture (following ALOHA paper):
   1. Vision encoder: Extract features from image sequences
   2. Temporal encoder: Process temporal dependencies with transformer
-  3. Action decoder: Predict action chunks using learned queries
+  3. Action encoder: Encode action chunks conditioned on observations into latent Z 
+                     (q_φ(z|a_{t:t+k}, ō_t)) - CVAE
+  4. Action decoder: Predict action chunks using observations and Z (π_θ(â_{t:t+k}|o_t, z))
   """
   
   def __init__(
@@ -150,6 +241,9 @@ class ActionChunkingTransformer(nn.Module):
     chunk_size: int = 15,
     action_dim: int = 2,  # linear_x, angular_z
     
+    # VAE parameters
+    z_dim: int = 32,  # Dimension of latent Z variable
+    
     # Other parameters
     max_seq_len: int = 100
   ):
@@ -158,6 +252,7 @@ class ActionChunkingTransformer(nn.Module):
     self.d_model = d_model
     self.chunk_size = chunk_size
     self.action_dim = action_dim
+    self.z_dim = z_dim
     
     # Vision encoder
     self.vision_encoder = VisionEncoder(
@@ -183,6 +278,19 @@ class ActionChunkingTransformer(nn.Module):
       num_layers=num_encoder_layers,
       enable_nested_tensor=False  # Disable nested tensor to avoid warning
     )
+    
+    # Action encoder (for CVAE-style latent Z, conditioned on observations)
+    self.action_encoder = ActionEncoder(
+      action_dim=action_dim,
+      chunk_size=chunk_size,
+      z_dim=z_dim,
+      obs_dim=d_model,  # Condition on temporal features (d_model dimension)
+      hidden_dim=d_model
+    )
+    
+    # Projection to incorporate Z into decoder queries
+    # Z will be added to action queries
+    self.z_projection = nn.Linear(z_dim, d_model)
     
     # Action decoder
     decoder_layer = nn.TransformerDecoderLayer(
@@ -227,17 +335,28 @@ class ActionChunkingTransformer(nn.Module):
   def forward(
     self, 
     images: torch.Tensor,
+    actions: Optional[torch.Tensor] = None,
+    z: Optional[torch.Tensor] = None,
+    return_z_stats: bool = False,
     return_attention: bool = False
-  ) -> torch.Tensor:
+  ):
     """
-    Forward pass.
+    Forward pass with CVAE-style latent Z (conditioned on observations).
     
     Args:
       images: (batch, seq_len, 3, height, width) - input image sequence
+      actions: (batch, seq_len, chunk_size, action_dim) - target actions (for training)
+                If provided during training, Z will be encoded from actions conditioned on observations.
+                If None, Z will be set to 0 (for inference).
+      z: (batch, z_dim) - optional pre-computed latent Z variable
+          If None and actions provided, Z will be encoded from actions and observations (CVAE).
+          If None and actions not provided, Z=0 (inference mode).
+      return_z_stats: Whether to return Z statistics (mean, logvar) for KL loss
       return_attention: Whether to return attention weights
     
     Returns:
       actions: (batch, seq_len, chunk_size, action_dim) - predicted action chunks
+      z_stats: (z_mean, z_logvar) if return_z_stats=True, else None
     """
     batch_size, seq_len = images.shape[:2]
     
@@ -252,9 +371,31 @@ class ActionChunkingTransformer(nn.Module):
     # (seq_len, batch, d_model)
     temporal_features = self.temporal_encoder(vision_features)
     
-    # Prepare action queries
+    # Encode Z from actions conditioned on observations (CVAE, training mode)
+    z_mean = None
+    z_logvar = None
+    if actions is not None and self.training:
+      # Use first timestep's action chunk and observation features to encode Z
+      # Following ALOHA: q_φ(z|a_{t:t+k}, ō_t)
+      # In ALOHA, ō_t is non-image observations. For us, we use temporal features.
+      action_chunk = actions[:, 0, :, :]  # (batch, chunk_size, action_dim)
+      obs_features = temporal_features[0].transpose(0, 1)  # (batch, d_model) - first timestep
+      z_mean, z_logvar, z = self.action_encoder(action_chunk, obs_features)
+    elif z is not None:
+      # Use provided Z
+      pass
+    else:
+      # Inference mode: use Z=0 (as per ALOHA Algorithm 2)
+      z = torch.zeros(batch_size, self.z_dim, device=images.device)
+    
+    # Project Z to match d_model dimension
+    z_proj = self.z_projection(z)  # (batch, d_model)
+    
+    # Prepare action queries and add Z
     # (chunk_size, batch, d_model)
     action_queries = self.action_queries.unsqueeze(1).expand(-1, batch_size, -1)
+    # Add Z to queries: broadcast (batch, d_model) -> (chunk_size, batch, d_model)
+    action_queries = action_queries + z_proj.unsqueeze(0)
     
     # Action decoding
     # (chunk_size, batch, d_model)
@@ -268,22 +409,23 @@ class ActionChunkingTransformer(nn.Module):
     
     # Predict actions for each timestep
     # (batch, chunk_size, action_dim)
-    actions = self.action_head(decoded_features)
+    actions_pred = self.action_head(decoded_features)
     
     # Expand to all timesteps: (batch, seq_len, chunk_size, action_dim)
-    actions = actions.unsqueeze(1).expand(-1, seq_len, -1, -1)
+    actions_pred = actions_pred.unsqueeze(1).expand(-1, seq_len, -1, -1)
     
-    if return_attention:
-      # Note: This is a simplified version. For full attention visualization,
-      # you would need to modify the transformer layers to return attention weights
-      return actions, None
+    if return_z_stats:
+      return actions_pred, (z_mean, z_logvar)
+    elif return_attention:
+      return actions_pred, None
     else:
-      return actions
+      return actions_pred
   
   def predict_actions(
     self,
     images: torch.Tensor,
-    use_first_action_only: bool = True
+    use_first_action_only: bool = True,
+    z: Optional[torch.Tensor] = None
   ) -> torch.Tensor:
     """
     Predict actions for inference.
@@ -291,13 +433,15 @@ class ActionChunkingTransformer(nn.Module):
     Args:
       images: (batch, seq_len, 3, height, width) - input image sequence
       use_first_action_only: If True, return only the first action of each chunk
+      z: Optional latent Z variable. If None, uses Z=0 (as per ALOHA Algorithm 2)
     
     Returns:
       actions: (batch, seq_len, action_dim) or (batch, seq_len, chunk_size, action_dim)
     """
+    self.eval()
     with torch.no_grad():
-      # Get full action chunks
-      action_chunks = self.forward(images)  # (batch, seq_len, chunk_size, action_dim)
+      # Get full action chunks (Z=0 for inference)
+      action_chunks = self.forward(images, actions=None, z=z)  # (batch, seq_len, chunk_size, action_dim)
       
       if use_first_action_only:
         # Return only the first action of each chunk
@@ -338,6 +482,7 @@ def create_model(config: Dict[str, Any]) -> ActionChunkingTransformer:
     dropout=model_config.get('dropout', 0.1),
     chunk_size=model_config.get('chunk_size', 15),
     action_dim=model_config.get('action_dim', 2),
+    z_dim=model_config.get('z_dim', 32),  # Latent Z dimension
     max_seq_len=model_config.get('max_seq_len', 100)
   )
   
