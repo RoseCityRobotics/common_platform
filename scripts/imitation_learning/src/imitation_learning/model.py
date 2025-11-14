@@ -371,10 +371,11 @@ class ActionChunkingTransformer(nn.Module):
     # (seq_len, batch, d_model)
     temporal_features = self.temporal_encoder(vision_features)
     
-    # Encode Z from actions conditioned on observations (CVAE, training mode)
+    # Encode Z from actions conditioned on observations (CVAE)
     z_mean = None
     z_logvar = None
-    if actions is not None and self.training:
+    if actions is not None:
+      # Encode Z when actions are provided (for training or validation with return_z_stats)
       # Use first timestep's action chunk and observation features to encode Z
       # Following ALOHA: q_φ(z|a_{t:t+k}, ō_t)
       # In ALOHA, ō_t is non-image observations. For us, we use temporal features.
