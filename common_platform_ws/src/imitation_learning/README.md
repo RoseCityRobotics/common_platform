@@ -55,6 +55,8 @@ ros2 launch imitation_learning imitation_learning.launch.py \
   sequence_length:=10 \
   max_linear_velocity:=0.5 \
   max_angular_velocity:=1.5 \
+  linear_velocity_threshold:=0.01 \
+  angular_velocity_threshold:=0.05 \
   publish_rate:=30.0 \
   stats_report_interval:=10.0 \
   max_inference_time_ms:=33.0
@@ -80,6 +82,8 @@ ros2 run imitation_learning imitation_learning_node
 - `sequence_length`: Number of consecutive frames for temporal model (default: 10)
 - `max_linear_velocity`: Maximum linear velocity in m/s (default: 0.5)
 - `max_angular_velocity`: Maximum angular velocity in rad/s (default: 1.5)
+- `linear_velocity_threshold`: Threshold below which linear velocity is set to 0 (deadband) in m/s (default: 0.01)
+- `angular_velocity_threshold`: Threshold below which angular velocity is set to 0 (deadband) in rad/s (default: 0.05)
 - `publish_rate`: Publishing rate for cmd_vel in Hz (default: 30.0)
 - `stats_report_interval`: Interval for reporting inference statistics in seconds (default: 10.0)
 - `max_inference_time_ms`: Maximum expected inference time in milliseconds (default: 33.0, for 30 Hz camera)

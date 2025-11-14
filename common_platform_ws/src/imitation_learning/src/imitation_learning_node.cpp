@@ -25,6 +25,8 @@ ImitationLearningNode::ImitationLearningNode(const rclcpp::NodeOptions& options)
   this->declare_parameter("sequence_length", 10);
   this->declare_parameter("max_linear_velocity", 0.5);
   this->declare_parameter("max_angular_velocity", 1.5);
+  this->declare_parameter("linear_velocity_threshold", 0.01);  // Threshold below which linear velocity is set to 0
+  this->declare_parameter("angular_velocity_threshold", 0.05);  // Threshold below which angular velocity is set to 0
   this->declare_parameter("publish_rate", 30.0);
   this->declare_parameter("stats_report_interval", 10.0);  // Report stats every 10 seconds
   this->declare_parameter("max_inference_time_ms", 33.0);  // Max inference time for 30 Hz (33.3 ms per frame)
@@ -35,6 +37,8 @@ ImitationLearningNode::ImitationLearningNode(const rclcpp::NodeOptions& options)
   sequence_length_ = this->get_parameter("sequence_length").as_int();
   max_linear_velocity_ = static_cast<float>(this->get_parameter("max_linear_velocity").as_double());
   max_angular_velocity_ = static_cast<float>(this->get_parameter("max_angular_velocity").as_double());
+  linear_velocity_threshold_ = static_cast<float>(this->get_parameter("linear_velocity_threshold").as_double());
+  angular_velocity_threshold_ = static_cast<float>(this->get_parameter("angular_velocity_threshold").as_double());
   publish_rate_ = this->get_parameter("publish_rate").as_double();
   double stats_interval = this->get_parameter("stats_report_interval").as_double();
 
@@ -291,6 +295,14 @@ void ImitationLearningNode::image_callback(const sensor_msgs::msg::Image::Shared
         // Clamp to max velocities
         latest_linear_x_ = std::clamp(latest_linear_x_, -max_linear_velocity_, max_linear_velocity_);
         latest_angular_z_ = std::clamp(latest_angular_z_, -max_angular_velocity_, max_angular_velocity_);
+        
+        // Apply deadband threshold - set to zero if below threshold
+        if (std::abs(latest_linear_x_) < linear_velocity_threshold_) {
+          latest_linear_x_ = 0.0f;
+        }
+        if (std::abs(latest_angular_z_) < angular_velocity_threshold_) {
+          latest_angular_z_ = 0.0f;
+        }
         
         RCLCPP_DEBUG(this->get_logger(), "Prediction: linear_x=%.3f, angular_z=%.3f",
                      latest_linear_x_, latest_angular_z_);
