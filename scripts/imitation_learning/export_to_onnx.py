@@ -82,13 +82,32 @@ def export_to_onnx(
     dummy_input = torch.randn(*input_shape)
     
     # Export to ONNX
+    # Note: The model's forward() returns (batch, seq_len, chunk_size, action_dim)
+    # but for inference we only need the first timestep's chunk: (batch, chunk_size, action_dim)
+    # We'll create a wrapper that extracts just the first timestep
     print(f"\nExporting model to ONNX: {output_path}")
     print(f"  Input shape: {input_shape}")
     print(f"  Opset version: {opset_version}")
+    print(f"  Note: Model outputs (batch, seq_len, chunk_size, action_dim)")
+    print(f"        We'll extract first timestep: (batch, chunk_size, action_dim)")
+    
+    # Create a wrapper model that extracts the first timestep's prediction
+    class InferenceWrapper(torch.nn.Module):
+        def __init__(self, model):
+            super().__init__()
+            self.model = model
+        
+        def forward(self, images):
+            # Get full output: (batch, seq_len, chunk_size, action_dim)
+            full_output = self.model(images)
+            # Extract first timestep: (batch, chunk_size, action_dim)
+            return full_output[:, 0, :, :]
+    
+    wrapped_model = InferenceWrapper(model)
     
     try:
         torch.onnx.export(
-            model,
+            wrapped_model,
             dummy_input,
             output_path,
             export_params=True,
@@ -103,14 +122,19 @@ def export_to_onnx(
             verbose=False
         )
         print(f"✓ ONNX model exported successfully to: {output_path}")
+        chunk_size = model_info['chunk_size']
+        action_dim = model_info['action_dim']
+        print(f"  Output shape: (batch, chunk_size, action_dim) = (1, {chunk_size}, {action_dim})")
     except Exception as e:
         print(f"✗ Error exporting to ONNX: {e}")
         raise
     
     # Simplify ONNX model if requested
+    # Note: This is optional - Hailo Dataflow Compiler will do its own optimizations
     if simplify:
         try:
-            print("\nSimplifying ONNX model...")
+            print("\nSimplifying ONNX model (optional preprocessing step)...")
+            print("  Note: Hailo compiler will optimize anyway, but this can catch issues early")
             import onnx
             from onnxsim import simplify
             
@@ -131,10 +155,11 @@ def export_to_onnx(
                 print("⚠ Simplification check failed, using original model")
         except ImportError:
             print("⚠ onnx-simplifier not installed, skipping simplification")
-            print("  Install with: pip install onnx-simplifier")
+            print("  This is optional - Hailo compiler will optimize the model anyway")
+            print("  Install with: pip install onnx-simplifier (if you want this step)")
         except Exception as e:
             print(f"⚠ Error simplifying model: {e}")
-            print("  Continuing with original model...")
+            print("  Continuing with original model (Hailo compiler will optimize it)...")
     
     print("\n" + "=" * 60)
     print("Export Complete!")
