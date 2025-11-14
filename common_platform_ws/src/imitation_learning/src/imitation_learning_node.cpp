@@ -3,13 +3,15 @@
 #include <fstream>
 #include <iomanip>
 #include <sstream>
+#include <filesystem>
 
 using namespace imitation_learning;
 
 ImitationLearningNode::ImitationLearningNode(const rclcpp::NodeOptions& options)
   : Node("imitation_learning_node", options),
 #ifdef HAVE_ONNXRUNTIME
-    ort_env_(ORT_LOGGING_LEVEL_WARNING, "ImitationLearningNode"),
+    // Use ERROR level to suppress GPU discovery warnings (we're CPU-only on Raspberry Pi)
+    ort_env_(ORT_LOGGING_LEVEL_ERROR, "ImitationLearningNode"),
 #endif
     latest_linear_x_(0.0f),
     latest_angular_z_(0.0f),
@@ -99,20 +101,48 @@ void ImitationLearningNode::initialize_onnx()
   try {
     RCLCPP_INFO(this->get_logger(), "Initializing ONNX Runtime with model: %s", model_path_.c_str());
     
-    // Check if model file exists
-    std::ifstream model_file(model_path_);
-    if (!model_file.good()) {
-      throw std::runtime_error("Model file not found: " + model_path_);
+    // Resolve model path to absolute path (helps with external data file resolution)
+    std::filesystem::path model_path(model_path_);
+    if (!model_path.is_absolute()) {
+      // If relative path, resolve relative to current working directory
+      model_path = std::filesystem::absolute(model_path);
     }
-    model_file.close();
+    
+    std::string absolute_model_path = model_path.string();
+    RCLCPP_INFO(this->get_logger(), "Resolved model path: %s", absolute_model_path.c_str());
+    
+    // Check if model file exists
+    if (!std::filesystem::exists(absolute_model_path)) {
+      throw std::runtime_error("Model file not found: " + absolute_model_path);
+    }
+    
+    // Check for external data file in the same directory
+    // Note: If the ONNX model was renamed but still references an external data file
+    // with the old name, ONNX Runtime will fail. The model needs to be re-exported
+    // or the external data file needs to match the name referenced in the ONNX file.
+    std::filesystem::path model_dir = model_path.parent_path();
+    
+    // Log any .data files found (for debugging)
+    try {
+      for (const auto& entry : std::filesystem::directory_iterator(model_dir)) {
+        if (entry.is_regular_file() && entry.path().extension() == ".data") {
+          RCLCPP_DEBUG(this->get_logger(), "Found external data file: %s", entry.path().string().c_str());
+        }
+      }
+    } catch (const std::filesystem::filesystem_error& e) {
+      RCLCPP_DEBUG(this->get_logger(), "Could not list directory for .data files: %s", e.what());
+    }
 
     // Configure session options
     session_options_.SetIntraOpNumThreads(4);  // Use 4 threads for intra-op parallelism
     session_options_.SetInterOpNumThreads(2);  // Use 2 threads for inter-op parallelism
     session_options_.SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_ALL);
     
-    // Create session
-    session_ = std::make_unique<Ort::Session>(ort_env_, model_path_.c_str(), session_options_);
+    // Note: GPU discovery warnings are suppressed by using ORT_LOGGING_LEVEL_ERROR
+    // We're running on CPU only (Raspberry Pi 5), so GPU providers are not used
+    
+    // Create session with absolute path (helps ONNX Runtime find external data files)
+    session_ = std::make_unique<Ort::Session>(ort_env_, absolute_model_path.c_str(), session_options_);
     
     // Get input/output names and shapes
     size_t num_input_nodes = session_->GetInputCount();
