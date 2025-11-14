@@ -23,6 +23,7 @@ from torch.amp import GradScaler, autocast
 import numpy as np
 from tqdm import tqdm
 import logging
+import matplotlib.pyplot as plt
 from pathlib import Path
 
 # Add training directory to path
@@ -32,7 +33,7 @@ from dataset import create_datasets
 from model import create_model, load_pretrained_weights, freeze_layers
 from utils import (
   setup_logging, load_config, save_config, save_checkpoint, load_checkpoint,
-  compute_metrics, plot_training_curves, plot_action_predictions,
+  compute_metrics, compute_kl_loss, plot_training_curves, plot_action_predictions,
   count_parameters, get_device, set_seed, create_experiment_dir,
   save_experiment_info
 )
@@ -113,11 +114,19 @@ def train_epoch(
   device: torch.device,
   scaler: GradScaler,
   mixed_precision: bool = True,
+  kl_weight: float = 0.01,
   log_frequency: int = 100
-) -> float:
-  """Train for one epoch."""
+) -> tuple:
+  """
+  Train for one epoch with VAE-style loss (reconstruction + KL divergence).
+  
+  Returns:
+    (avg_total_loss, avg_recon_loss, avg_kl_loss)
+  """
   model.train()
   total_loss = 0.0
+  total_recon_loss = 0.0
+  total_kl_loss = 0.0
   num_batches = len(dataloader)
   
   # Determine device type for mixed precision
@@ -137,29 +146,59 @@ def train_epoch(
     if mixed_precision and device_type == 'cuda':
       # Mixed precision only supported for CUDA
       with autocast(device_type='cuda'):
-        predictions = model(images)
-        loss = criterion(predictions, actions)
+        # Forward pass with actions to encode Z
+        predictions, (z_mean, z_logvar) = model(images, actions=actions, return_z_stats=True)
+        
+        # Reconstruction loss (MSE)
+        recon_loss = criterion(predictions, actions)
+        
+        # KL divergence loss
+        kl_loss = compute_kl_loss(z_mean, z_logvar)
+        
+        # Total loss: L = L_reconst + β * L_KL
+        total_batch_loss = recon_loss + kl_weight * kl_loss
       
-      scaler.scale(loss).backward()
+      scaler.scale(total_batch_loss).backward()
       scaler.step(optimizer)
       scaler.update()
     else:
       # Full precision for MPS or CPU
-      predictions = model(images)
-      loss = criterion(predictions, actions)
-      loss.backward()
+      # Forward pass with actions to encode Z
+      predictions, (z_mean, z_logvar) = model(images, actions=actions, return_z_stats=True)
+      
+      # Reconstruction loss (MSE)
+      recon_loss = criterion(predictions, actions)
+      
+      # KL divergence loss
+      kl_loss = compute_kl_loss(z_mean, z_logvar)
+      
+      # Total loss: L = L_reconst + β * L_KL
+      total_batch_loss = recon_loss + kl_weight * kl_loss
+      
+      total_batch_loss.backward()
       optimizer.step()
     
-    total_loss += loss.item()
+    total_loss += total_batch_loss.item()
+    total_recon_loss += recon_loss.item()
+    total_kl_loss += kl_loss.item()
     
     # Update progress bar
-    pbar.set_postfix({'loss': f'{loss.item():.4f}'})
+    pbar.set_postfix({
+      'loss': f'{total_batch_loss.item():.4f}',
+      'recon': f'{recon_loss.item():.4f}',
+      'kl': f'{kl_loss.item():.4f}'
+    })
     
     # Log every log_frequency steps
     if batch_idx % log_frequency == 0:
-      logging.info(f'Batch {batch_idx}/{num_batches}, Loss: {loss.item():.4f}')
+      logging.info(f'Batch {batch_idx}/{num_batches}, Total Loss: {total_batch_loss.item():.4f}, '
+                   f'Recon: {recon_loss.item():.4f}, KL: {kl_loss.item():.4f}')
   
-  return total_loss / num_batches
+  return (
+    total_loss / num_batches,
+    total_recon_loss / num_batches,
+    total_kl_loss / num_batches
+  )
 
 
 def validate_epoch(
@@ -167,11 +206,14 @@ def validate_epoch(
   dataloader: DataLoader,
   criterion: nn.Module,
   device: torch.device,
-  action_stats: dict
+  action_stats: dict,
+  kl_weight: float = 0.01
 ) -> tuple:
   """Validate for one epoch."""
   model.eval()
   total_loss = 0.0
+  total_recon_loss = 0.0
+  total_kl_loss = 0.0
   all_predictions = []
   all_targets = []
   
@@ -180,10 +222,22 @@ def validate_epoch(
       images = images.to(device)
       actions = actions.to(device)
       
-      predictions = model(images)
-      loss = criterion(predictions, actions)
+      # Forward pass with actions to encode Z (for validation metrics)
+      predictions, (z_mean, z_logvar) = model(images, actions=actions, return_z_stats=True)
+      
+      # Reconstruction loss
+      recon_loss = criterion(predictions, actions)
+      
+      # KL divergence loss
+      kl_loss = compute_kl_loss(z_mean, z_logvar)
+      
+      # Total loss
+      loss = recon_loss + kl_weight * kl_loss
       
       total_loss += loss.item()
+      total_recon_loss += recon_loss.item()
+      total_kl_loss += kl_loss.item()
+      
       all_predictions.append(predictions.cpu())
       all_targets.append(actions.cpu())
   
@@ -193,6 +247,8 @@ def validate_epoch(
   
   # Compute metrics
   metrics = compute_metrics(all_predictions, all_targets, action_stats)
+  metrics['recon_loss'] = total_recon_loss / len(dataloader)
+  metrics['kl_loss'] = total_kl_loss / len(dataloader)
   
   return total_loss / len(dataloader), metrics
 
@@ -341,6 +397,10 @@ def main():
   # Create loss function
   criterion = nn.MSELoss()
   
+  # KL weight (β in ALOHA paper: L = L_reconst + β * L_KL)
+  kl_weight = config['training'].get('kl_weight', 0.01)
+  logger.info(f"KL divergence weight: {kl_weight}")
+  
   # Create learning rate scheduler
   if config['training']['lr_schedule']['type'] == 'cosine':
     scheduler = CosineAnnealingWarmupRestarts(
@@ -409,30 +469,36 @@ def main():
     logger.info(f"Epoch {epoch+1}/{config['training']['num_epochs']}")
     
     # Train
-    train_loss = train_epoch(
+    train_loss, train_recon_loss, train_kl_loss = train_epoch(
       model, train_loader, optimizer, criterion, device, scaler,
-      use_mixed_precision, config['logging']['log_frequency']
+      use_mixed_precision, kl_weight, config['logging']['log_frequency']
     )
     train_losses.append(train_loss)
     
     # Validate
     if (epoch + 1) % config['validation']['val_frequency'] == 0:
       val_loss, val_metrics = validate_epoch(
-        model, val_loader, criterion, device, train_dataset.get_action_stats()
+        model, val_loader, criterion, device, train_dataset.get_action_stats(), kl_weight
       )
       val_losses.append(val_loss)
       
-      logger.info(f"Epoch {epoch+1} - Train Loss: {train_loss:.4f}, Val Loss: {val_loss:.4f}")
+      logger.info(f"Epoch {epoch+1} - Train Loss: {train_loss:.4f} (Recon: {train_recon_loss:.4f}, KL: {train_kl_loss:.4f}), "
+                  f"Val Loss: {val_loss:.4f}")
       logger.info(f"Validation metrics: {val_metrics}")
       
       # Log to TensorBoard
       if writer:
         writer.add_scalar('Loss/Train', train_loss, epoch)
+        writer.add_scalar('Loss/Train_Recon', train_recon_loss, epoch)
+        writer.add_scalar('Loss/Train_KL', train_kl_loss, epoch)
         writer.add_scalar('Loss/Validation', val_loss, epoch)
+        writer.add_scalar('Loss/Validation_Recon', val_metrics.get('recon_loss', 0), epoch)
+        writer.add_scalar('Loss/Validation_KL', val_metrics.get('kl_loss', 0), epoch)
         writer.add_scalar('Learning_Rate', optimizer.param_groups[0]['lr'], epoch)
         
         for metric_name, metric_value in val_metrics.items():
-          writer.add_scalar(f'Metrics/{metric_name}', metric_value, epoch)
+          if metric_name not in ['recon_loss', 'kl_loss']:  # Already logged separately
+            writer.add_scalar(f'Metrics/{metric_name}', metric_value, epoch)
       
       # Check for best model
       if val_loss < best_val_loss:
@@ -471,7 +537,8 @@ def main():
       with torch.no_grad():
         sample_images, sample_actions = next(iter(val_loader))
         sample_images = sample_images.to(device)
-        sample_predictions = model(sample_images)
+        # Use Z=0 for inference (as per ALOHA Algorithm 2)
+        sample_predictions = model(sample_images, actions=None, z=None)
         
         # Plot and save predictions
         plot_path = os.path.join(exp_dir, f'predictions_epoch_{epoch+1:04d}.png')
