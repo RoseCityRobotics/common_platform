@@ -94,6 +94,57 @@ OR
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+## 🤖 Imitation Learning Training
+
+The platform includes a complete PyTorch training pipeline for robot maze navigation using imitation learning with a transformer-based architecture. For detailed documentation, see [`scripts/imitation_learning/src/imitation_learning/README.md`](scripts/imitation_learning/src/imitation_learning/README.md).
+
+### Transfer Learning from No-Z Model Checkpoint
+
+If you have a previously trained model without the Z variable (CVAE style variable) and want to initialize a new model with Z using those weights, you can use transfer learning:
+
+```bash
+# Navigate to the imitation learning directory
+cd scripts/imitation_learning/src/imitation_learning
+
+# Train with transfer learning from a no-Z model checkpoint
+python train.py \
+  --config config.yaml \
+  --transfer_from_noz /path/to/best_model_without_z.pth
+```
+
+**What gets transferred:**
+- ✅ Vision encoder weights
+- ✅ Temporal encoder weights  
+- ✅ Action decoder weights
+- ✅ Action queries and action head weights
+- 🆕 New CVAE components (`action_encoder`, `z_projection`) are randomly initialized
+
+**Optional: Freeze layers during transfer learning**
+
+You can freeze specific layers while training the new CVAE components by enabling transfer learning in your config:
+
+```yaml
+# In config.yaml
+transfer_learning:
+  enabled: true
+  freeze_vision: true      # Freeze vision encoder
+  freeze_encoder: false     # Keep temporal encoder trainable
+  freeze_decoder: false     # Keep action decoder trainable
+```
+
+**Example: Freeze vision encoder only**
+```bash
+python train.py \
+  --config config.yaml \
+  --transfer_from_noz checkpoints/best_model_noz.pth
+```
+
+With `freeze_vision: true` in the config, the vision encoder will remain frozen while the new CVAE components and other layers are trained.
+
+For more training options and examples, see the [imitation learning README](scripts/imitation_learning/src/imitation_learning/README.md).
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
 ### Assembly Images
 
 *Mobile base platform - unassembled components*

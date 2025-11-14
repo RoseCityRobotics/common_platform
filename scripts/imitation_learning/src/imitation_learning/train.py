@@ -30,7 +30,7 @@ from pathlib import Path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from dataset import create_datasets
-from model import create_model, load_pretrained_weights, freeze_layers
+from model import create_model, load_pretrained_weights, freeze_layers, transfer_from_noz_model
 from utils import (
   setup_logging, load_config, save_config, save_checkpoint, load_checkpoint,
   compute_metrics, compute_kl_loss, plot_training_curves, plot_action_predictions,
@@ -265,6 +265,8 @@ def main():
                      help='Resume training from checkpoint')
   parser.add_argument('--pretrained', type=str, default=None,
                      help='Path to pretrained model weights')
+  parser.add_argument('--transfer_from_noz', type=str, default=None,
+                     help='Path to model checkpoint without Z variable (for transfer learning)')
   parser.add_argument('--device', type=str, default=None,
                      help='Override device (cpu, cuda, mps)')
   parser.add_argument('--seed', type=int, default=None,
@@ -364,8 +366,30 @@ def main():
     logger.info(f"Loading pretrained weights from {args.pretrained}")
     model = load_pretrained_weights(model, args.pretrained, device)
   
-  # Transfer learning setup
-  if config['transfer_learning']['enabled']:
+  # Transfer from model without Z variable if specified
+  if args.transfer_from_noz:
+    logger.info(f"Transferring weights from model without Z: {args.transfer_from_noz}")
+    model = transfer_from_noz_model(model, args.transfer_from_noz, str(device), verbose=True)
+    
+    # Apply transfer learning freezing if enabled
+    # This allows fine-tuning control when transferring from no-Z model
+    if config['transfer_learning']['enabled']:
+      logger.info("Applying transfer learning freezing configuration...")
+      if config['transfer_learning']['freeze_vision']:
+        freeze_layers(model, ['vision_encoder'])
+        logger.info("  - Vision encoder: FROZEN")
+      if config['transfer_learning']['freeze_encoder']:
+        freeze_layers(model, ['temporal_encoder'])
+        logger.info("  - Temporal encoder: FROZEN")
+      if config['transfer_learning']['freeze_decoder']:
+        freeze_layers(model, ['action_decoder'])
+        logger.info("  - Action decoder: FROZEN")
+    else:
+      logger.info("Note: All layers are trainable (transfer_learning.enabled = false)")
+      logger.info("      New CVAE components (action_encoder, z_projection) will be trained from scratch")
+  
+  # Transfer learning setup (for other transfer learning scenarios)
+  elif config['transfer_learning']['enabled']:
     logger.info("Setting up transfer learning...")
     if config['transfer_learning']['freeze_vision']:
       freeze_layers(model, ['vision_encoder'])
@@ -403,13 +427,27 @@ def main():
   
   # Create learning rate scheduler
   if config['training']['lr_schedule']['type'] == 'cosine':
+    # Determine cycle length
+    cycle_epochs = config['training']['lr_schedule'].get('cycle_epochs')
+    if cycle_epochs is None:
+      # Use all epochs for single cycle
+      first_cycle_steps = config['training']['num_epochs']
+    else:
+      # Use specified cycle length (enables restarts)
+      first_cycle_steps = cycle_epochs
+    
     scheduler = CosineAnnealingWarmupRestarts(
       optimizer,
-      first_cycle_steps=len(train_loader) * config['training']['num_epochs'],
+      first_cycle_steps=first_cycle_steps,
+      cycle_mult=config['training']['lr_schedule'].get('cycle_mult', 1.0),
       max_lr=config['training']['learning_rate'],
       min_lr=config['training']['lr_schedule']['min_lr'],
-      warmup_steps=len(train_loader) * config['training']['lr_schedule']['warmup_epochs']
+      warmup_steps=config['training']['lr_schedule']['warmup_epochs'],
+      gamma=config['training']['lr_schedule'].get('gamma', 1.0)
     )
+    logger.info(f"Cosine annealing scheduler: cycle={first_cycle_steps} epochs, "
+                f"warmup={config['training']['lr_schedule']['warmup_epochs']} epochs, "
+                f"lr_range=[{config['training']['lr_schedule']['min_lr']:.2e}, {config['training']['learning_rate']:.2e}]")
   else:
     scheduler = None
   

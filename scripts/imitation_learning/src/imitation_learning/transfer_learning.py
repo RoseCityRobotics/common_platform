@@ -342,6 +342,130 @@ def analyze_aloha_checkpoint(checkpoint_path: str) -> Dict[str, Any]:
   return analysis
 
 
+def transfer_weights_noz_to_withz(
+  new_model: nn.Module,
+  old_checkpoint_path: str,
+  device: str = 'cpu',
+  verbose: bool = True
+) -> nn.Module:
+  """
+  Transfer weights from a model without Z variable to a model with Z variable.
+  
+  This function:
+  - Transfers compatible weights (vision_encoder, temporal_encoder, action_decoder, etc.)
+  - Keeps new components (action_encoder, z_projection) with random initialization
+  - Handles the case where old model doesn't have CVAE components
+  
+  Args:
+    new_model: Model with Z variable (CVAE architecture)
+    old_checkpoint_path: Path to checkpoint from model without Z variable
+    device: Device to load on
+    verbose: Whether to print transfer details
+  
+  Returns:
+    new_model with transferred weights
+  """
+  if verbose:
+    print(f"Loading old model checkpoint (without Z): {old_checkpoint_path}")
+  
+  # Load old checkpoint
+  old_checkpoint = torch.load(old_checkpoint_path, map_location=device, weights_only=False)
+  
+  # Extract state dict
+  if 'model_state_dict' in old_checkpoint:
+    old_state_dict = old_checkpoint['model_state_dict']
+  elif 'state_dict' in old_checkpoint:
+    old_state_dict = old_checkpoint['state_dict']
+  else:
+    old_state_dict = old_checkpoint
+  
+  # Get new model state dict
+  new_state_dict = new_model.state_dict()
+  
+  # Components to transfer (these exist in both models)
+  transferable_components = [
+    'vision_encoder',
+    'pos_encoding',
+    'temporal_encoder',
+    'action_decoder',
+    'action_queries',
+    'action_head'
+  ]
+  
+  # Track what gets transferred
+  transferred_keys = {}  # Track individual keys
+  transferred_components = {}  # Track by component: {component: {'keys': [...], 'num_params': int}}
+  skipped = []
+  new_components = []
+  
+  # Transfer compatible weights
+  for key in old_state_dict.keys():
+    if key in new_state_dict:
+      # Check if shapes match
+      if old_state_dict[key].shape == new_state_dict[key].shape:
+        new_state_dict[key] = old_state_dict[key]
+        transferred_keys[key] = True
+        
+        # Track which component this belongs to
+        component = key.split('.')[0]
+        if component not in transferred_components:
+          transferred_components[component] = {'keys': [], 'num_params': 0}
+        transferred_components[component]['keys'].append(key)
+        # Count total number of elements in this tensor
+        transferred_components[component]['num_params'] += old_state_dict[key].numel()
+      else:
+        skipped.append(f"{key} (shape mismatch: {old_state_dict[key].shape} vs {new_state_dict[key].shape})")
+    else:
+      # Key doesn't exist in new model (might be from old architecture)
+      skipped.append(f"{key} (not in new model)")
+  
+  # Identify new components that will be randomly initialized
+  for key in new_state_dict.keys():
+    if key not in old_state_dict:
+      component = key.split('.')[0]
+      if component not in new_components:
+        new_components.append(component)
+  
+  # Load transferred weights (non-strict to allow new components)
+  new_model.load_state_dict(new_state_dict, strict=False)
+  
+  # Print summary
+  if verbose:
+    print("\n" + "="*60)
+    print("Weight Transfer Summary: No-Z Model -> With-Z Model")
+    print("="*60)
+    
+    total_transferred = 0
+    print("\n✅ Transferred Components:")
+    for component in transferable_components:
+      if component in transferred_components:
+        num_keys = len(transferred_components[component]['keys'])
+        num_params = transferred_components[component]['num_params']
+        total_transferred += num_params
+        print(f"  - {component}: {num_params:,} parameters ({num_keys} tensors) transferred")
+    
+    print(f"\n📊 Total transferred: {total_transferred:,} parameters")
+    
+    print("\n🆕 New Components (Random Initialization):")
+    for component in new_components:
+      if component in ['action_encoder', 'z_projection']:
+        print(f"  - {component}: Random initialization")
+    
+    if skipped:
+      print(f"\n⚠️  Skipped {len(skipped)} weights (shape mismatch or not in new model)")
+      if verbose and len(skipped) <= 10:
+        for skip in skipped[:10]:
+          print(f"    - {skip}")
+        if len(skipped) > 10:
+          print(f"    ... and {len(skipped) - 10} more")
+    
+    print("\n" + "="*60)
+    print("Transfer complete! New CVAE components initialized randomly.")
+    print("="*60 + "\n")
+  
+  return new_model
+
+
 def print_checkpoint_analysis(checkpoint_path: str):
   """Print analysis of ALOHA checkpoint."""
   analysis = analyze_aloha_checkpoint(checkpoint_path)

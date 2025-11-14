@@ -42,7 +42,10 @@ training:
   lr_schedule:
     type: "cosine"                    # Schedule type: cosine, step, exponential
     warmup_epochs: 5                  # Number of warmup epochs
-    min_lr: 1e-6                      # Minimum learning rate
+    min_lr: 1e-5                      # Minimum learning rate (increased from 1e-6 for slower decay)
+    cycle_epochs: null                # Cycle length in epochs (null = use all epochs, or set to e.g. 20 for restarts)
+    cycle_mult: 1.0                   # Cycle length multiplier for restarts (1.0 = no restarts, >1.0 = longer cycles)
+    gamma: 1.0                        # LR decay factor per restart (1.0 = no decay, <1.0 = decay)
   
   # Optimizer
   optimizer:
