@@ -78,7 +78,36 @@ def export_to_onnx(
     
     # Load weights
     print(f"Loading weights from: {checkpoint_path}")
-    model = load_pretrained_weights(model, checkpoint_path, device='cpu')
+    # Try to load weights - handle models with/without CVAE components
+    try:
+        model = load_pretrained_weights(model, checkpoint_path, device='cpu', strict=True)
+        print("✓ Loaded weights successfully (strict mode)")
+    except RuntimeError as e:
+        error_msg = str(e)
+        if "Missing key(s)" in error_msg:
+            # Check if missing keys are CVAE-related
+            if "action_encoder" in error_msg or "z_projection" in error_msg:
+                print(f"⚠ Warning: Checkpoint appears to be from a model without CVAE components.")
+                print(f"  Missing components will be initialized randomly (this is fine for inference).")
+                # Try using transfer function if available
+                try:
+                    from imitation_learning.model import transfer_from_noz_model
+                    print(f"  Attempting to use transfer_from_noz_model...")
+                    model = transfer_from_noz_model(model, checkpoint_path, device='cpu', verbose=True)
+                    print(f"✓ Loaded weights using transfer function")
+                except (ImportError, Exception) as transfer_error:
+                    print(f"  Transfer function not available or failed: {transfer_error}")
+                    print(f"  Falling back to strict=False loading...")
+                    model = load_pretrained_weights(model, checkpoint_path, device='cpu', strict=False)
+                    print(f"✓ Loaded weights with strict=False (missing keys initialized randomly)")
+            else:
+                # Other missing keys - try strict=False
+                print(f"⚠ Warning: State dict mismatch detected. Attempting to load with strict=False...")
+                model = load_pretrained_weights(model, checkpoint_path, device='cpu', strict=False)
+                print(f"✓ Loaded weights with strict=False")
+        else:
+            # Other errors - re-raise
+            raise
     model.eval()
     
     # Print model info
