@@ -31,8 +31,8 @@ ImitationLearningNode::ImitationLearningNode(const rclcpp::NodeOptions& options)
   input_width_ = this->get_parameter("input_width").as_int();
   input_height_ = this->get_parameter("input_height").as_int();
   sequence_length_ = this->get_parameter("sequence_length").as_int();
-  max_linear_velocity_ = this->get_parameter("max_linear_velocity").as_float();
-  max_angular_velocity_ = this->get_parameter("max_angular_velocity").as_float();
+  max_linear_velocity_ = static_cast<float>(this->get_parameter("max_linear_velocity").as_double());
+  max_angular_velocity_ = static_cast<float>(this->get_parameter("max_angular_velocity").as_double());
   publish_rate_ = this->get_parameter("publish_rate").as_double();
   double stats_interval = this->get_parameter("stats_report_interval").as_double();
 
@@ -354,7 +354,6 @@ std::vector<float> ImitationLearningNode::run_inference(const cv::Mat& image)
       
       // Expected output shape: (batch, chunk_size, action_dim) = (1, 15, 2)
       // Extract first action: [0, 0, :] = (linear_x, angular_z)
-      size_t chunk_size = output_shape.size() > 1 ? output_shape[1] : 1;
       size_t action_dim = output_shape.size() > 2 ? output_shape[2] : output_shape.back();
       
       if (action_dim >= 2) {
@@ -372,7 +371,12 @@ std::vector<float> ImitationLearningNode::run_inference(const cv::Mat& image)
     
     // Update statistics
     stats_.total_inferences++;
-    stats_.total_inference_time_ms += inference_time_ms;
+    
+    // Atomic operations for double require load/modify/store pattern
+    double current_total = stats_.total_inference_time_ms.load();
+    while (!stats_.total_inference_time_ms.compare_exchange_weak(current_total, current_total + inference_time_ms)) {
+      // Retry if compare_exchange_weak failed
+    }
     
     double current_min = stats_.min_inference_time_ms.load();
     while (inference_time_ms < current_min && 
