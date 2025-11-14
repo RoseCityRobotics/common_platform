@@ -72,6 +72,8 @@ private:
   int sequence_length_;
   float max_linear_velocity_;
   float max_angular_velocity_;
+  float linear_velocity_threshold_;
+  float angular_velocity_threshold_;
 
   // Image buffer for sequence processing
   std::deque<cv::Mat> image_buffer_;

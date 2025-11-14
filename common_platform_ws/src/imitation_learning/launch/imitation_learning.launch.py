@@ -42,6 +42,16 @@ def generate_launch_description():
             description='Maximum angular velocity (rad/s)'
         ),
         DeclareLaunchArgument(
+            'linear_velocity_threshold',
+            default_value='0.01',
+            description='Threshold below which linear velocity is set to 0 (m/s)'
+        ),
+        DeclareLaunchArgument(
+            'angular_velocity_threshold',
+            default_value='0.05',
+            description='Threshold below which angular velocity is set to 0 (rad/s)'
+        ),
+        DeclareLaunchArgument(
             'publish_rate',
             default_value='30.0',
             description='Publishing rate for cmd_vel (Hz)'
@@ -68,6 +78,8 @@ def generate_launch_description():
                 'sequence_length': LaunchConfiguration('sequence_length'),
                 'max_linear_velocity': LaunchConfiguration('max_linear_velocity'),
                 'max_angular_velocity': LaunchConfiguration('max_angular_velocity'),
+                'linear_velocity_threshold': LaunchConfiguration('linear_velocity_threshold'),
+                'angular_velocity_threshold': LaunchConfiguration('angular_velocity_threshold'),
                 'publish_rate': LaunchConfiguration('publish_rate'),
                 'stats_report_interval': LaunchConfiguration('stats_report_interval'),
                 'max_inference_time_ms': LaunchConfiguration('max_inference_time_ms'),
