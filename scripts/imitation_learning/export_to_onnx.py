@@ -36,7 +36,7 @@ def export_to_onnx(
     checkpoint_path: str,
     config_path: str,
     output_path: str,
-    input_shape: tuple = (1, 10, 3, 224, 224),  # (batch, seq_len, channels, height, width)
+    input_shape: tuple = None,  # (batch, seq_len, channels, height, width) - will be read from config if None
     opset_version: int = 13,
     simplify: bool = True
 ):
@@ -58,6 +58,19 @@ def export_to_onnx(
     # Load config
     print(f"\nLoading config from: {config_path}")
     config = load_config(config_path)
+    
+    # Get default values from config if not provided
+    if input_shape is None:
+        # Read from config
+        dataset_config = config.get('dataset', {})
+        default_seq_len = dataset_config.get('sequence_length', 10)
+        default_image_size = dataset_config.get('image_size', [224, 224])
+        default_height = default_image_size[0] if isinstance(default_image_size, list) else 224
+        default_width = default_image_size[1] if isinstance(default_image_size, list) else 224
+        default_batch_size = 1  # Always 1 for inference
+        
+        input_shape = (default_batch_size, default_seq_len, 3, default_height, default_width)
+        print(f"  Using config values: seq_len={default_seq_len}, image_size=({default_height}, {default_width})")
     
     # Create model
     print("Creating model architecture...")
@@ -199,14 +212,14 @@ Examples:
                         help='Path to model config YAML file')
     parser.add_argument('--output', type=str, required=True,
                         help='Output ONNX file path')
-    parser.add_argument('--batch-size', type=int, default=1,
-                        help='Batch size for export (default: 1)')
-    parser.add_argument('--seq-len', type=int, default=10,
-                        help='Sequence length (default: 10)')
-    parser.add_argument('--height', type=int, default=224,
-                        help='Image height (default: 224)')
-    parser.add_argument('--width', type=int, default=224,
-                        help='Image width (default: 224)')
+    parser.add_argument('--batch-size', type=int, default=None,
+                        help='Batch size for export (default: 1 for inference, or read from config)')
+    parser.add_argument('--seq-len', type=int, default=None,
+                        help='Sequence length (default: read from config dataset.sequence_length)')
+    parser.add_argument('--height', type=int, default=None,
+                        help='Image height (default: read from config dataset.image_size[0])')
+    parser.add_argument('--width', type=int, default=None,
+                        help='Image width (default: read from config dataset.image_size[1])')
     parser.add_argument('--opset-version', type=int, default=13,
                         help='ONNX opset version (default: 13)')
     parser.add_argument('--no-simplify', action='store_true',
@@ -228,7 +241,29 @@ Examples:
     if output_dir and not os.path.exists(output_dir):
         os.makedirs(output_dir, exist_ok=True)
     
-    input_shape = (args.batch_size, args.seq_len, 3, args.height, args.width)
+    # Load config to get defaults if not provided
+    config = load_config(args.config)
+    dataset_config = config.get('dataset', {})
+    
+    # Determine values: use provided args or read from config
+    batch_size = args.batch_size if args.batch_size is not None else 1
+    seq_len = args.seq_len if args.seq_len is not None else dataset_config.get('sequence_length', 10)
+    
+    image_size = dataset_config.get('image_size', [224, 224])
+    if isinstance(image_size, list):
+        default_height, default_width = image_size[0], image_size[1]
+    else:
+        default_height, default_width = 224, 224
+    
+    height = args.height if args.height is not None else default_height
+    width = args.width if args.width is not None else default_width
+    
+    print(f"\nExport parameters:")
+    print(f"  Batch size: {batch_size} (always 1 for inference)")
+    print(f"  Sequence length: {seq_len} (from config: {dataset_config.get('sequence_length', 10)})")
+    print(f"  Image size: {height}x{width} (from config: {image_size})")
+    
+    input_shape = (batch_size, seq_len, 3, height, width)
     
     export_to_onnx(
         checkpoint_path=args.checkpoint,
