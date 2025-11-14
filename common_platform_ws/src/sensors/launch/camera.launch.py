@@ -36,12 +36,19 @@ def generate_launch_description():
     description='Use simulation time'
   )
   
+  rate_arg = DeclareLaunchArgument(
+    'rate',
+    default_value='0',
+    description='Publishing rate in Hz (0 = camera native rate)'
+  )
+  
   # Get launch configurations
   camera_id = LaunchConfiguration('camera_id')
   width = LaunchConfiguration('width')
   height = LaunchConfiguration('height')
   format = LaunchConfiguration('format')
   use_sim_time = LaunchConfiguration('use_sim_time')
+  rate = LaunchConfiguration('rate')
   
   # Handle namespace from environment variable
   ns = os.environ.get('ROS_NAMESPACE', '').strip()
@@ -65,6 +72,8 @@ def generate_launch_description():
       # Additional format parameters for camera_ros
       'encoding': 'rgb8',
       'color_space': 'sRGB',
+      # Rate parameter (if supported by camera_ros)
+      'rate': rate,
     }],
     output='screen',
   )
@@ -77,6 +86,7 @@ def generate_launch_description():
       height_arg,
       format_arg,
       use_sim_time_arg,
+      rate_arg,
       GroupAction([
         PushRosNamespace(ns),
         camera_node
@@ -89,5 +99,6 @@ def generate_launch_description():
       height_arg,
       format_arg,
       use_sim_time_arg,
+      rate_arg,
       camera_node
     ])
