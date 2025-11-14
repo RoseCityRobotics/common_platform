@@ -379,7 +379,8 @@ class ActionChunkingTransformer(nn.Module):
       # Following ALOHA: q_φ(z|a_{t:t+k}, ō_t)
       # In ALOHA, ō_t is non-image observations. For us, we use temporal features.
       action_chunk = actions[:, 0, :, :]  # (batch, chunk_size, action_dim)
-      obs_features = temporal_features[0].transpose(0, 1)  # (batch, d_model) - first timestep
+      # temporal_features is (seq_len, batch, d_model), so [0] gives (batch, d_model)
+      obs_features = temporal_features[0]  # (batch, d_model) - first timestep
       z_mean, z_logvar, z = self.action_encoder(action_chunk, obs_features)
     elif z is not None:
       # Use provided Z
@@ -518,6 +519,35 @@ def load_pretrained_weights(
   model.load_state_dict(state_dict, strict=strict)
   
   return model
+
+
+def transfer_from_noz_model(
+  new_model: ActionChunkingTransformer,
+  old_checkpoint_path: str,
+  device: str = 'cpu',
+  verbose: bool = True
+) -> ActionChunkingTransformer:
+  """
+  Transfer weights from a model without Z variable to a model with Z variable.
+  
+  This is a convenience wrapper that uses the transfer_learning module.
+  
+  Args:
+    new_model: Model with Z variable (CVAE architecture)
+    old_checkpoint_path: Path to checkpoint from model without Z variable
+    device: Device to load on
+    verbose: Whether to print transfer details
+  
+  Returns:
+    new_model with transferred weights
+  """
+  try:
+    from transfer_learning import transfer_weights_noz_to_withz
+    return transfer_weights_noz_to_withz(new_model, old_checkpoint_path, device, verbose)
+  except ImportError:
+    # Fallback: try to load directly (will fail if architectures don't match)
+    print("Warning: transfer_learning module not available. Attempting direct load...")
+    return load_pretrained_weights(new_model, old_checkpoint_path, device, strict=False)
 
 
 def freeze_layers(model: ActionChunkingTransformer, layer_names: list):
