@@ -71,6 +71,9 @@ target_link_libraries(imitation_learning_node PUBLIC
 target_link_libraries(imitation_learning_node PUBLIC ${OPENCV_LIBRARIES})
 target_compile_options(imitation_learning_node PRIVATE ${OPENCV_CFLAGS_OTHER})
 
+# Link filesystem library (C++17)
+target_link_libraries(imitation_learning_node PUBLIC stdc++fs)
+
 if(ONNXRUNTIME_FOUND)
   target_link_libraries(imitation_learning_node PUBLIC ${ONNXRUNTIME_LIBRARIES})
   target_include_directories(imitation_learning_node PRIVATE ${ONNXRUNTIME_INCLUDE_DIRS})

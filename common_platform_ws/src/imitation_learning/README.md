@@ -155,6 +155,27 @@ If inference is too slow, you'll see warnings:
 
 If the build fails to find ONNX Runtime, see [ONNXRUNTIME_INSTALL.md](ONNXRUNTIME_INSTALL.md) for installation instructions.
 
+### External Data File Error
+
+If you see an error like:
+```
+Exception during initialization: filesystem error: cannot get file size: No such file or directory [../models/best_model.onnx.data]
+```
+
+This means your ONNX model references an external data file (weights stored separately) but the file is missing or has a different name. Solutions:
+
+1. **Re-export the model without external data** (recommended):
+   ```python
+   # In export_to_onnx.py, ensure external_data=False (default)
+   torch.onnx.export(..., external_data=False)
+   ```
+
+2. **Copy the external data file** to match the name referenced in the ONNX file:
+   - The error message shows which file is expected (e.g., `best_model.onnx.data`)
+   - Copy your `.data` file to match that name in the same directory as the model
+
+3. **Use a tool to fix the ONNX file** to point to the correct external data file name
+
 ### Inference Too Slow
 
 If inference is too slow to keep up with the camera rate:
