@@ -19,7 +19,7 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
-from torch.cuda.amp import GradScaler, autocast
+from torch.amp import GradScaler, autocast
 import numpy as np
 from tqdm import tqdm
 import logging
@@ -120,6 +120,13 @@ def train_epoch(
   total_loss = 0.0
   num_batches = len(dataloader)
   
+  # Determine device type for mixed precision
+  device_type = 'cpu'
+  if device.type == 'cuda':
+    device_type = 'cuda'
+  elif device.type == 'mps':
+    device_type = 'mps'
+  
   pbar = tqdm(dataloader, desc="Training", leave=False)
   for batch_idx, (images, actions) in enumerate(pbar):
     images = images.to(device)
@@ -127,8 +134,9 @@ def train_epoch(
     
     optimizer.zero_grad()
     
-    if mixed_precision:
-      with autocast():
+    if mixed_precision and device_type == 'cuda':
+      # Mixed precision only supported for CUDA
+      with autocast(device_type='cuda'):
         predictions = model(images)
         loss = criterion(predictions, actions)
       
@@ -136,6 +144,7 @@ def train_epoch(
       scaler.step(optimizer)
       scaler.update()
     else:
+      # Full precision for MPS or CPU
       predictions = model(images)
       loss = criterion(predictions, actions)
       loss.backward()
@@ -230,6 +239,12 @@ def main():
     device = torch.device(config['device'])
   
   print(f"Using device: {device}")
+  if device.type == 'mps':
+    print("Apple Silicon GPU (MPS) detected and enabled!")
+  elif device.type == 'cuda':
+    print("CUDA GPU detected and enabled!")
+  else:
+    print("Using CPU (no GPU acceleration)")
   
   # Create experiment directory
   exp_dir = create_experiment_dir(
@@ -338,8 +353,26 @@ def main():
   else:
     scheduler = None
   
-  # Mixed precision scaler
-  scaler = GradScaler() if config['training']['mixed_precision'] else None
+  # Mixed precision scaler (device-aware)
+  # Note: MPS doesn't support autocast, so mixed precision is only enabled for CUDA
+  device_type = 'cpu'
+  if device.type == 'cuda':
+    device_type = 'cuda'
+  elif device.type == 'mps':
+    device_type = 'mps'
+  
+  # Only enable mixed precision for CUDA (MPS doesn't support autocast)
+  use_mixed_precision = config['training']['mixed_precision'] and device_type == 'cuda'
+  if use_mixed_precision:
+    scaler = GradScaler(device_type)
+    logger.info(f"Mixed precision training enabled for device: {device_type}")
+  else:
+    scaler = None
+    if config['training']['mixed_precision']:
+      if device_type == 'mps':
+        logger.info("Mixed precision requested but MPS doesn't support autocast. Using full precision on MPS.")
+      elif device_type == 'cpu':
+        logger.info("Mixed precision requested but not available for CPU. Disabling.")
   
   # Early stopping
   early_stopping = EarlyStopping(
@@ -378,7 +411,7 @@ def main():
     # Train
     train_loss = train_epoch(
       model, train_loader, optimizer, criterion, device, scaler,
-      config['training']['mixed_precision'], config['logging']['log_frequency']
+      use_mixed_precision, config['logging']['log_frequency']
     )
     train_losses.append(train_loss)
     

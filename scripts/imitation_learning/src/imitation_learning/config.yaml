@@ -28,7 +28,7 @@ model:
 
 # Training configuration
 training:
-  batch_size: 16                      # Batch size
+  batch_size: 64                      # Batch size
   num_epochs: 100                     # Number of training epochs
   learning_rate: 1e-4                 # Initial learning rate
   weight_decay: 1e-5                  # Weight decay for regularization

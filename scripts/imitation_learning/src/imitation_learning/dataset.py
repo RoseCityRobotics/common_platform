@@ -81,12 +81,24 @@ class MazeNavigationDataset(Dataset):
         print(f"Warning: Missing data in session: {session_dir}")
         continue
       # Load only required columns to minimize RAM
-      df = pd.read_csv(csv_path, usecols=['image_file', 'cmd_linear_x', 'cmd_angular_z'])
+      try:
+        df = pd.read_csv(csv_path, usecols=['image_file', 'cmd_linear_x', 'cmd_angular_z'])
+      except ValueError as e:
+        # Handle missing columns in CSV
+        print(f"Warning: Missing required columns in {csv_path}: {e}")
+        continue
       df = df.dropna(subset=['image_file', 'cmd_linear_x', 'cmd_angular_z'])
       if len(df) == 0:
         print(f"Warning: No valid rows in {csv_path}")
         continue
       image_files = df['image_file'].tolist()
+      
+      # Validate that all images in the session have the same size
+      image_size = self._validate_image_sizes(images_dir, image_files)
+      if image_size is None:
+        print(f"Warning: Image size validation failed for {session_dir}, skipping session")
+        continue
+      
       # Build absolute paths lazily in __getitem__ to keep small
       cmd_linear = df['cmd_linear_x'].to_numpy(dtype=np.float32)
       cmd_angular = df['cmd_angular_z'].to_numpy(dtype=np.float32)
@@ -96,10 +108,74 @@ class MazeNavigationDataset(Dataset):
         'image_files': image_files,
         'cmd_linear_x': cmd_linear,
         'cmd_angular_z': cmd_angular,
-        'length': len(image_files)
+        'length': len(image_files),
+        'image_size': image_size  # Store original image size
       })
-      print(f"Indexed {len(image_files)} samples from {session_dir}")
+      print(f"Indexed {len(image_files)} samples from {session_dir} (image size: {image_size[0]}x{image_size[1]})")
     return sessions
+  
+  def _validate_image_sizes(self, images_dir: str, image_files: List[str]) -> Optional[Tuple[int, int]]:
+    """
+    Validate that all images in a session have the same size.
+    
+    Args:
+      images_dir: Directory containing images
+      image_files: List of image filenames
+    
+    Returns:
+      Tuple of (height, width) if all images have the same size, None otherwise
+    """
+    if not image_files:
+      return None
+    
+    # Check first image to get reference size
+    first_image_path = os.path.join(images_dir, image_files[0])
+    if not os.path.exists(first_image_path):
+      print(f"Warning: First image not found: {first_image_path}")
+      return None
+    
+    try:
+      first_img = cv2.imread(first_image_path, cv2.IMREAD_UNCHANGED)
+      if first_img is None:
+        print(f"Warning: Could not read first image: {first_image_path}")
+        return None
+      
+      # Get dimensions (handle both grayscale and color images)
+      if len(first_img.shape) == 2:
+        reference_size = (first_img.shape[0], first_img.shape[1])  # (height, width)
+      else:
+        reference_size = (first_img.shape[0], first_img.shape[1])  # (height, width)
+      
+      # Check remaining images
+      for image_file in image_files[1:]:
+        image_path = os.path.join(images_dir, image_file)
+        if not os.path.exists(image_path):
+          print(f"Warning: Image not found: {image_path}")
+          return None
+        
+        try:
+          img = cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
+          if img is None:
+            print(f"Warning: Could not read image: {image_path}")
+            return None
+          
+          # Get dimensions
+          if len(img.shape) == 2:
+            img_size = (img.shape[0], img.shape[1])
+          else:
+            img_size = (img.shape[0], img.shape[1])
+          
+          if img_size != reference_size:
+            print(f"Warning: Image size mismatch in {image_path}: expected {reference_size}, got {img_size}")
+            return None
+        except Exception as e:
+          print(f"Warning: Error reading image {image_path}: {e}")
+          return None
+      
+      return reference_size
+    except Exception as e:
+      print(f"Warning: Error validating image sizes: {e}")
+      return None
   
   def _compute_action_stats_compact(self) -> Dict[str, float]:
     """Compute normalization stats from compact per-session arrays."""
@@ -150,7 +226,19 @@ class MazeNavigationDataset(Dataset):
         image = cv2.cvtColor(image, cv2.COLOR_BGRA2RGB)
       
       # Resize image
-      image = cv2.resize(image, (self.image_size[1], self.image_size[0]))
+      # Use INTER_AREA for downsampling (better quality, reduces aliasing)
+      # Use INTER_LINEAR for upsampling (if needed)
+      original_height, original_width = image.shape[:2]
+      target_height, target_width = self.image_size
+      
+      if target_height < original_height or target_width < original_width:
+        # Downsampling: use INTER_AREA for better quality
+        interpolation = cv2.INTER_AREA
+      else:
+        # Upsampling: use INTER_LINEAR
+        interpolation = cv2.INTER_LINEAR
+      
+      image = cv2.resize(image, (target_width, target_height), interpolation=interpolation)
       
       # Normalize to [0, 1]
       image = image.astype(np.float32) / 255.0
@@ -162,13 +250,14 @@ class MazeNavigationDataset(Dataset):
       return np.zeros((self.image_size[0], self.image_size[1], 3), dtype=np.float32)
   
   def _augment_image(self, image: np.ndarray) -> np.ndarray:
-    """Apply data augmentation to image."""
+    """
+    Apply photometric (non-geometric) data augmentation to image.
+    
+    Note: Geometric augmentations like horizontal flip are handled
+    at the sequence level in __getitem__ to maintain temporal consistency.
+    """
     if not self.augment:
       return image
-    
-    # Random horizontal flip
-    if random.random() < 0.5:
-      image = np.fliplr(image)
     
     # Random brightness adjustment
     if random.random() < 0.3:

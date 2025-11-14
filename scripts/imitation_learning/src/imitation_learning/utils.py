@@ -48,6 +48,38 @@ def load_config(config_path: str) -> Dict[str, Any]:
   """Load configuration from YAML file."""
   with open(config_path, 'r') as f:
     config = yaml.safe_load(f)
+  
+  # Ensure numeric values are properly converted (YAML sometimes parses scientific notation as strings)
+  def convert_numeric_values(obj):
+    """Recursively convert string numbers to floats/ints."""
+    if isinstance(obj, dict):
+      return {k: convert_numeric_values(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+      return [convert_numeric_values(item) for item in obj]
+    elif isinstance(obj, str):
+      # Try to convert string to number if possible
+      stripped = obj.strip()
+      if not stripped:
+        return obj
+      
+      # Try converting to number (handles int, float, and scientific notation)
+      try:
+        # Try float first (handles scientific notation like "1e-4")
+        float_val = float(stripped)
+        # If it's actually an integer, return int
+        if '.' not in stripped and 'e' not in stripped.lower():
+          try:
+            return int(stripped)
+          except ValueError:
+            pass
+        return float_val
+      except ValueError:
+        # Not a number, return as-is
+        return obj
+    else:
+      return obj
+  
+  config = convert_numeric_values(config)
   return config
 
 
@@ -95,7 +127,7 @@ def load_checkpoint(
   device: str = 'cpu'
 ) -> Dict[str, Any]:
   """Load model checkpoint."""
-  checkpoint = torch.load(checkpoint_path, map_location=device)
+  checkpoint = torch.load(checkpoint_path, map_location=device, weights_only=False)
   
   model.load_state_dict(checkpoint['model_state_dict'])
   
