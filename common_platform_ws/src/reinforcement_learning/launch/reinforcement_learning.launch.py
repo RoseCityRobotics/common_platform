@@ -15,8 +15,8 @@ def generate_launch_description():
   
   forward_distance_arg = DeclareLaunchArgument(
     'forward_distance',
-    default_value='0.05',
-    description='Forward distance for each action in meters (default: 0.05 = 5cm)'
+    default_value='0.15',
+    description='Forward distance for each action in meters (default: 0.15 = 15cm)'
   )
   
   turn_angle_arg = DeclareLaunchArgument(
