@@ -251,6 +251,12 @@ class ReinforcementLearningNode(Node):
     with self.action_lock:
       if self.is_executing_action:
         # Still executing previous action, skip this cycle
+        self.get_logger().debug('Action already executing, skipping timer callback')
+        return
+      
+      # Also check if command queue is active (double-check)
+      if self.cmd_vel_queue:
+        self.get_logger().debug('Command queue still active, skipping timer callback')
         return
       
       if self.current_odom is None:
@@ -371,9 +377,16 @@ class ReinforcementLearningNode(Node):
   
   def execute_command_sequence(self, commands):
     """Execute a sequence of commands"""
-    self.cmd_vel_queue = commands.copy()
-    self.cmd_start_time = time.time()
-    self.current_cmd_index = 0
+    with self.action_lock:
+      # Check if a command sequence is already running
+      if self.cmd_vel_queue:
+        self.get_logger().warn('Command sequence already in progress, ignoring new sequence')
+        return
+      
+      self.cmd_vel_queue = commands.copy()
+      self.cmd_start_time = time.time()
+      self.current_cmd_index = 0
+      self.get_logger().info(f'Command queue set with {len(commands)} commands, start_time={self.cmd_start_time:.3f}')
   
   def cmd_vel_timer_callback(self):
     """Timer callback to publish cmd_vel during action execution with collision monitoring"""
