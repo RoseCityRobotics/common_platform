@@ -461,7 +461,18 @@ void imu_timer_callback(rcl_timer_t *timer, int64_t last_call_time) {
   // This provides drift-free heading compared to gyroscope integration
   static float yaw = 0.0f;
   static uint32_t last_imu_time = 0;
+  static bool was_calibrated = false;
   uint32_t current_time = millis();
+  
+  // Reset static yaw when calibration state changes from false to true
+  if (global_ros_context && global_ros_context->mag_calibrated && !was_calibrated) {
+    // Just calibrated - reset yaw and timing
+    yaw = 0.0f;
+    last_imu_time = 0;  // Force first reading to use magnetometer directly
+    was_calibrated = true;
+  } else if (global_ros_context && !global_ros_context->mag_calibrated) {
+    was_calibrated = false;
+  }
   
   // Calculate yaw from magnetometer (compass heading)
   // Magnetometer gives us absolute heading in the horizontal plane
