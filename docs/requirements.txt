@@ -4,4 +4,6 @@ sphinx_rtd_theme==2.0.0
 readthedocs-sphinx-search==0.3.1
 myst_parser==2.0.0
 sphinx_copybutton==0.5.2
+sphinx_design==0.5.0
+sphinx_tabs==3.4.5
 watchdog==6.0.0

@@ -15,6 +15,14 @@
     .custom-footer a:hover {
         color: ligthen(#2980b9, 10%);
     }
+    /* Ensure consistent line height for toctree titles */
+    .toctree-wrapper li a,
+    .toctree-l1 > a,
+    .toctree-l2 > a {
+        min-height: 3em;
+        line-height: 1.5em;
+        display: inline-block;
+    }
 </style>
 {% endblock %}
 

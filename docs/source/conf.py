@@ -11,10 +11,33 @@ project = 'RCR - Common Robotics Platform'
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
-extensions = ["myst_parser","sphinx_rtd_theme","sphinx_copybutton"]
+extensions = [
+    "myst_parser",
+    "sphinx_rtd_theme",
+    "sphinx_copybutton",
+    "sphinx_design",
+    "sphinx_tabs.tabs",
+]
 
 templates_path = ['_templates']
 exclude_patterns = []
+
+# MyST parser settings
+myst_enable_extensions = [
+    "colon_fence",
+    "deflist",
+    "fieldlist",
+    "attrs_inline",
+    "attrs_block",
+]
+
+# Enable substitutions in MyST
+myst_substitutions = {
+    "pi": "🥧",  # Raspberry Pi icon
+    "pc": "💻",  # PC/Development computer icon
+    "teensy": "🔌",  # Teensy/Microcontroller icon
+    "terminal": "📟",  # Terminal window icon
+}
 
 
 

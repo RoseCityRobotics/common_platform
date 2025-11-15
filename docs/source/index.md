@@ -9,10 +9,17 @@ Welcome to the comprehensive documentation for the RCR Common Robotics Platform!
 ### Initial Setup
 
 - **[Virtual Machine Setup](virtual_machines/installing_vms.md)** - Set up Ubuntu VM on Windows/macOS for ROS2 development
-- **[Host Configuration](setup/pi_connection.md)** - Connect to your robot's Raspberry Pi
-- **[Network Configuration](setup/host_and_software)** - Configure WiFi and network settings
-- **[Software Setup](setup/index.md)** - Install ROS2 and configure the development environment
-- **[Flash Teensy Firmware](operations/advanced/firmware_updates.md)** - Program the robot's microcontroller
+- **[Raspberry Pi Setup](procedures/raspberry-pi-setup.md)** - Complete Pi configuration from connection to namespacing
+- **[Firmware and Teleoperation](procedures/firmware-and-teleop.md)** - Flash Teensy and set up robot control
+- **[SLAM Mapping](procedures/slam-mapping.md)** - Create a map of your environment
+
+```{toctree}
+:maxdepth: 1
+:caption: Procedures & Modules
+
+procedures/index
+modules/index
+```
 
 ```{toctree}
 :maxdepth: 2
@@ -61,15 +68,6 @@ operations/advanced/custom_controllers
 
 virtual_machines/installing_vms
 virtual_machines/rviz_sensor_visualization
-```
-
-```{toctree}
-:maxdepth: 1
-:caption: Object Detection (YOLO)
-
-YOLO_ObjectDetection/Running_Object_Detection_Node
-YOLO_ObjectDetection/YOLOv11n_Finetuning_Workflow
-YOLO_ObjectDetection/YOLOv11n_to_Hailo8_Guide
 ```
 
 ```{toctree}
