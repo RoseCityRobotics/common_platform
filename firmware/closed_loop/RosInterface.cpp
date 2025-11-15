@@ -132,16 +132,6 @@ void odom_timer_callback(rcl_timer_t *timer, int64_t last_call_time) {
   odom_msg.child_frame_id.data = (char*)child_frame_id_str;
   odom_msg.child_frame_id.size = strlen(child_frame_id_str) + 1;  // Include null terminator
 
-  // Use IMU heading if available and calibrated, otherwise fall back to encoder-based theta
-  float theta;
-  if (global_ros_context->mag_calibrated) {
-    // Use IMU heading (already corrected by initial magnetometer reading)
-    theta = global_ros_context->imu_yaw;
-  } else {
-    // Fall back to encoder-based theta
-    theta = global_ros_context->odomContext.motion->getTheta();
-  }
-  
   // Update position using IMU heading if calibrated
   // The Motion class accumulates position based on encoder differential
   // We need to recalculate x,y based on the IMU heading
@@ -168,6 +158,21 @@ void odom_timer_callback(rcl_timer_t *timer, int64_t last_call_time) {
     was_calibrated = global_ros_context->mag_calibrated;
   }
   
+  // Use IMU heading if available and calibrated, otherwise fall back to encoder-based theta
+  float theta;
+  if (global_ros_context->mag_calibrated) {
+    // Use IMU heading (already corrected by initial magnetometer reading)
+    theta = global_ros_context->imu_yaw;
+    // If this is the first update after calibration, ensure theta is 0
+    if (first_update) {
+      theta = 0.0f;
+      last_theta = 0.0f;
+    }
+  } else {
+    // Fall back to encoder-based theta
+    theta = global_ros_context->odomContext.motion->getTheta();
+  }
+  
   float x, y;
   if (global_ros_context->mag_calibrated) {
     // Get current encoder counts
@@ -191,7 +196,9 @@ void odom_timer_callback(rcl_timer_t *timer, int64_t last_call_time) {
       }
     } else {
       // First update after calibration - initialize encoder tracking
-      last_theta = theta;
+      // Ensure theta and last_theta are both 0 after reset
+      theta = 0.0f;
+      last_theta = 0.0f;
       first_update = false;
     }
     
