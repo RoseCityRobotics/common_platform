@@ -378,10 +378,12 @@ void imu_timer_callback(rcl_timer_t *timer, int64_t last_call_time) {
     imu_msg.header.stamp.nanosec = 0;
   }
   
-  // Set frame ID
-  const char* frame_id_str = "imu_link";
+  // Set frame ID - must be set every time since it's a string pointer
+  // Use a static string to ensure the pointer remains valid
+  static const char* frame_id_str = "imu_link";
   imu_msg.header.frame_id.data = (char*)frame_id_str;
   imu_msg.header.frame_id.size = strlen(frame_id_str) + 1;  // Include null terminator
+  imu_msg.header.frame_id.capacity = strlen(frame_id_str) + 1;  // Set capacity as well
   
   // Set angular velocity (from gyroscope)
   imu_msg.angular_velocity.x = gyro_x;
@@ -450,12 +452,20 @@ void imu_timer_callback(rcl_timer_t *timer, int64_t last_call_time) {
   imu_msg.orientation.z = sin(yaw / 2.0f);
   imu_msg.orientation.w = cos(yaw / 2.0f);
   
-  // Set covariance matrices (unknown/not computed for now)
-  // Set to -1 to indicate unknown
+  // Set covariance matrices
+  // Use -1.0 to indicate unknown (ROS2 convention)
+  // But initialize to 0.0 first to ensure proper message structure
   for (int i = 0; i < 9; i++) {
     imu_msg.orientation_covariance[i] = -1.0;
     imu_msg.angular_velocity_covariance[i] = -1.0;
     imu_msg.linear_acceleration_covariance[i] = -1.0;
+  }
+  
+  // Ensure header is properly set (frame_id was set earlier)
+  // Make sure frame_id data pointer is valid
+  if (imu_msg.header.frame_id.data == NULL) {
+    SERIAL_OUT.println("ERROR: IMU frame_id.data is NULL!");
+    return;
   }
   
   // Debug output
@@ -548,11 +558,19 @@ bool create_entities(void *context) {
   
   // Initialize IMU publisher
   RCCHECK(rclc_publisher_init_default(
-      &imu_publisher, &node, imu_type_support, "imu/data"));
-  SERIAL_OUT.println("ROS: IMU publisher initialized on topic 'imu/data'");
+      &imu_publisher, &node, imu_type_support, "imu_uros/data"));
+  SERIAL_OUT.println("ROS: IMU publisher initialized on topic 'imu_uros/data'");
   
-  // Initialize IMU message
+  // Initialize IMU message BEFORE timer (order matters for micro-ROS)
   sensor_msgs__msg__Imu__init(&imu_msg);
+  
+  // Initialize covariance arrays to zero (required for proper message initialization)
+  for (int i = 0; i < 9; i++) {
+    imu_msg.orientation_covariance[i] = 0.0;
+    imu_msg.angular_velocity_covariance[i] = 0.0;
+    imu_msg.linear_acceleration_covariance[i] = 0.0;
+  }
+  
   RCCHECK(rclc_timer_init_default(
       &imu_timer, &support, RCL_MS_TO_NS(20), imu_timer_callback));  // 50 Hz IMU update rate
   SERIAL_OUT.println("ROS: IMU timer initialized successfully (50 Hz)");
