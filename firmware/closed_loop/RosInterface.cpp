@@ -404,12 +404,6 @@ void imu_timer_callback(rcl_timer_t *timer, int64_t last_call_time) {
   (void)timer;
   (void)last_call_time;
   
-  // Always log that timer is firing (for debugging)
-  static int call_count = 0;
-  if (++call_count % 50 == 0) {  // Log every 50 calls (~1 second at 50Hz)
-    SERIAL_OUT.println("IMU timer callback firing...");
-  }
-  
 #if PRINT_MOVES > 1
   SERIAL_OUT.println("=== IMU TIMER CALLBACK ===");
 #endif
@@ -430,20 +424,6 @@ void imu_timer_callback(rcl_timer_t *timer, int64_t last_call_time) {
       SERIAL_OUT.println("ERROR: Failed to read IMU data - accel/gyro read failed");
     }
     return;
-  }
-  
-  // Log successful read occasionally
-  static int success_count = 0;
-  if (++success_count % 250 == 0) {  // Log every 250 successes (~5 seconds at 50Hz)
-    SERIAL_OUT.print("IMU read success: accel=(");
-    SERIAL_OUT.print(accel_x, 2);
-    SERIAL_OUT.print(",");
-    SERIAL_OUT.print(accel_y, 2);
-    SERIAL_OUT.print(",");
-    SERIAL_OUT.print(accel_z, 2);
-    SERIAL_OUT.print(") gyro=(");
-    SERIAL_OUT.print(gyro_z * 180.0f / M_PI, 1);
-    SERIAL_OUT.println("°/s)");
   }
   
   // Set timestamp - use ROS system time
@@ -622,11 +602,6 @@ void imu_timer_callback(rcl_timer_t *timer, int64_t last_call_time) {
         default: SERIAL_OUT.print("Unknown error"); break;
       }
       SERIAL_OUT.println(")");
-    }
-  } else {
-    static int pub_success_count = 0;
-    if (++pub_success_count % 250 == 0) {  // Log every 250 publishes (~5 seconds)
-      SERIAL_OUT.println("IMU published successfully");
     }
   }
 }
