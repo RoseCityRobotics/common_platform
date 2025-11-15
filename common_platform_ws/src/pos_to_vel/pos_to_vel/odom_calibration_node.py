@@ -1,0 +1,474 @@
+#!/usr/bin/env python3
+
+"""
+Odometry Calibration Node
+
+This node provides discrete keyboard teleop for calibrating robot odometry.
+It subscribes to lidar scan and odom topics, and publishes cmd_vel commands
+for discrete movements. It displays calibration information showing how well
+the actual readings match expected values.
+"""
+
+import rclpy
+from rclpy.node import Node
+from geometry_msgs.msg import Twist
+from nav_msgs.msg import Odometry
+from sensor_msgs.msg import LaserScan
+import math
+import threading
+import time
+import sys
+import select
+import termios
+import tty
+import os
+from enum import Enum
+
+class ActionType(Enum):
+  FORWARD = 0  # Up arrow
+  LEFT = 1    # Left arrow: turn left 90, then forward
+  RIGHT = 2   # Right arrow: turn right 90, then forward
+  BACK = 3    # Down arrow: turn 180, then forward
+
+class OdomCalibrationNode(Node):
+  def __init__(self):
+    super().__init__('odom_calibration_node')
+    
+    # Parameters
+    self.declare_parameter('forward_distance', 0.05)  # 5 cm default
+    self.declare_parameter('turn_angle', math.pi / 2.0)  # 90 degrees
+    self.declare_parameter('linear_speed', 0.1)  # m/s
+    self.declare_parameter('angular_speed', 0.5)  # rad/s
+    self.declare_parameter('scan_topic', 'scan')
+    self.declare_parameter('odom_topic', 'odom')
+    self.declare_parameter('cmd_vel_topic', 'cmd_vel')
+    self.declare_parameter('namespace', '')
+    
+    # Get parameters
+    self.forward_distance = self.get_parameter('forward_distance').value
+    self.turn_angle = self.get_parameter('turn_angle').value
+    self.linear_speed = self.get_parameter('linear_speed').value
+    self.angular_speed = self.get_parameter('angular_speed').value
+    scan_topic = self.get_parameter('scan_topic').value
+    odom_topic = self.get_parameter('odom_topic').value
+    cmd_vel_topic = self.get_parameter('cmd_vel_topic').value
+    namespace = self.get_parameter('namespace').value
+    
+    # Add namespace if provided
+    if namespace:
+      scan_topic = f'{namespace}/{scan_topic}'
+      odom_topic = f'{namespace}/{odom_topic}'
+      cmd_vel_topic = f'{namespace}/{cmd_vel_topic}'
+    
+    # Publishers
+    self.cmd_vel_pub = self.create_publisher(Twist, cmd_vel_topic, 10)
+    
+    # Subscribers
+    self.scan_sub = self.create_subscription(
+      LaserScan, scan_topic, self.scan_callback, 10
+    )
+    self.odom_sub = self.create_subscription(
+      Odometry, odom_topic, self.odom_callback, 10
+    )
+    
+    # State
+    self.current_odom = None
+    self.current_scan = None
+    self.expected_position = None
+    self.expected_orientation = None
+    self.start_position = None
+    self.start_orientation = None
+    self.is_executing_action = False
+    self.action_lock = threading.Lock()
+    
+    # Calibration adjustments (user can modify these)
+    self.forward_distance_adjust = 0.0  # meters
+    self.turn_angle_adjust = 0.0  # radians
+    self.linear_speed_adjust = 0.0  # m/s
+    self.angular_speed_adjust = 0.0  # rad/s
+    
+    # Statistics
+    self.action_count = 0
+    self.position_errors = []
+    self.orientation_errors = []
+    
+    # Timer for publishing cmd_vel during actions
+    self.cmd_timer = self.create_timer(0.1, self.cmd_vel_timer_callback)
+    self.cmd_vel_queue = []
+    self.check_results_after = None  # Timestamp when to check results
+    
+    # Keyboard input thread
+    self.keyboard_thread = None
+    self.old_terminal_settings = None
+    self.start_keyboard_input()
+    
+    self.get_logger().info('Odometry calibration node started')
+    self.get_logger().info(f'Subscribed to: {scan_topic}, {odom_topic}')
+    self.get_logger().info(f'Publishing to: {cmd_vel_topic}')
+    self.print_instructions()
+  
+  def start_keyboard_input(self):
+    """Start keyboard input thread"""
+    self.keyboard_thread = threading.Thread(target=self.keyboard_input_loop, daemon=True)
+    self.keyboard_thread.start()
+  
+  def print_instructions(self):
+    """Print keyboard control instructions"""
+    print("\n" + "="*60)
+    print("ODOMETRY CALIBRATION CONTROLS")
+    print("="*60)
+    print("Arrow Keys:")
+    print("  ↑ (Up)    - Move forward")
+    print("  ← (Left)  - Turn left 90° then move forward")
+    print("  → (Right) - Turn right 90° then move forward")
+    print("  ↓ (Down)  - Turn 180° then move forward")
+    print("\nCalibration Adjustments:")
+    print("  w/s       - Increase/decrease forward distance")
+    print("  a/d       - Increase/decrease turn angle")
+    print("  q/e       - Increase/decrease linear speed")
+    print("  z/x       - Increase/decrease angular speed")
+    print("\nOther:")
+    print("  r         - Reset statistics")
+    print("  p         - Print current calibration values")
+    print("  h         - Show this help")
+    print("  Ctrl+C    - Exit")
+    print("="*60 + "\n")
+  
+  def keyboard_input_loop(self):
+    """Thread for handling keyboard input"""
+    # Save terminal settings
+    try:
+      self.old_terminal_settings = termios.tcgetattr(sys.stdin)
+    except:
+      self.get_logger().warn('Could not save terminal settings - keyboard input may not work')
+      return
+    
+    try:
+      tty.setraw(sys.stdin.fileno())
+      
+      while rclpy.ok():
+        try:
+          if select.select([sys.stdin], [], [], 0.1)[0]:
+            key = sys.stdin.read(1)
+            
+            # Handle escape sequences (arrow keys)
+            if key == '\x1b':  # ESC
+              key2 = sys.stdin.read(1)
+              if key2 == '[':
+                key3 = sys.stdin.read(1)
+                if key3 == 'A':  # Up arrow
+                  self.execute_action(ActionType.FORWARD)
+                elif key3 == 'B':  # Down arrow
+                  self.execute_action(ActionType.BACK)
+                elif key3 == 'C':  # Right arrow
+                  self.execute_action(ActionType.RIGHT)
+                elif key3 == 'D':  # Left arrow
+                  self.execute_action(ActionType.LEFT)
+            elif key == 'w':
+              self.forward_distance_adjust += 0.001  # 1mm
+              self.get_logger().info(f'Forward distance adjustment: {self.forward_distance_adjust:.4f} m')
+            elif key == 's':
+              self.forward_distance_adjust -= 0.001
+              self.get_logger().info(f'Forward distance adjustment: {self.forward_distance_adjust:.4f} m')
+            elif key == 'a':
+              self.turn_angle_adjust += 0.01  # ~0.57 degrees
+              self.get_logger().info(f'Turn angle adjustment: {self.turn_angle_adjust:.4f} rad ({math.degrees(self.turn_angle_adjust):.2f}°)')
+            elif key == 'd':
+              self.turn_angle_adjust -= 0.01
+              self.get_logger().info(f'Turn angle adjustment: {self.turn_angle_adjust:.4f} rad ({math.degrees(self.turn_angle_adjust):.2f}°)')
+            elif key == 'q':
+              self.linear_speed_adjust += 0.01  # 1 cm/s
+              self.get_logger().info(f'Linear speed adjustment: {self.linear_speed_adjust:.4f} m/s')
+            elif key == 'e':
+              self.linear_speed_adjust -= 0.01
+              self.get_logger().info(f'Linear speed adjustment: {self.linear_speed_adjust:.4f} m/s')
+            elif key == 'z':
+              self.angular_speed_adjust += 0.05  # rad/s
+              self.get_logger().info(f'Angular speed adjustment: {self.angular_speed_adjust:.4f} rad/s')
+            elif key == 'x':
+              self.angular_speed_adjust -= 0.05
+              self.get_logger().info(f'Angular speed adjustment: {self.angular_speed_adjust:.4f} rad/s')
+            elif key == 'r':
+              self.reset_statistics()
+            elif key == 'p':
+              self.print_calibration_values()
+            elif key == 'h':
+              self.print_instructions()
+            elif key == '\x03':  # Ctrl+C
+              break
+        except Exception as e:
+          self.get_logger().error(f'Error in keyboard input: {e}')
+    finally:
+      # Restore terminal settings
+      if self.old_terminal_settings:
+        try:
+          termios.tcsetattr(sys.stdin, termios.TCSADRAIN, self.old_terminal_settings)
+        except:
+          pass
+  
+  def execute_action(self, action_type: ActionType):
+    """Execute a discrete action"""
+    with self.action_lock:
+      if self.is_executing_action:
+        self.get_logger().warn('Action already in progress, ignoring command')
+        return
+      
+      if self.current_odom is None:
+        self.get_logger().warn('No odometry data available yet')
+        return
+      
+      self.is_executing_action = True
+      self.action_count += 1
+      
+      # Record starting position
+      self.start_position = (
+        self.current_odom.pose.pose.position.x,
+        self.current_odom.pose.pose.position.y
+      )
+      
+      # Get starting orientation (yaw from quaternion)
+      q = self.current_odom.pose.pose.orientation
+      self.start_orientation = math.atan2(
+        2.0 * (q.w * q.z + q.x * q.y),
+        1.0 - 2.0 * (q.y * q.y + q.z * q.z)
+      )
+      
+      # Calculate expected final position and orientation
+      effective_forward = self.forward_distance + self.forward_distance_adjust
+      effective_turn = self.turn_angle + self.turn_angle_adjust
+      effective_linear_speed = self.linear_speed + self.linear_speed_adjust
+      effective_angular_speed = self.angular_speed + self.angular_speed_adjust
+      
+      if action_type == ActionType.FORWARD:
+        # Just move forward
+        expected_theta = self.start_orientation
+        expected_x = self.start_position[0] + effective_forward * math.cos(expected_theta)
+        expected_y = self.start_position[1] + effective_forward * math.sin(expected_theta)
+      elif action_type == ActionType.LEFT:
+        # Turn left 90, then forward
+        expected_theta = self.start_orientation + effective_turn
+        expected_x = self.start_position[0] + effective_forward * math.cos(expected_theta)
+        expected_y = self.start_position[1] + effective_forward * math.sin(expected_theta)
+      elif action_type == ActionType.RIGHT:
+        # Turn right 90, then forward
+        expected_theta = self.start_orientation - effective_turn
+        expected_x = self.start_position[0] + effective_forward * math.cos(expected_theta)
+        expected_y = self.start_position[1] + effective_forward * math.sin(expected_theta)
+      elif action_type == ActionType.BACK:
+        # Turn 180, then forward (use math.pi for 180 degrees, but allow adjustment)
+        back_turn_angle = math.pi + self.turn_angle_adjust
+        expected_theta = self.start_orientation + back_turn_angle
+        expected_x = self.start_position[0] + effective_forward * math.cos(expected_theta)
+        expected_y = self.start_position[1] + effective_forward * math.sin(expected_theta)
+      
+      self.expected_position = (expected_x, expected_y)
+      self.expected_orientation = expected_theta
+      
+      # Normalize expected_orientation to [-pi, pi]
+      while self.expected_orientation > math.pi:
+        self.expected_orientation -= 2 * math.pi
+      while self.expected_orientation < -math.pi:
+        self.expected_orientation += 2 * math.pi
+      
+      self.get_logger().info(f'Executing action {action_type.name}')
+      self.get_logger().info(f'Start: ({self.start_position[0]:.3f}, {self.start_position[1]:.3f}), theta: {math.degrees(self.start_orientation):.1f}°')
+      self.get_logger().info(f'Expected: ({expected_x:.3f}, {expected_y:.3f}), theta: {math.degrees(self.expected_orientation):.1f}°')
+      
+      # Generate command sequence
+      commands = self.generate_action_commands(action_type, effective_forward, effective_turn, 
+                                                 effective_linear_speed, effective_angular_speed)
+      
+      # Execute commands
+      self.execute_command_sequence(commands)
+  
+  def generate_action_commands(self, action_type: ActionType, forward_dist: float, 
+                               turn_angle: float, lin_speed: float, ang_speed: float):
+    """Generate sequence of cmd_vel commands for an action"""
+    commands = []
+    
+    if action_type == ActionType.FORWARD:
+      # Just move forward
+      duration = forward_dist / lin_speed
+      commands.append(('forward', duration, lin_speed, 0.0))
+    elif action_type == ActionType.LEFT:
+      # Turn left, then forward
+      turn_duration = turn_angle / ang_speed
+      commands.append(('turn', turn_duration, 0.0, ang_speed))
+      forward_duration = forward_dist / lin_speed
+      commands.append(('forward', forward_duration, lin_speed, 0.0))
+    elif action_type == ActionType.RIGHT:
+      # Turn right, then forward
+      turn_duration = turn_angle / ang_speed
+      commands.append(('turn', turn_duration, 0.0, -ang_speed))
+      forward_duration = forward_dist / lin_speed
+      commands.append(('forward', forward_duration, lin_speed, 0.0))
+    elif action_type == ActionType.BACK:
+      # Turn 180, then forward (use math.pi for 180 degrees, but allow adjustment)
+      back_turn_angle = math.pi + self.turn_angle_adjust
+      turn_duration = abs(back_turn_angle) / ang_speed
+      commands.append(('turn', turn_duration, 0.0, ang_speed))
+      forward_duration = forward_dist / lin_speed
+      commands.append(('forward', forward_duration, lin_speed, 0.0))
+    
+    # Always end with stop
+    commands.append(('stop', 0.5, 0.0, 0.0))
+    
+    return commands
+  
+  def execute_command_sequence(self, commands):
+    """Execute a sequence of commands"""
+    self.cmd_vel_queue = commands.copy()
+    self.cmd_start_time = time.time()
+    self.current_cmd_index = 0
+  
+  def cmd_vel_timer_callback(self):
+    """Timer callback to publish cmd_vel during action execution"""
+    # Check if we need to check results after action completion
+    if self.check_results_after is not None and time.time() >= self.check_results_after:
+      self.check_calibration_results()
+      self.check_results_after = None
+    
+    if not self.cmd_vel_queue:
+      return
+    
+    current_time = time.time()
+    elapsed = current_time - self.cmd_start_time
+    
+    # Find which command we should be executing
+    cumulative_time = 0.0
+    active_cmd = None
+    
+    for i, (cmd_type, duration, lin_vel, ang_vel) in enumerate(self.cmd_vel_queue):
+      if elapsed < cumulative_time + duration:
+        active_cmd = (cmd_type, lin_vel, ang_vel)
+        self.current_cmd_index = i
+        break
+      cumulative_time += duration
+    
+    if active_cmd:
+      # Publish active command
+      twist = Twist()
+      twist.linear.x = active_cmd[1]
+      twist.angular.z = active_cmd[2]
+      self.cmd_vel_pub.publish(twist)
+    else:
+      # All commands complete
+      # Send stop command
+      twist = Twist()
+      twist.linear.x = 0.0
+      twist.angular.z = 0.0
+      self.cmd_vel_pub.publish(twist)
+      
+      # Clear queue and mark action as complete
+      self.cmd_vel_queue = []
+      with self.action_lock:
+        self.is_executing_action = False
+      
+      # Schedule result check after a short delay for odometry to settle
+      self.check_results_after = time.time() + 0.5
+  
+  def check_calibration_results(self):
+    """Check how well actual readings match expected values"""
+    if self.current_odom is None or self.expected_position is None:
+      return
+    
+    # Get current position
+    current_x = self.current_odom.pose.pose.position.x
+    current_y = self.current_odom.pose.pose.position.y
+    
+    # Get current orientation
+    q = self.current_odom.pose.pose.orientation
+    current_theta = math.atan2(
+      2.0 * (q.w * q.z + q.x * q.y),
+      1.0 - 2.0 * (q.y * q.y + q.z * q.z)
+    )
+    
+    # Calculate errors
+    pos_error = math.sqrt(
+      (current_x - self.expected_position[0])**2 +
+      (current_y - self.expected_position[1])**2
+    )
+    
+    # Orientation error (handle wrap-around)
+    orient_error = current_theta - self.expected_orientation
+    while orient_error > math.pi:
+      orient_error -= 2 * math.pi
+    while orient_error < -math.pi:
+      orient_error += 2 * math.pi
+    orient_error = abs(orient_error)
+    
+    self.position_errors.append(pos_error)
+    self.orientation_errors.append(orient_error)
+    
+    # Print results
+    print("\n" + "="*60)
+    print("CALIBRATION RESULTS")
+    print("="*60)
+    print(f"Action #{self.action_count}")
+    print(f"Expected position: ({self.expected_position[0]:.4f}, {self.expected_position[1]:.4f})")
+    print(f"Actual position:   ({current_x:.4f}, {current_y:.4f})")
+    print(f"Position error:   {pos_error*1000:.2f} mm")
+    print(f"Expected orientation: {math.degrees(self.expected_orientation):.2f}°")
+    print(f"Actual orientation:   {math.degrees(current_theta):.2f}°")
+    print(f"Orientation error:    {math.degrees(orient_error):.2f}°")
+    
+    if len(self.position_errors) > 1:
+      avg_pos_error = sum(self.position_errors) / len(self.position_errors)
+      avg_orient_error = sum(self.orientation_errors) / len(self.orientation_errors)
+      print(f"\nAverage position error:   {avg_pos_error*1000:.2f} mm")
+      print(f"Average orientation error: {math.degrees(avg_orient_error):.2f}°")
+    
+    print("="*60 + "\n")
+  
+  def reset_statistics(self):
+    """Reset calibration statistics"""
+    self.position_errors = []
+    self.orientation_errors = []
+    self.action_count = 0
+    self.get_logger().info('Statistics reset')
+  
+  def print_calibration_values(self):
+    """Print current calibration parameter values"""
+    print("\n" + "="*60)
+    print("CURRENT CALIBRATION VALUES")
+    print("="*60)
+    print(f"Forward distance:     {self.forward_distance:.4f} m (adjust: {self.forward_distance_adjust:+.4f} m)")
+    print(f"Turn angle:           {math.degrees(self.turn_angle):.2f}° (adjust: {math.degrees(self.turn_angle_adjust):+.2f}°)")
+    print(f"Linear speed:         {self.linear_speed:.4f} m/s (adjust: {self.linear_speed_adjust:+.4f} m/s)")
+    print(f"Angular speed:        {self.angular_speed:.4f} rad/s (adjust: {self.angular_speed_adjust:+.4f} rad/s)")
+    print("="*60 + "\n")
+  
+  def scan_callback(self, msg: LaserScan):
+    """Callback for lidar scan messages"""
+    self.current_scan = msg
+    # Could use scan data for additional calibration checks
+  
+  def odom_callback(self, msg: Odometry):
+    """Callback for odometry messages"""
+    self.current_odom = msg
+
+def main(args=None):
+  rclpy.init(args=args)
+  node = OdomCalibrationNode()
+  try:
+    rclpy.spin(node)
+  except KeyboardInterrupt:
+    pass
+  finally:
+    # Ensure terminal is restored
+    if node.old_terminal_settings:
+      try:
+        termios.tcsetattr(sys.stdin, termios.TCSADRAIN, node.old_terminal_settings)
+      except:
+        pass
+    # Send stop command before shutdown
+    twist = Twist()
+    twist.linear.x = 0.0
+    twist.angular.z = 0.0
+    node.cmd_vel_pub.publish(twist)
+    node.destroy_node()
+    rclpy.shutdown()
+
+if __name__ == '__main__':
+  main()
+
