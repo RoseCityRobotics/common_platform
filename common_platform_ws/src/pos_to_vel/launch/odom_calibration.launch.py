@@ -21,7 +21,7 @@ def generate_launch_description():
   
   linear_speed_arg = DeclareLaunchArgument(
     'linear_speed',
-    default_value='0.1',
+    default_value='0.3',
     description='Linear speed for forward movement in m/s'
   )
   
