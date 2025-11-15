@@ -11,6 +11,7 @@ the actual readings match expected values.
 
 import rclpy
 from rclpy.node import Node
+from rclpy.qos import QoSProfile, ReliabilityPolicy, DurabilityPolicy, HistoryPolicy
 from geometry_msgs.msg import Twist
 from nav_msgs.msg import Odometry
 from sensor_msgs.msg import LaserScan
@@ -70,12 +71,20 @@ class OdomCalibrationNode(Node):
     # Publishers
     self.cmd_vel_pub = self.create_publisher(Twist, cmd_vel_topic, 10)
     
+    # Create BEST_EFFORT QoS profile for odometry (to match qos_relay output)
+    best_effort_qos = QoSProfile(
+      reliability=ReliabilityPolicy.BEST_EFFORT,
+      durability=DurabilityPolicy.VOLATILE,
+      history=HistoryPolicy.KEEP_LAST,
+      depth=10
+    )
+    
     # Subscribers
     self.scan_sub = self.create_subscription(
       LaserScan, scan_topic, self.scan_callback, 10
     )
     self.odom_sub = self.create_subscription(
-      Odometry, odom_topic, self.odom_callback, 10
+      Odometry, odom_topic, self.odom_callback, best_effort_qos
     )
     
     # State
