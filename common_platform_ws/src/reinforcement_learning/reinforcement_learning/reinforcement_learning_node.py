@@ -37,7 +37,7 @@ class ReinforcementLearningNode(Node):
     
     # Parameters
     self.declare_parameter('model_path', 'q-tabular.pkl')
-    self.declare_parameter('forward_distance', 0.05)  # 5 cm default
+    self.declare_parameter('forward_distance', 0.15)  # 15 cm default
     self.declare_parameter('turn_angle', math.pi / 2.0)  # 90 degrees
     self.declare_parameter('linear_speed', 0.3)  # m/s
     self.declare_parameter('angular_speed', 0.5)  # rad/s
@@ -441,11 +441,11 @@ class ReinforcementLearningNode(Node):
           twist = Twist()
           twist.linear.x = 0.0
           twist.angular.z = 0.0
-          # Publish stop command multiple times (for 1.2 seconds at 10 Hz = 12 publications)
+          # Publish stop command multiple times (for 0.4 seconds at 10 Hz = 4 publications)
           self.cmd_vel_pub.publish(twist)
           self.cmd_vel_queue = []
-          # Set stop command period (1.2 seconds to ensure robot stops)
-          self.stop_command_end_time = current_time + 1.2
+          # Set stop command period (0.4 seconds = 4 publications to ensure robot stops)
+          self.stop_command_end_time = current_time + 0.4
           with self.action_lock:
             self.is_executing_action = False
           return
@@ -464,8 +464,8 @@ class ReinforcementLearningNode(Node):
       twist.angular.z = 0.0
       self.cmd_vel_pub.publish(twist)
       
-      # Set stop command period (1.2 seconds to ensure robot stops)
-      self.stop_command_end_time = current_time + 1.2
+      # Set stop command period (0.4 seconds = 4 publications to ensure robot stops)
+      self.stop_command_end_time = current_time + 0.4
       
       # Log collision status if detected
       if self.collision_detected:
