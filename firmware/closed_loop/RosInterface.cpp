@@ -132,13 +132,93 @@ void odom_timer_callback(rcl_timer_t *timer, int64_t last_call_time) {
   odom_msg.child_frame_id.data = (char*)child_frame_id_str;
   odom_msg.child_frame_id.size = strlen(child_frame_id_str) + 1;  // Include null terminator
 
+  // Use IMU heading if available and calibrated, otherwise fall back to encoder-based theta
+  float theta;
+  if (global_ros_context->mag_calibrated) {
+    // Use IMU heading (already corrected by initial magnetometer reading)
+    theta = global_ros_context->imu_yaw;
+  } else {
+    // Fall back to encoder-based theta
+    theta = global_ros_context->odomContext.motion->getTheta();
+  }
+  
+  // Update position using IMU heading if calibrated
+  // The Motion class accumulates position based on encoder differential
+  // We need to recalculate x,y based on the IMU heading
+  static float last_theta = 0.0f;
+  static float accumulated_x = 0.0f;
+  static float accumulated_y = 0.0f;
+  static int32_t last_left_count = 0;
+  static int32_t last_right_count = 0;
+  static bool first_update = true;
+  static bool was_calibrated = false;
+  
+  // Reset accumulated position if calibration state changed
+  if (global_ros_context->mag_calibrated != was_calibrated) {
+    if (global_ros_context->mag_calibrated) {
+      // Just calibrated - reset accumulated position and encoder tracking
+      accumulated_x = 0.0f;
+      accumulated_y = 0.0f;
+      first_update = true;
+      // Initialize encoder tracking from current (reset) values
+      last_left_count = global_ros_context->odomContext.leftMotor->getCounter();
+      last_right_count = global_ros_context->odomContext.rightMotor->getCounter();
+      last_theta = 0.0f;  // Reset theta tracking
+    }
+    was_calibrated = global_ros_context->mag_calibrated;
+  }
+  
+  float x, y;
+  if (global_ros_context->mag_calibrated) {
+    // Get current encoder counts
+    int32_t left_count = global_ros_context->odomContext.leftMotor->getCounter();
+    int32_t right_count = global_ros_context->odomContext.rightMotor->getCounter();
+    
+    if (!first_update) {
+      // Calculate distance traveled from encoder counts
+      // Use the same calculation as Motion class
+      float leftTravel = (left_count - last_left_count) * MotorControl::METERS_PER_COUNT;
+      float rightTravel = (right_count - last_right_count) * MotorControl::METERS_PER_COUNT;
+      float distance = (rightTravel + leftTravel) / 2.0f;
+      
+      if (fabs(distance) > 1e-6f) {  // Only update if there's significant movement
+        // Use average of current and previous IMU heading for smoother integration
+        float avg_theta = (theta + last_theta) / 2.0f;
+        
+        // Accumulate position using IMU heading
+        accumulated_x += distance * cos(avg_theta);
+        accumulated_y += distance * sin(avg_theta);
+      }
+    } else {
+      // First update after calibration - initialize encoder tracking
+      last_theta = theta;
+      first_update = false;
+    }
+    
+    // Update encoder tracking for next iteration
+    last_left_count = left_count;
+    last_right_count = right_count;
+    x = accumulated_x;
+    y = accumulated_y;
+  } else {
+    // Use encoder-based position
+    x = global_ros_context->odomContext.motion->getX();
+    y = global_ros_context->odomContext.motion->getY();
+    // Reset accumulated position tracking when not calibrated
+    last_left_count = global_ros_context->odomContext.leftMotor->getCounter();
+    last_right_count = global_ros_context->odomContext.rightMotor->getCounter();
+    accumulated_x = x;
+    accumulated_y = y;
+    first_update = true;
+  }
+  last_theta = theta;
+  
   // Set pose
-  odom_msg.pose.pose.position.x = global_ros_context->odomContext.motion->getX();
-  odom_msg.pose.pose.position.y = global_ros_context->odomContext.motion->getY();
+  odom_msg.pose.pose.position.x = x;
+  odom_msg.pose.pose.position.y = y;
   odom_msg.pose.pose.position.z = 0.0;
 
   // Convert theta to quaternion
-  float theta = global_ros_context->odomContext.motion->getTheta();
   odom_msg.pose.pose.orientation.x = 0.0;
   odom_msg.pose.pose.orientation.y = 0.0;
   odom_msg.pose.pose.orientation.z = sin(theta / 2.0);
@@ -407,9 +487,18 @@ void imu_timer_callback(rcl_timer_t *timer, int64_t last_call_time) {
   // Magnetometer gives us absolute heading in the horizontal plane
   float mag_yaw = 0.0f;
   if (mag_x != 0.0f || mag_y != 0.0f) {
-    // Calculate heading from magnetometer (atan2 gives angle in XY plane)
+    // Apply initial magnetometer correction if calibrated
+    float corrected_mag_x = mag_x;
+    float corrected_mag_y = mag_y;
+    if (global_ros_context && global_ros_context->mag_calibrated) {
+      // Subtract initial magnetometer reading to get relative heading
+      corrected_mag_x = mag_x - global_ros_context->initial_mag_x;
+      corrected_mag_y = mag_y - global_ros_context->initial_mag_y;
+    }
+    
+    // Calculate heading from corrected magnetometer (atan2 gives angle in XY plane)
     // Note: This assumes magnetometer X/Y are in the horizontal plane
-    mag_yaw = atan2(mag_y, mag_x);
+    mag_yaw = atan2(corrected_mag_y, corrected_mag_x);
     
     // If we have a previous yaw from gyro, use complementary filter
     // to combine smooth gyro updates with absolute magnetometer reference
@@ -445,6 +534,11 @@ void imu_timer_callback(rcl_timer_t *timer, int64_t last_call_time) {
     }
   }
   last_imu_time = current_time;
+  
+  // Store yaw in global context for odom callback
+  if (global_ros_context) {
+    global_ros_context->imu_yaw = yaw;
+  }
   
   // Convert yaw to quaternion (assuming robot is on flat ground, roll=0, pitch=0)
   imu_msg.orientation.x = 0.0;
@@ -537,19 +631,71 @@ void imu_timer_callback(rcl_timer_t *timer, int64_t last_call_time) {
   }
 }
 
+// Reset odometry and calibrate magnetometer
+void resetOdomWithMagnetometerCalibration(void *context) {
+  RosContext *ros_ctx = (RosContext *)context;
+  if (!ros_ctx) {
+    SERIAL_OUT.println("ERROR: No ROS context for odom reset");
+    return;
+  }
+  
+  // Read current magnetometer reading
+  float accel_x, accel_y, accel_z;
+  float gyro_x, gyro_y, gyro_z;
+  float mag_x, mag_y, mag_z;
+  
+  if (readIMU(&accel_x, &accel_y, &accel_z, &gyro_x, &gyro_y, &gyro_z, &mag_x, &mag_y, &mag_z)) {
+    // Store initial magnetometer reading
+    ros_ctx->initial_mag_x = mag_x;
+    ros_ctx->initial_mag_y = mag_y;
+    ros_ctx->mag_calibrated = true;
+    ros_ctx->imu_yaw = 0.0f;  // Reset yaw to 0
+    
+    SERIAL_OUT.print("Magnetometer calibrated: mag_x=");
+    SERIAL_OUT.print(mag_x * 1e6f, 2);
+    SERIAL_OUT.print("μT, mag_y=");
+    SERIAL_OUT.print(mag_y * 1e6f, 2);
+    SERIAL_OUT.println("μT");
+  } else {
+    SERIAL_OUT.println("ERROR: Failed to read magnetometer for calibration");
+    ros_ctx->mag_calibrated = false;
+    return;
+  }
+  
+  // Reset odometry
+  if (ros_ctx->odomContext.motion) {
+    ros_ctx->odomContext.motion->reset();
+  }
+  if (ros_ctx->odomContext.leftMotor) {
+    ros_ctx->odomContext.leftMotor->resetCounter();
+  }
+  if (ros_ctx->odomContext.rightMotor) {
+    ros_ctx->odomContext.rightMotor->resetCounter();
+  }
+  
+  SERIAL_OUT.println("Odometry reset to position (0, 0) and orientation 0");
+  SERIAL_OUT.println("Note: Position will now use IMU heading for accumulation");
+}
+
 // Create ROS entities
 bool create_entities(void *context) {
   allocator = rcl_get_default_allocator();
   
   // Set global context for timer callback
   global_ros_context = (RosContext*)context;
+  
+  // Initialize magnetometer calibration fields
+  global_ros_context->imu_yaw = 0.0f;
+  global_ros_context->initial_mag_x = 0.0f;
+  global_ros_context->initial_mag_y = 0.0f;
+  global_ros_context->mag_calibrated = false;
 
   // Initialize ROS clock with system time
   RCCHECK(rcl_clock_init(RCL_SYSTEM_TIME, &global_ros_context->clock, &allocator));
 
   RCCHECK(rclc_support_init(&support, 0, NULL, &allocator));
   RCCHECK(
-      rclc_node_init_default(&node, "micro_ros_arduino_node", "rcr001", &support));
+      rclc_node_init_default(&node, "micro_ros_arduino_node", "rcr005", &support));
   RCCHECK(rclc_subscription_init_default(
       &subscriber, &node,
       ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist), "cmd_vel"));

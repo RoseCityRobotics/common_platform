@@ -92,6 +92,10 @@ bool encoderStreaming = false;
 #if ROS
 // ROS context instance
 RosContext rosContext;
+// Forward declaration for global ROS context (defined in RosInterface.cpp)
+extern RosContext* global_ros_context;
+// Forward declaration for reset function
+void resetOdomWithMagnetometerCalibration(void *context);
 #endif
 
 void robotState_reset() {
@@ -194,6 +198,17 @@ void parseCommand(const char *const cmd) {
       SERIAL_OUT.println("Reset state");
       commandProcessed = true;
       break;
+
+#if ROS
+    case 'R':  // Reset odometry with magnetometer calibration
+      if (global_ros_context) {
+        resetOdomWithMagnetometerCalibration(global_ros_context);
+      } else {
+        SERIAL_OUT.println("ERROR: ROS context not available");
+      }
+      commandProcessed = true;
+      break;
+#endif
 
 #if !ROS
     // --- Non-ROS Specific Commands ---
@@ -466,6 +481,9 @@ case 'J':  // Toggle encoder streaming
       SERIAL_OUT.println("=== Available Commands ===");
       SERIAL_OUT.println("M - Toggle motor drive on/off");
       SERIAL_OUT.println("X - Reset all state");
+#if ROS
+      SERIAL_OUT.println("R - Reset odometry with magnetometer calibration");
+#endif
       SERIAL_OUT.println("J - Toggle encoder streaming");
 #if !ROS
       SERIAL_OUT.println("L<degrees> - Turn left");

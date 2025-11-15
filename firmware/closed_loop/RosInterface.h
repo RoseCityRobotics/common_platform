@@ -31,6 +31,10 @@ struct RosContext {
   RobotState* robotState;
   OdometryContext odomContext;
   rcl_clock_t clock;
+  float imu_yaw;  // Current IMU heading (radians)
+  float initial_mag_x;  // Initial magnetometer X reading for heading correction
+  float initial_mag_y;  // Initial magnetometer Y reading for heading correction
+  bool mag_calibrated;  // Flag indicating if magnetometer has been calibrated
 };
 
 // ROS Agent States
@@ -43,6 +47,7 @@ enum RosAgentStatus {
 
 void setup_ROS();
 void handleRosAgentState(void *context);
+void resetOdomWithMagnetometerCalibration(void *context);
 #endif
 
 #endif
