@@ -452,10 +452,23 @@ void imu_timer_callback(rcl_timer_t *timer, int64_t last_call_time) {
   imu_msg.header.frame_id.size = strlen(frame_id_str) + 1;  // Include null terminator
   imu_msg.header.frame_id.capacity = strlen(frame_id_str) + 1;  // Set capacity as well
   
-  // Set angular velocity (from gyroscope)
+  // Apply gyroscope bias compensation if calibrated
+  float corrected_gyro_z = gyro_z;
+  if (global_ros_context && global_ros_context->gyro_bias_calibrated) {
+    corrected_gyro_z = gyro_z - global_ros_context->gyro_z_bias;
+    
+    // Apply deadband to zero out very small angular velocities (gyro noise)
+    // This prevents false rotation detection when robot is stationary
+    const float GYRO_DEADBAND = 0.01f;  // ~0.57 deg/s threshold
+    if (fabs(corrected_gyro_z) < GYRO_DEADBAND) {
+      corrected_gyro_z = 0.0f;
+    }
+  }
+  
+  // Set angular velocity (from gyroscope, with bias compensation)
   imu_msg.angular_velocity.x = gyro_x;
   imu_msg.angular_velocity.y = gyro_y;
-  imu_msg.angular_velocity.z = gyro_z;
+  imu_msg.angular_velocity.z = corrected_gyro_z;
   
   // Set linear acceleration (from accelerometer)
   // Note: This includes gravity. For true linear acceleration, gravity should be subtracted
@@ -506,7 +519,12 @@ void imu_timer_callback(rcl_timer_t *timer, int64_t last_call_time) {
     // to combine smooth gyro updates with absolute magnetometer reference
     if (last_imu_time > 0) {
       float dt = (current_time - last_imu_time) / 1000.0f;  // Convert to seconds
-      float gyro_yaw = yaw + gyro_z * dt;  // Integrate gyroscope
+      // Use corrected gyro_z (with bias compensation) for integration
+      float gyro_z_corrected = gyro_z;
+      if (global_ros_context && global_ros_context->gyro_bias_calibrated) {
+        gyro_z_corrected = gyro_z - global_ros_context->gyro_z_bias;
+      }
+      float gyro_yaw = yaw + gyro_z_corrected * dt;  // Integrate gyroscope
       
       // Normalize angles to [-pi, pi]
       while (gyro_yaw > M_PI) gyro_yaw -= 2.0f * M_PI;
@@ -530,7 +548,12 @@ void imu_timer_callback(rcl_timer_t *timer, int64_t last_call_time) {
     // No magnetometer data, fall back to gyroscope integration
     if (last_imu_time > 0) {
       float dt = (current_time - last_imu_time) / 1000.0f;
-      yaw += gyro_z * dt;
+      // Use corrected gyro_z (with bias compensation) for integration
+      float gyro_z_corrected = gyro_z;
+      if (global_ros_context && global_ros_context->gyro_bias_calibrated) {
+        gyro_z_corrected = gyro_z - global_ros_context->gyro_z_bias;
+      }
+      yaw += gyro_z_corrected * dt;
       while (yaw > M_PI) yaw -= 2.0f * M_PI;
       while (yaw < -M_PI) yaw += 2.0f * M_PI;
     }
@@ -649,11 +672,32 @@ void resetOdomWithMagnetometerCalibration(void *context) {
     ros_ctx->imu_yaw = 0.0f;  // Reset yaw to 0
     ros_ctx->imu_yaw_reset_requested = true;  // Request IMU callback to reset static yaw
     
+    // Calibrate gyroscope bias (assume robot is stationary during reset)
+    // Take multiple readings and average to get bias estimate
+    static const int BIAS_SAMPLES = 10;
+    float gyro_z_sum = 0.0f;
+    for (int i = 0; i < BIAS_SAMPLES; i++) {
+      float temp_accel_x, temp_accel_y, temp_accel_z;
+      float temp_gyro_x, temp_gyro_y, temp_gyro_z;
+      float temp_mag_x, temp_mag_y, temp_mag_z;
+      if (readIMU(&temp_accel_x, &temp_accel_y, &temp_accel_z, 
+                   &temp_gyro_x, &temp_gyro_y, &temp_gyro_z,
+                   &temp_mag_x, &temp_mag_y, &temp_mag_z)) {
+        gyro_z_sum += temp_gyro_z;
+      }
+      delay(10);  // Small delay between samples
+    }
+    ros_ctx->gyro_z_bias = gyro_z_sum / BIAS_SAMPLES;
+    ros_ctx->gyro_bias_calibrated = true;
+    
     SERIAL_OUT.print("Magnetometer calibrated: mag_x=");
     SERIAL_OUT.print(mag_x * 1e6f, 2);
     SERIAL_OUT.print("μT, mag_y=");
     SERIAL_OUT.print(mag_y * 1e6f, 2);
     SERIAL_OUT.println("μT");
+    SERIAL_OUT.print("Gyroscope bias calibrated: gyro_z_bias=");
+    SERIAL_OUT.print(ros_ctx->gyro_z_bias * 180.0f / M_PI, 3);
+    SERIAL_OUT.println(" deg/s");
   } else {
     SERIAL_OUT.println("ERROR: Failed to read magnetometer for calibration");
     ros_ctx->mag_calibrated = false;
@@ -688,6 +732,8 @@ bool create_entities(void *context) {
   global_ros_context->initial_mag_y = 0.0f;
   global_ros_context->mag_calibrated = false;
   global_ros_context->imu_yaw_reset_requested = false;
+  global_ros_context->gyro_z_bias = 0.0f;
+  global_ros_context->gyro_bias_calibrated = false;
 
   // Initialize ROS clock with system time
   RCCHECK(rcl_clock_init(RCL_SYSTEM_TIME, &global_ros_context->clock, &allocator));
