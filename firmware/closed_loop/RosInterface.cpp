@@ -3,6 +3,7 @@
 #include "Motion.h"
 #include "MotorControl.h"
 
+#include <Wire.h>  // For I2C communication with IMU
 #include <rmw/qos_profiles.h>
 #include <cstring>
 #include <time.h>
@@ -252,7 +253,13 @@ bool readIMU(float* accel_x, float* accel_y, float* accel_z,
   Wire.beginTransmission(AK8963_ADDR);
   Wire.write(0x02);  // ST1 register
   Wire.endTransmission(false);
-  Wire.requestFrom(AK8963_ADDR, (uint8_t)1, (uint8_t)true);
+  uint8_t bytes_read_mag = Wire.requestFrom((uint8_t)AK8963_ADDR, (uint8_t)1, (uint8_t)true);
+  if (bytes_read_mag == 0) {
+    *mag_x = 0.0f;
+    *mag_y = 0.0f;
+    *mag_z = 0.0f;
+    return true;  // Still return true since accel/gyro succeeded
+  }
   uint8_t st1 = Wire.read();
   
   if (!(st1 & 0x01)) {
@@ -267,9 +274,9 @@ bool readIMU(float* accel_x, float* accel_y, float* accel_z,
   Wire.beginTransmission(AK8963_ADDR);
   Wire.write(0x03);  // HXL register (start of magnetometer data)
   Wire.endTransmission(false);
-  bytes_read = Wire.requestFrom(AK8963_ADDR, (uint8_t)7, (uint8_t)true);
+  bytes_read_mag = Wire.requestFrom((uint8_t)AK8963_ADDR, (uint8_t)7, (uint8_t)true);
   
-  if (bytes_read != 7) {
+  if (bytes_read_mag != 7) {
     // Not enough data, set to zero
     *mag_x = 0.0f;
     *mag_y = 0.0f;
