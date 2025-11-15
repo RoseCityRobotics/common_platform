@@ -247,40 +247,41 @@ class ReinforcementLearningNode(Node):
   
   def action_timer_callback(self):
     """Timer callback to select and execute actions at the specified rate"""
-    with self.action_lock:
-      if self.is_executing_action:
-        # Still executing previous action, skip this cycle
-        return
-      
-      if self.current_odom is None:
-        # No odometry data yet, skip
-        return
-      
-      # Get current state from odometry
-      x = self.current_odom.pose.pose.position.x
-      y = self.current_odom.pose.pose.position.y
-      q = self.current_odom.pose.pose.orientation
-      yaw = math.atan2(
-        2.0 * (q.w * q.z + q.x * q.y),
-        1.0 - 2.0 * (q.y * q.y + q.z * q.z)
-      )
-      
-      state = np.array([x, y, yaw], dtype=float)
-      
-      # Discretize state
-      state_disc = self.discretize_state(state)
-      
-      # Select action greedily
-      action = self.greedy_action(state_disc, action_dim=4)
-      
-      self.get_logger().info(f'State: ({x:.3f}, {y:.3f}, {math.degrees(yaw):.1f}°), '
-                            f'Discretized: {state_disc}, Action: {action}')
-      
-      # Execute action
-      self.execute_action(action)
+    # Check if action is already executing (quick check without lock)
+    if self.is_executing_action:
+      # Still executing previous action, skip this cycle
+      return
+    
+    if self.current_odom is None:
+      # No odometry data yet, skip
+      return
+    
+    # Get current state from odometry
+    x = self.current_odom.pose.pose.position.x
+    y = self.current_odom.pose.pose.position.y
+    q = self.current_odom.pose.pose.orientation
+    yaw = math.atan2(
+      2.0 * (q.w * q.z + q.x * q.y),
+      1.0 - 2.0 * (q.y * q.y + q.z * q.z)
+    )
+    
+    state = np.array([x, y, yaw], dtype=float)
+    
+    # Discretize state
+    state_disc = self.discretize_state(state)
+    
+    # Select action greedily
+    action = self.greedy_action(state_disc, action_dim=4)
+    
+    self.get_logger().info(f'State: ({x:.3f}, {y:.3f}, {math.degrees(yaw):.1f}°), '
+                          f'Discretized: {state_disc}, Action: {action}')
+    
+    # Execute action (this will acquire the lock internally)
+    self.execute_action(action)
   
   def execute_action(self, action: int):
     """Execute a discrete action (0-3) with collision checking"""
+    self.get_logger().info(f'execute_action called with action={action}')
     with self.action_lock:
       if self.is_executing_action:
         self.get_logger().warn('Action already in progress, ignoring command')
@@ -290,18 +291,21 @@ class ReinforcementLearningNode(Node):
         self.get_logger().error(f'Invalid action: {action}, must be 0-3')
         return
       
+      self.get_logger().info(f'Action {action} is valid, checking collision...')
+      
       # Check for collision before executing action (if action involves forward movement)
       # For actions that involve forward movement, check collision
       # Actions 0 (FORWARD), 1 (LEFT), 2 (RIGHT), 3 (BACK) all move forward after turning
       # Only check collision if scan data is available
       if self.current_scan is not None:
-        self.get_logger().debug(f'Checking collision before action {action}')
-        if self.check_collision():
+        self.get_logger().info(f'Scan data available, checking collision before action {action}')
+        collision = self.check_collision()
+        if collision:
           self.get_logger().warn(f'Collision detected before action {action}, skipping action')
           return
-        self.get_logger().debug(f'No collision detected, proceeding with action {action}')
+        self.get_logger().info(f'No collision detected, proceeding with action {action}')
       else:
-        self.get_logger().debug(f'No scan data available, skipping collision check for action {action}')
+        self.get_logger().info(f'No scan data available, skipping collision check for action {action}')
       
       self.is_executing_action = True
       self.collision_detected = False
@@ -320,8 +324,11 @@ class ReinforcementLearningNode(Node):
         self.angular_speed
       )
       
+      self.get_logger().info(f'Generated {len(commands)} commands for action {action}')
+      
       # Execute commands
       self.execute_command_sequence(commands)
+      self.get_logger().info(f'Command sequence started for action {action}')
   
   def generate_action_commands(self, action_type: ActionType, forward_dist: float, 
                                turn_angle: float, lin_speed: float, ang_speed: float):
