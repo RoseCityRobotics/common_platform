@@ -453,13 +453,32 @@ void imu_timer_callback(rcl_timer_t *timer, int64_t last_call_time) {
   imu_msg.orientation.w = cos(yaw / 2.0f);
   
   // Set covariance matrices
-  // Use -1.0 to indicate unknown (ROS2 convention)
-  // But initialize to 0.0 first to ensure proper message structure
+  // Cartographer requires linear_acceleration_covariance[0] != -1
+  // -1.0 means data not available, 0.0 means data available but covariance unknown
+  // We provide linear acceleration and angular velocity, so set those to 0.0
+  // For orientation, we provide it but with less confidence, so use small positive values
   for (int i = 0; i < 9; i++) {
-    imu_msg.orientation_covariance[i] = -1.0;
-    imu_msg.angular_velocity_covariance[i] = -1.0;
-    imu_msg.linear_acceleration_covariance[i] = -1.0;
+    imu_msg.orientation_covariance[i] = 0.0;  // Orientation available (yaw from mag+gyro)
+    imu_msg.angular_velocity_covariance[i] = 0.0;  // Angular velocity available
+    imu_msg.linear_acceleration_covariance[i] = 0.0;  // Linear acceleration available (required by Cartographer)
   }
+  
+  // Set diagonal elements to indicate data quality
+  // For MPU9250, typical noise levels:
+  // Linear acceleration: ~0.01 m/s² noise -> variance ~0.0001
+  // Angular velocity: ~0.01 rad/s noise -> variance ~0.0001
+  // Orientation (yaw): ~0.05 rad (~3°) uncertainty -> variance ~0.0025
+  imu_msg.linear_acceleration_covariance[0] = 0.01;  // X variance (m/s²)²
+  imu_msg.linear_acceleration_covariance[4] = 0.01;  // Y variance
+  imu_msg.linear_acceleration_covariance[8] = 0.01;  // Z variance
+  
+  imu_msg.angular_velocity_covariance[0] = 0.01;  // X variance (rad/s)²
+  imu_msg.angular_velocity_covariance[4] = 0.01;  // Y variance
+  imu_msg.angular_velocity_covariance[8] = 0.01;  // Z variance
+  
+  imu_msg.orientation_covariance[0] = 0.01;  // Roll variance (rad²) - not used (assumed 0)
+  imu_msg.orientation_covariance[4] = 0.01;  // Pitch variance (rad²) - not used (assumed 0)
+  imu_msg.orientation_covariance[8] = 0.0025;  // Yaw variance (rad²) - ~3° uncertainty
   
   // Ensure header is properly set (frame_id was set earlier)
   // Make sure frame_id data pointer is valid
