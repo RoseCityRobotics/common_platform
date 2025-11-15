@@ -247,6 +247,14 @@ class ReinforcementLearningNode(Node):
   
   def action_timer_callback(self):
     """Timer callback to select and execute actions at the specified rate"""
+    current_time = time.time()
+    
+    # Check if we're still in stop command period
+    if self.stop_command_end_time is not None and current_time < self.stop_command_end_time:
+      # Still publishing stop commands, skip this cycle
+      self.get_logger().debug(f'Still in stop command period (ends at {self.stop_command_end_time:.3f}), skipping timer callback')
+      return
+    
     # Use lock to atomically check if action is executing
     with self.action_lock:
       if self.is_executing_action:
