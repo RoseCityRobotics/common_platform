@@ -299,10 +299,24 @@ class OdomCalibrationNode(Node):
       self.get_logger().info(f'Executing action {action_type.name}')
       self.get_logger().info(f'Start: ({self.start_position[0]:.3f}, {self.start_position[1]:.3f}), theta: {math.degrees(self.start_orientation):.1f}°')
       self.get_logger().info(f'Expected: ({expected_x:.3f}, {expected_y:.3f}), theta: {math.degrees(self.expected_orientation):.1f}°')
+      self.get_logger().info(f'Using effective values: forward={effective_forward:.4f}m, turn={math.degrees(effective_turn):.2f}°, lin_speed={effective_linear_speed:.3f}m/s, ang_speed={effective_angular_speed:.3f}rad/s')
       
       # Generate command sequence
       commands = self.generate_action_commands(action_type, effective_forward, effective_turn, 
                                                  effective_linear_speed, effective_angular_speed)
+      
+      # Log the command sequence
+      self.get_logger().info('Command sequence:')
+      total_duration = 0.0
+      for i, (cmd_type, duration, lin_vel, ang_vel) in enumerate(commands):
+        total_duration += duration
+        if cmd_type == 'turn':
+          self.get_logger().info(f'  [{i+1}] {cmd_type}: duration={duration:.3f}s, ang_vel={ang_vel:.3f}rad/s ({math.degrees(ang_vel):.2f}°/s), expected_angle={math.degrees(abs(ang_vel * duration)):.2f}°')
+        elif cmd_type == 'forward':
+          self.get_logger().info(f'  [{i+1}] {cmd_type}: duration={duration:.3f}s, lin_vel={lin_vel:.3f}m/s, expected_distance={lin_vel * duration:.4f}m')
+        else:
+          self.get_logger().info(f'  [{i+1}] {cmd_type}: duration={duration:.3f}s')
+      self.get_logger().info(f'Total action duration: {total_duration:.3f}s')
       
       # Execute commands
       self.execute_command_sequence(commands)
@@ -396,6 +410,7 @@ class OdomCalibrationNode(Node):
   def check_calibration_results(self):
     """Check how well actual readings match expected values"""
     if self.current_odom is None or self.expected_position is None:
+      self.get_logger().warn('Cannot check results: missing odometry or expected position')
       return
     
     # Get current position
@@ -409,11 +424,33 @@ class OdomCalibrationNode(Node):
       1.0 - 2.0 * (q.y * q.y + q.z * q.z)
     )
     
-    # Calculate errors
-    pos_error = math.sqrt(
-      (current_x - self.expected_position[0])**2 +
-      (current_y - self.expected_position[1])**2
-    )
+    # Calculate position errors (X and Y separately)
+    pos_error_x = current_x - self.expected_position[0]
+    pos_error_y = current_y - self.expected_position[1]
+    pos_error = math.sqrt(pos_error_x**2 + pos_error_y**2)
+    
+    # Calculate movement from start
+    movement_x = current_x - self.start_position[0]
+    movement_y = current_y - self.start_position[1]
+    movement_distance = math.sqrt(movement_x**2 + movement_y**2)
+    
+    # Expected movement
+    expected_movement_x = self.expected_position[0] - self.start_position[0]
+    expected_movement_y = self.expected_position[1] - self.start_position[1]
+    expected_movement_distance = math.sqrt(expected_movement_x**2 + expected_movement_y**2)
+    
+    # Orientation change
+    orientation_change = current_theta - self.start_orientation
+    while orientation_change > math.pi:
+      orientation_change -= 2 * math.pi
+    while orientation_change < -math.pi:
+      orientation_change += 2 * math.pi
+    
+    expected_orientation_change = self.expected_orientation - self.start_orientation
+    while expected_orientation_change > math.pi:
+      expected_orientation_change -= 2 * math.pi
+    while expected_orientation_change < -math.pi:
+      expected_orientation_change += 2 * math.pi
     
     # Orientation error (handle wrap-around)
     orient_error = current_theta - self.expected_orientation
@@ -421,30 +458,103 @@ class OdomCalibrationNode(Node):
       orient_error -= 2 * math.pi
     while orient_error < -math.pi:
       orient_error += 2 * math.pi
-    orient_error = abs(orient_error)
+    orient_error_abs = abs(orient_error)
     
     self.position_errors.append(pos_error)
-    self.orientation_errors.append(orient_error)
+    self.orientation_errors.append(orient_error_abs)
     
-    # Print results
-    print("\n" + "="*60)
+    # Print detailed results
+    print("\n" + "="*70)
     print("CALIBRATION RESULTS")
-    print("="*60)
+    print("="*70)
     print(f"Action #{self.action_count}")
-    print(f"Expected position: ({self.expected_position[0]:.4f}, {self.expected_position[1]:.4f})")
-    print(f"Actual position:   ({current_x:.4f}, {current_y:.4f})")
-    print(f"Position error:   {pos_error*1000:.2f} mm")
-    print(f"Expected orientation: {math.degrees(self.expected_orientation):.2f}°")
-    print(f"Actual orientation:   {math.degrees(current_theta):.2f}°")
-    print(f"Orientation error:    {math.degrees(orient_error):.2f}°")
+    print()
+    print("START POSITION:")
+    print(f"  Position: ({self.start_position[0]:.6f}, {self.start_position[1]:.6f}) m")
+    print(f"  Orientation: {math.degrees(self.start_orientation):.3f}°")
+    print()
+    print("EXPECTED FINAL STATE:")
+    print(f"  Position: ({self.expected_position[0]:.6f}, {self.expected_position[1]:.6f}) m")
+    print(f"  Orientation: {math.degrees(self.expected_orientation):.3f}°")
+    print(f"  Expected movement: {expected_movement_distance*1000:.2f} mm")
+    print(f"  Expected orientation change: {math.degrees(expected_orientation_change):.3f}°")
+    print()
+    print("ACTUAL FINAL STATE:")
+    print(f"  Position: ({current_x:.6f}, {current_y:.6f}) m")
+    print(f"  Orientation: {math.degrees(current_theta):.3f}°")
+    print(f"  Actual movement: {movement_distance*1000:.2f} mm")
+    print(f"  Actual orientation change: {math.degrees(orientation_change):.3f}°")
+    print()
+    print("ERRORS:")
+    print(f"  Position error (X): {pos_error_x*1000:.2f} mm")
+    print(f"  Position error (Y): {pos_error_y*1000:.2f} mm")
+    print(f"  Position error (total): {pos_error*1000:.2f} mm")
+    print(f"  Movement distance error: {(movement_distance - expected_movement_distance)*1000:.2f} mm")
+    print(f"  Orientation error: {math.degrees(orient_error_abs):.3f}°")
+    print(f"  Orientation change error: {math.degrees(abs(orientation_change - expected_orientation_change)):.3f}°")
+    print()
+    
+    # Analyze scan data if available
+    if self.current_scan is not None:
+      self.analyze_scan_data()
     
     if len(self.position_errors) > 1:
       avg_pos_error = sum(self.position_errors) / len(self.position_errors)
       avg_orient_error = sum(self.orientation_errors) / len(self.orientation_errors)
-      print(f"\nAverage position error:   {avg_pos_error*1000:.2f} mm")
-      print(f"Average orientation error: {math.degrees(avg_orient_error):.2f}°")
+      print("STATISTICS (all actions):")
+      print(f"  Average position error:   {avg_pos_error*1000:.2f} mm")
+      print(f"  Average orientation error: {math.degrees(avg_orient_error):.3f}°")
+      print(f"  Total actions: {len(self.position_errors)}")
+      print()
     
-    print("="*60 + "\n")
+    print("="*70 + "\n")
+    
+    # Also log to ROS logger
+    self.get_logger().info(f'Calibration results - Position error: {pos_error*1000:.2f} mm, Orientation error: {math.degrees(orient_error_abs):.3f}°')
+  
+  def analyze_scan_data(self):
+    """Analyze lidar scan data for calibration insights"""
+    if self.current_scan is None:
+      return
+    
+    scan = self.current_scan
+    ranges = scan.ranges
+    
+    # Filter out invalid readings (inf, nan, or out of range)
+    valid_ranges = [r for r in ranges if r != float('inf') and not math.isnan(r) and 
+                    scan.range_min <= r <= scan.range_max]
+    
+    if len(valid_ranges) == 0:
+      print("SCAN ANALYSIS: No valid range readings")
+      return
+    
+    min_range = min(valid_ranges)
+    max_range = max(valid_ranges)
+    avg_range = sum(valid_ranges) / len(valid_ranges)
+    
+    # Find the angle with minimum range (closest obstacle)
+    min_range_idx = ranges.index(min_range)
+    angle_min = scan.angle_min + min_range_idx * scan.angle_increment
+    
+    # Find the angle with maximum range (furthest open space)
+    max_range_idx = ranges.index(max_range)
+    angle_max = scan.angle_min + max_range_idx * scan.angle_increment
+    
+    print("SCAN ANALYSIS:")
+    print(f"  Valid readings: {len(valid_ranges)}/{len(ranges)}")
+    print(f"  Min range: {min_range:.3f} m at {math.degrees(angle_min):.1f}°")
+    print(f"  Max range: {max_range:.3f} m at {math.degrees(angle_max):.1f}°")
+    print(f"  Average range: {avg_range:.3f} m")
+    
+    # Check if we're close to expected position by looking at scan consistency
+    # If we're in a known location, the scan pattern should be consistent
+    if self.start_position is not None:
+      # Calculate distance from start
+      distance_from_start = math.sqrt(
+        (self.current_odom.pose.pose.position.x - self.start_position[0])**2 +
+        (self.current_odom.pose.pose.position.y - self.start_position[1])**2
+      )
+      print(f"  Distance from start position: {distance_from_start*1000:.2f} mm")
   
   def reset_statistics(self):
     """Reset calibration statistics"""
