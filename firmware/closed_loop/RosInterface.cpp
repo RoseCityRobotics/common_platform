@@ -461,17 +461,14 @@ void imu_timer_callback(rcl_timer_t *timer, int64_t last_call_time) {
   // This provides drift-free heading compared to gyroscope integration
   static float yaw = 0.0f;
   static uint32_t last_imu_time = 0;
-  static bool was_calibrated = false;
   uint32_t current_time = millis();
   
-  // Reset static yaw when calibration state changes from false to true
-  if (global_ros_context && global_ros_context->mag_calibrated && !was_calibrated) {
-    // Just calibrated - reset yaw and timing
+  // Reset static yaw when requested (e.g., after calibration)
+  if (global_ros_context && global_ros_context->imu_yaw_reset_requested) {
+    // Reset yaw and timing
     yaw = 0.0f;
     last_imu_time = 0;  // Force first reading to use magnetometer directly
-    was_calibrated = true;
-  } else if (global_ros_context && !global_ros_context->mag_calibrated) {
-    was_calibrated = false;
+    global_ros_context->imu_yaw_reset_requested = false;  // Clear the request flag
   }
   
   // Calculate yaw from magnetometer (compass heading)
@@ -489,7 +486,14 @@ void imu_timer_callback(rcl_timer_t *timer, int64_t last_call_time) {
     
     // Calculate heading from corrected magnetometer (atan2 gives angle in XY plane)
     // Note: This assumes magnetometer X/Y are in the horizontal plane
-    mag_yaw = atan2(corrected_mag_y, corrected_mag_x);
+    // If both corrected values are very close to zero (just after calibration), use 0
+    float mag_magnitude = sqrt(corrected_mag_x * corrected_mag_x + corrected_mag_y * corrected_mag_y);
+    if (mag_magnitude < 1e-6f) {
+      // Very small magnitude - treat as zero (just calibrated, no rotation)
+      mag_yaw = 0.0f;
+    } else {
+      mag_yaw = atan2(corrected_mag_y, corrected_mag_x);
+    }
     
     // If we have a previous yaw from gyro, use complementary filter
     // to combine smooth gyro updates with absolute magnetometer reference
@@ -636,6 +640,7 @@ void resetOdomWithMagnetometerCalibration(void *context) {
     ros_ctx->initial_mag_y = mag_y;
     ros_ctx->mag_calibrated = true;
     ros_ctx->imu_yaw = 0.0f;  // Reset yaw to 0
+    ros_ctx->imu_yaw_reset_requested = true;  // Request IMU callback to reset static yaw
     
     SERIAL_OUT.print("Magnetometer calibrated: mag_x=");
     SERIAL_OUT.print(mag_x * 1e6f, 2);
@@ -675,6 +680,7 @@ bool create_entities(void *context) {
   global_ros_context->initial_mag_x = 0.0f;
   global_ros_context->initial_mag_y = 0.0f;
   global_ros_context->mag_calibrated = false;
+  global_ros_context->imu_yaw_reset_requested = false;
 
   // Initialize ROS clock with system time
   RCCHECK(rcl_clock_init(RCL_SYSTEM_TIME, &global_ros_context->clock, &allocator));

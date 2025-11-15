@@ -35,6 +35,7 @@ struct RosContext {
   float initial_mag_x;  // Initial magnetometer X reading for heading correction
   float initial_mag_y;  // Initial magnetometer Y reading for heading correction
   bool mag_calibrated;  // Flag indicating if magnetometer has been calibrated
+  bool imu_yaw_reset_requested;  // Flag to request IMU yaw reset in callback
 };
 
 // ROS Agent States
