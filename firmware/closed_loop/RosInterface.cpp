@@ -249,38 +249,43 @@ bool readIMU(float* accel_x, float* accel_y, float* accel_z,
   
   // Read magnetometer (AK8963) - accessed via I2C passthrough
   // Note: Passthrough should be enabled during setup, not here
+  // Make magnetometer read optional - if it fails, just set to zero and continue
+  *mag_x = 0.0f;
+  *mag_y = 0.0f;
+  *mag_z = 0.0f;
+  
+  // Try to read magnetometer, but don't fail if it doesn't work
   // Check if magnetometer is ready (ST1 register)
   Wire.beginTransmission(AK8963_ADDR);
   Wire.write(0x02);  // ST1 register
-  Wire.endTransmission(false);
+  if (Wire.endTransmission(false) != 0) {
+    // Communication failed, skip magnetometer
+    return true;  // Still return true since accel/gyro succeeded
+  }
+  
   uint8_t bytes_read_mag = Wire.requestFrom((uint8_t)AK8963_ADDR, (uint8_t)1, (uint8_t)true);
-  if (bytes_read_mag == 0) {
-    *mag_x = 0.0f;
-    *mag_y = 0.0f;
-    *mag_z = 0.0f;
+  if (bytes_read_mag == 0 || !Wire.available()) {
+    // No data available, skip magnetometer
     return true;  // Still return true since accel/gyro succeeded
   }
   uint8_t st1 = Wire.read();
   
   if (!(st1 & 0x01)) {
-    // Data not ready, set to zero
-    *mag_x = 0.0f;
-    *mag_y = 0.0f;
-    *mag_z = 0.0f;
+    // Data not ready, skip magnetometer
     return true;  // Still return true since accel/gyro succeeded
   }
   
   // Read magnetometer data (7 bytes: 6 data + 1 status)
   Wire.beginTransmission(AK8963_ADDR);
   Wire.write(0x03);  // HXL register (start of magnetometer data)
-  Wire.endTransmission(false);
-  bytes_read_mag = Wire.requestFrom((uint8_t)AK8963_ADDR, (uint8_t)7, (uint8_t)true);
+  if (Wire.endTransmission(false) != 0) {
+    // Communication failed, skip magnetometer
+    return true;  // Still return true since accel/gyro succeeded
+  }
   
-  if (bytes_read_mag != 7) {
-    // Not enough data, set to zero
-    *mag_x = 0.0f;
-    *mag_y = 0.0f;
-    *mag_z = 0.0f;
+  bytes_read_mag = Wire.requestFrom((uint8_t)AK8963_ADDR, (uint8_t)7, (uint8_t)true);
+  if (bytes_read_mag != 7 || Wire.available() < 7) {
+    // Not enough data, skip magnetometer
     return true;  // Still return true since accel/gyro succeeded
   }
   
@@ -308,14 +313,18 @@ void imu_timer_callback(rcl_timer_t *timer, int64_t last_call_time) {
   (void)timer;
   (void)last_call_time;
   
+  // Always log that timer is firing (for debugging)
+  static int call_count = 0;
+  if (++call_count % 50 == 0) {  // Log every 50 calls (~1 second at 50Hz)
+    SERIAL_OUT.println("IMU timer callback firing...");
+  }
+  
 #if PRINT_MOVES > 1
   SERIAL_OUT.println("=== IMU TIMER CALLBACK ===");
 #endif
   
   if (!global_ros_context) {
-#if PRINT_MOVES > 1
-    SERIAL_OUT.println("ERROR: Missing ROS context");
-#endif
+    SERIAL_OUT.println("ERROR: Missing ROS context in IMU callback");
     return;
   }
   
@@ -325,9 +334,7 @@ void imu_timer_callback(rcl_timer_t *timer, int64_t last_call_time) {
   float mag_x, mag_y, mag_z;
   
   if (!readIMU(&accel_x, &accel_y, &accel_z, &gyro_x, &gyro_y, &gyro_z, &mag_x, &mag_y, &mag_z)) {
-#if PRINT_MOVES > 1
-    SERIAL_OUT.println("ERROR: Failed to read IMU data");
-#endif
+    SERIAL_OUT.println("ERROR: Failed to read IMU data - accel/gyro read failed");
     return;
   }
   
@@ -451,9 +458,17 @@ void imu_timer_callback(rcl_timer_t *timer, int64_t last_call_time) {
   // Publish the message
   rcl_ret_t publish_ret = rcl_publish(&imu_publisher, &imu_msg, NULL);
   if (publish_ret != RCL_RET_OK) {
-    SERIAL_OUT.print("Failed to publish IMU: ");
+    SERIAL_OUT.print("ERROR: Failed to publish IMU: ");
     SERIAL_OUT.print(publish_ret);
-    SERIAL_OUT.println();
+    SERIAL_OUT.print(" (");
+    switch(publish_ret) {
+      case RCL_RET_ERROR: SERIAL_OUT.print("RCL_RET_ERROR"); break;
+      case RCL_RET_BAD_ALLOC: SERIAL_OUT.print("RCL_RET_BAD_ALLOC"); break;
+      case RCL_RET_INVALID_ARGUMENT: SERIAL_OUT.print("RCL_RET_INVALID_ARGUMENT"); break;
+      case RCL_RET_PUBLISHER_INVALID: SERIAL_OUT.print("RCL_RET_PUBLISHER_INVALID"); break;
+      default: SERIAL_OUT.print("Unknown error"); break;
+    }
+    SERIAL_OUT.println(")");
   } else {
 #if PRINT_MOVES > 1
     SERIAL_OUT.println("IMU published successfully");
@@ -502,12 +517,13 @@ bool create_entities(void *context) {
   // Initialize IMU publisher
   RCCHECK(rclc_publisher_init_default(
       &imu_publisher, &node, imu_type_support, "imu/data"));
+  SERIAL_OUT.println("ROS: IMU publisher initialized on topic 'imu/data'");
   
   // Initialize IMU message
   sensor_msgs__msg__Imu__init(&imu_msg);
   RCCHECK(rclc_timer_init_default(
       &imu_timer, &support, RCL_MS_TO_NS(20), imu_timer_callback));  // 50 Hz IMU update rate
-  SERIAL_OUT.println("ROS: IMU timer initialized successfully");
+  SERIAL_OUT.println("ROS: IMU timer initialized successfully (50 Hz)");
   
   RCCHECK(rclc_executor_init(&executor, &support.context, 3, &allocator));  // Increased to 3 for IMU timer
   SERIAL_OUT.println("ROS: Executor initialized successfully");
