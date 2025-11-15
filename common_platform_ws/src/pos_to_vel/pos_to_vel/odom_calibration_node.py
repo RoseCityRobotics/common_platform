@@ -761,6 +761,33 @@ class OdomCalibrationNode(Node):
     self.current_scan = msg
     # Could use scan data for additional calibration checks
   
+  def print_scan_ranges(self, scan: LaserScan = None):
+    """Print all ranges from a scan message"""
+    if scan is None:
+      scan = self.current_scan
+    
+    if scan is None:
+      print("No scan data available")
+      return
+    
+    print(f"\nScan Ranges (total: {len(scan.ranges)}):")
+    print(f"Angle range: {math.degrees(scan.angle_min):.2f}° to {math.degrees(scan.angle_max):.2f}°")
+    print(f"Angle increment: {math.degrees(scan.angle_increment):.4f}°")
+    print(f"Range limits: {scan.range_min:.3f} m to {scan.range_max:.3f} m")
+    print("\nRanges (m):")
+    
+    # Print ranges with their corresponding angles
+    for i, r in enumerate(scan.ranges):
+      angle = scan.angle_min + i * scan.angle_increment
+      if r == float('inf'):
+        print(f"  [{i:4d}] {math.degrees(angle):7.2f}°: inf")
+      elif math.isnan(r):
+        print(f"  [{i:4d}] {math.degrees(angle):7.2f}°: nan")
+      else:
+        print(f"  [{i:4d}] {math.degrees(angle):7.2f}°: {r:.4f} m")
+    
+    print()  # Empty line at end
+  
   def odom_callback(self, msg: Odometry):
     """Callback for odometry messages"""
     self.current_odom = msg
