@@ -14,15 +14,16 @@ from rclpy.node import Node
 from geometry_msgs.msg import Twist
 from nav_msgs.msg import Odometry
 from sensor_msgs.msg import LaserScan
+from evdev import InputDevice, ecodes
 import math
 import threading
 import time
-import sys
-import select
-import termios
-import tty
 import os
 from enum import Enum
+
+KEY_DOWN = 1
+KEY_UP = 0
+KEY_HOLD = 2
 
 class ActionType(Enum):
   FORWARD = 0  # Up arrow
@@ -43,6 +44,9 @@ class OdomCalibrationNode(Node):
     self.declare_parameter('odom_topic', 'odom')
     self.declare_parameter('cmd_vel_topic', 'cmd_vel')
     self.declare_parameter('namespace', '')
+    self.declare_parameter('device_path', '/dev/input/event0')
+    self.declare_parameter('grab_device', True)
+    self.declare_parameter('debug', True)
     
     # Get parameters
     self.forward_distance = self.get_parameter('forward_distance').value
@@ -53,6 +57,9 @@ class OdomCalibrationNode(Node):
     odom_topic = self.get_parameter('odom_topic').value
     cmd_vel_topic = self.get_parameter('cmd_vel_topic').value
     namespace = self.get_parameter('namespace').value
+    self.device_path = self.get_parameter('device_path').get_parameter_value().string_value
+    self.grab_device = bool(self.get_parameter('grab_device').value)
+    self.debug = bool(self.get_parameter('debug').value)
     
     # Add namespace if provided
     if namespace:
@@ -99,12 +106,13 @@ class OdomCalibrationNode(Node):
     
     # Keyboard input thread
     self.keyboard_thread = None
-    self.old_terminal_settings = None
+    self._stop_keyboard = threading.Event()
     self.start_keyboard_input()
     
     self.get_logger().info('Odometry calibration node started')
     self.get_logger().info(f'Subscribed to: {scan_topic}, {odom_topic}')
     self.get_logger().info(f'Publishing to: {cmd_vel_topic}')
+    self.get_logger().info(f'Reading keyboard from: {self.device_path}')
     self.print_instructions()
   
   def start_keyboard_input(self):
@@ -135,76 +143,85 @@ class OdomCalibrationNode(Node):
     print("="*60 + "\n")
   
   def keyboard_input_loop(self):
-    """Thread for handling keyboard input"""
-    # Save terminal settings
+    """Thread for handling keyboard input from evdev device"""
     try:
-      self.old_terminal_settings = termios.tcgetattr(sys.stdin)
-    except:
-      self.get_logger().warn('Could not save terminal settings - keyboard input may not work')
+      dev = InputDevice(self.device_path)
+    except Exception as e:
+      self.get_logger().error(f'Cannot open {self.device_path}: {e}')
+      self.get_logger().error('Make sure the keyboard dongle is connected and the device path is correct')
       return
     
     try:
-      tty.setraw(sys.stdin.fileno())
-      
-      while rclpy.ok():
-        try:
-          if select.select([sys.stdin], [], [], 0.1)[0]:
-            key = sys.stdin.read(1)
+      if self.grab_device:
+        dev.grab()  # Prevent events from going to the console/X
+        self.get_logger().info(f'Grabbed device {self.device_path} exclusively')
+    except Exception as e:
+      self.get_logger().warn(f'Could not grab device exclusively: {e}')
+    
+    # Key mapping for calibration controls
+    KEYMAP = {
+      ecodes.KEY_UP: ('action', ActionType.FORWARD),
+      ecodes.KEY_DOWN: ('action', ActionType.BACK),
+      ecodes.KEY_LEFT: ('action', ActionType.LEFT),
+      ecodes.KEY_RIGHT: ('action', ActionType.RIGHT),
+      ecodes.KEY_W: ('forward_adj', +0.001),
+      ecodes.KEY_S: ('forward_adj', -0.001),
+      ecodes.KEY_A: ('turn_adj', +0.01),
+      ecodes.KEY_D: ('turn_adj', -0.01),
+      ecodes.KEY_Q: ('linear_speed_adj', +0.01),
+      ecodes.KEY_E: ('linear_speed_adj', -0.01),
+      ecodes.KEY_Z: ('angular_speed_adj', +0.05),
+      ecodes.KEY_X: ('angular_speed_adj', -0.05),
+      ecodes.KEY_R: ('reset', None),
+      ecodes.KEY_P: ('print', None),
+      ecodes.KEY_H: ('help', None),
+    }
+    
+    while not self._stop_keyboard.is_set() and rclpy.ok():
+      try:
+        for event in dev.read_loop():
+          if self._stop_keyboard.is_set():
+            break
+          
+          if event.type == ecodes.EV_KEY:
+            keyevent = event.value  # 0=up, 1=down, 2=hold
+            code = event.code
             
-            # Handle escape sequences (arrow keys)
-            if key == '\x1b':  # ESC
-              key2 = sys.stdin.read(1)
-              if key2 == '[':
-                key3 = sys.stdin.read(1)
-                if key3 == 'A':  # Up arrow
-                  self.execute_action(ActionType.FORWARD)
-                elif key3 == 'B':  # Down arrow
-                  self.execute_action(ActionType.BACK)
-                elif key3 == 'C':  # Right arrow
-                  self.execute_action(ActionType.RIGHT)
-                elif key3 == 'D':  # Left arrow
-                  self.execute_action(ActionType.LEFT)
-            elif key == 'w':
-              self.forward_distance_adjust += 0.001  # 1mm
-              self.get_logger().info(f'Forward distance adjustment: {self.forward_distance_adjust:.4f} m')
-            elif key == 's':
-              self.forward_distance_adjust -= 0.001
-              self.get_logger().info(f'Forward distance adjustment: {self.forward_distance_adjust:.4f} m')
-            elif key == 'a':
-              self.turn_angle_adjust += 0.01  # ~0.57 degrees
-              self.get_logger().info(f'Turn angle adjustment: {self.turn_angle_adjust:.4f} rad ({math.degrees(self.turn_angle_adjust):.2f}°)')
-            elif key == 'd':
-              self.turn_angle_adjust -= 0.01
-              self.get_logger().info(f'Turn angle adjustment: {self.turn_angle_adjust:.4f} rad ({math.degrees(self.turn_angle_adjust):.2f}°)')
-            elif key == 'q':
-              self.linear_speed_adjust += 0.01  # 1 cm/s
-              self.get_logger().info(f'Linear speed adjustment: {self.linear_speed_adjust:.4f} m/s')
-            elif key == 'e':
-              self.linear_speed_adjust -= 0.01
-              self.get_logger().info(f'Linear speed adjustment: {self.linear_speed_adjust:.4f} m/s')
-            elif key == 'z':
-              self.angular_speed_adjust += 0.05  # rad/s
-              self.get_logger().info(f'Angular speed adjustment: {self.angular_speed_adjust:.4f} rad/s')
-            elif key == 'x':
-              self.angular_speed_adjust -= 0.05
-              self.get_logger().info(f'Angular speed adjustment: {self.angular_speed_adjust:.4f} rad/s')
-            elif key == 'r':
-              self.reset_statistics()
-            elif key == 'p':
-              self.print_calibration_values()
-            elif key == 'h':
-              self.print_instructions()
-            elif key == '\x03':  # Ctrl+C
-              break
-        except Exception as e:
-          self.get_logger().error(f'Error in keyboard input: {e}')
-    finally:
-      # Restore terminal settings
-      if self.old_terminal_settings:
-        try:
-          termios.tcsetattr(sys.stdin, termios.TCSADRAIN, self.old_terminal_settings)
-        except:
-          pass
+            # Only process key down events (not key up or hold)
+            if keyevent == KEY_DOWN and code in KEYMAP:
+              action_type, value = KEYMAP[code]
+              
+              if self.debug:
+                try:
+                  key_name = ecodes.KEY[code]
+                except Exception:
+                  key_name = str(code)
+                self.get_logger().debug(f'Key pressed: {key_name}')
+              
+              if action_type == 'action':
+                self.execute_action(value)
+              elif action_type == 'forward_adj':
+                self.forward_distance_adjust += value
+                self.get_logger().info(f'Forward distance adjustment: {self.forward_distance_adjust:.4f} m')
+              elif action_type == 'turn_adj':
+                self.turn_angle_adjust += value
+                self.get_logger().info(f'Turn angle adjustment: {self.turn_angle_adjust:.4f} rad ({math.degrees(self.turn_angle_adjust):.2f}°)')
+              elif action_type == 'linear_speed_adj':
+                self.linear_speed_adjust += value
+                self.get_logger().info(f'Linear speed adjustment: {self.linear_speed_adjust:.4f} m/s')
+              elif action_type == 'angular_speed_adj':
+                self.angular_speed_adjust += value
+                self.get_logger().info(f'Angular speed adjustment: {self.angular_speed_adjust:.4f} rad/s')
+              elif action_type == 'reset':
+                self.reset_statistics()
+              elif action_type == 'print':
+                self.print_calibration_values()
+              elif action_type == 'help':
+                self.print_instructions()
+      except Exception as e:
+        if not self._stop_keyboard.is_set():
+          self.get_logger().error(f'Error in keyboard input loop: {e}')
+          time.sleep(0.1)  # Brief pause before retrying
   
   def execute_action(self, action_type: ActionType):
     """Execute a discrete action"""
@@ -447,6 +464,16 @@ class OdomCalibrationNode(Node):
     """Callback for odometry messages"""
     self.current_odom = msg
 
+  def destroy_node(self):
+    """Cleanup on node destruction"""
+    self._stop_keyboard.set()
+    # Send stop command before shutdown
+    twist = Twist()
+    twist.linear.x = 0.0
+    twist.angular.z = 0.0
+    self.cmd_vel_pub.publish(twist)
+    return super().destroy_node()
+
 def main(args=None):
   rclpy.init(args=args)
   node = OdomCalibrationNode()
@@ -455,17 +482,6 @@ def main(args=None):
   except KeyboardInterrupt:
     pass
   finally:
-    # Ensure terminal is restored
-    if node.old_terminal_settings:
-      try:
-        termios.tcsetattr(sys.stdin, termios.TCSADRAIN, node.old_terminal_settings)
-      except:
-        pass
-    # Send stop command before shutdown
-    twist = Twist()
-    twist.linear.x = 0.0
-    twist.angular.z = 0.0
-    node.cmd_vel_pub.publish(twist)
     node.destroy_node()
     rclpy.shutdown()
 

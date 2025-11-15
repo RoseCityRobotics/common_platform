@@ -55,6 +55,24 @@ def generate_launch_description():
     description='ROS namespace (can also use ROS_NAME environment variable)'
   )
   
+  device_path_arg = DeclareLaunchArgument(
+    'device_path',
+    default_value='/dev/input/event0',
+    description='Path to evdev input device (e.g., /dev/input/event0 for USB keyboard dongle)'
+  )
+  
+  grab_device_arg = DeclareLaunchArgument(
+    'grab_device',
+    default_value='true',
+    description='Grab device exclusively to prevent events from going to console/X'
+  )
+  
+  debug_arg = DeclareLaunchArgument(
+    'debug',
+    default_value='true',
+    description='Enable debug logging for keyboard events'
+  )
+  
   # Get launch configurations
   forward_distance = LaunchConfiguration('forward_distance')
   turn_angle = LaunchConfiguration('turn_angle')
@@ -64,6 +82,9 @@ def generate_launch_description():
   odom_topic = LaunchConfiguration('odom_topic')
   cmd_vel_topic = LaunchConfiguration('cmd_vel_topic')
   namespace = LaunchConfiguration('namespace')
+  device_path = LaunchConfiguration('device_path')
+  grab_device = LaunchConfiguration('grab_device')
+  debug = LaunchConfiguration('debug')
   
   # Create the calibration node
   calibration_node = Node(
@@ -80,6 +101,9 @@ def generate_launch_description():
       'odom_topic': odom_topic,
       'cmd_vel_topic': cmd_vel_topic,
       'namespace': namespace,
+      'device_path': device_path,
+      'grab_device': grab_device,
+      'debug': debug,
     }]
   )
   
@@ -95,6 +119,9 @@ def generate_launch_description():
       odom_topic_arg,
       cmd_vel_topic_arg,
       namespace_arg,
+      device_path_arg,
+      grab_device_arg,
+      debug_arg,
       GroupAction([
         PushRosNamespace(ns),
         calibration_node
@@ -110,6 +137,9 @@ def generate_launch_description():
       odom_topic_arg,
       cmd_vel_topic_arg,
       namespace_arg,
+      device_path_arg,
+      grab_device_arg,
+      debug_arg,
       calibration_node
     ])
 

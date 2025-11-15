@@ -32,8 +32,23 @@ ros2 launch pos_to_vel odom_calibration.launch.py \
   forward_distance:=0.05 \
   turn_angle:=1.5708 \
   linear_speed:=0.1 \
-  angular_speed:=0.5
+  angular_speed:=0.5 \
+  device_path:=/dev/input/event0
 ```
+
+### Finding the Keyboard Device
+
+If you need to find the correct device path for your USB keyboard dongle:
+
+```bash
+# List all input devices
+ls -la /dev/input/
+
+# Or use evtest to identify the keyboard
+sudo evtest
+```
+
+The device path is typically `/dev/input/event0` for the first USB input device, but it may vary.
 
 ## Keyboard Controls
 
@@ -106,11 +121,26 @@ ros2 launch pos_to_vel odom_calibration.launch.py \
 5. Repeat actions and check if errors decrease
 6. Use 'r' to reset statistics and start fresh measurements
 
+## Parameters
+
+- `forward_distance` (default: 0.05 m): Distance to move forward in each action
+- `turn_angle` (default: 1.5708 rad = 90°): Angle to turn for left/right actions
+- `linear_speed` (default: 0.1 m/s): Speed for forward movement
+- `angular_speed` (default: 0.5 rad/s): Speed for turning
+- `scan_topic` (default: 'scan'): LiDAR scan topic name
+- `odom_topic` (default: 'odom'): Odometry topic name
+- `cmd_vel_topic` (default: 'cmd_vel'): Command velocity topic name
+- `namespace` (default: ''): ROS namespace (can also use ROS_NAME env var)
+- `device_path` (default: '/dev/input/event0'): Path to evdev input device for keyboard
+- `grab_device` (default: true): Grab device exclusively to prevent events from going to console/X
+- `debug` (default: true): Enable debug logging for keyboard events
+
 ## Notes
 
-- The node requires a terminal with proper keyboard input support
-- Arrow keys send escape sequences that are detected automatically
+- **Keyboard Input**: The node uses `evdev` to read from a USB keyboard dongle connected directly to the Raspberry Pi
+- The keyboard must be connected via USB dongle (not through SSH terminal)
 - Each action completes fully before the next can be executed
 - The robot stops after each discrete movement
 - Calibration adjustments are cumulative and persist until reset
+- If the device path is incorrect, check `/dev/input/` to find the correct event device
 
