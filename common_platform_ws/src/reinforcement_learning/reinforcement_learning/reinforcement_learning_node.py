@@ -143,6 +143,7 @@ class ReinforcementLearningNode(Node):
     self.get_logger().info(f'Subscribed to: {scan_topic}, {odom_topic}')
     self.get_logger().info(f'Publishing to: {cmd_vel_topic}')
     self.get_logger().info(f'Action rate: {self.action_rate} Hz')
+    self.get_logger().info(f'Forward distance: {self.forward_distance*100:.1f} cm, Linear speed: {self.linear_speed:.3f} m/s')
   
   def load_model(self, model_path: str) -> dict:
     """Load the trained Q-table model from a pickle file."""
@@ -359,18 +360,21 @@ class ReinforcementLearningNode(Node):
     if action_type == ActionType.FORWARD:
       # Just move forward
       duration = forward_dist / lin_speed
+      self.get_logger().info(f'FORWARD action: distance={forward_dist*100:.1f}cm, speed={lin_speed:.3f}m/s, duration={duration:.3f}s')
       commands.append(('forward', duration, lin_speed, 0.0))
     elif action_type == ActionType.LEFT:
       # Turn left, then forward
       turn_duration = turn_angle / ang_speed
       commands.append(('turn', turn_duration, 0.0, ang_speed))
       forward_duration = forward_dist / lin_speed
+      self.get_logger().info(f'LEFT action: turn={math.degrees(turn_angle):.1f}°, forward={forward_dist*100:.1f}cm, speed={lin_speed:.3f}m/s, forward_duration={forward_duration:.3f}s')
       commands.append(('forward', forward_duration, lin_speed, 0.0))
     elif action_type == ActionType.RIGHT:
       # Turn right, then forward
       turn_duration = turn_angle / ang_speed
       commands.append(('turn', turn_duration, 0.0, -ang_speed))
       forward_duration = forward_dist / lin_speed
+      self.get_logger().info(f'RIGHT action: turn={math.degrees(turn_angle):.1f}°, forward={forward_dist*100:.1f}cm, speed={lin_speed:.3f}m/s, forward_duration={forward_duration:.3f}s')
       commands.append(('forward', forward_duration, lin_speed, 0.0))
     elif action_type == ActionType.BACK:
       # Turn 180, then forward
@@ -378,6 +382,7 @@ class ReinforcementLearningNode(Node):
       turn_duration = abs(back_turn_angle) / ang_speed
       commands.append(('turn', turn_duration, 0.0, ang_speed))
       forward_duration = forward_dist / lin_speed
+      self.get_logger().info(f'BACK action: turn=180°, forward={forward_dist*100:.1f}cm, speed={lin_speed:.3f}m/s, forward_duration={forward_duration:.3f}s')
       commands.append(('forward', forward_duration, lin_speed, 0.0))
     
     # Always end with stop
@@ -443,11 +448,11 @@ class ReinforcementLearningNode(Node):
           twist = Twist()
           twist.linear.x = 0.0
           twist.angular.z = 0.0
-          # Publish stop command multiple times (for 0.4 seconds at 10 Hz = 4 publications)
+          # Publish stop command once
           self.cmd_vel_pub.publish(twist)
           self.cmd_vel_queue = []
-          # Set stop command period (0.4 seconds = 4 publications to ensure robot stops)
-          self.stop_command_end_time = current_time + 0.4
+          # Clear stop command period (no need to keep publishing)
+          self.stop_command_end_time = None
           with self.action_lock:
             self.is_executing_action = False
           return
@@ -460,14 +465,14 @@ class ReinforcementLearningNode(Node):
         self.cmd_vel_pub.publish(twist)
     else:
       # All commands complete
-      # Send stop command multiple times to ensure robot stops
+      # Send stop command once
       twist = Twist()
       twist.linear.x = 0.0
       twist.angular.z = 0.0
       self.cmd_vel_pub.publish(twist)
       
-      # Set stop command period (0.4 seconds = 4 publications to ensure robot stops)
-      self.stop_command_end_time = current_time + 0.4
+      # Clear stop command period (no need to keep publishing)
+      self.stop_command_end_time = None
       
       # Log collision status if detected
       if self.collision_detected:
