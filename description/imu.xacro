@@ -1,8 +1,6 @@
 
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
 
-    <xacro:property name="pi" value="3.1415926535897931"/>
-
     <!-- IMU Link - MPU9250 mounted on chassis -->
     <!-- Chassis center is at z=0.02565m relative to chassis origin, and chassis extends ±0.05065m from center -->
     <!-- So chassis top is at z=0.02565+0.05065=0.0763m from chassis origin -->
