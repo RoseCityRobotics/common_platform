@@ -642,6 +642,41 @@ void setup() {
   SERIAL_OUT.println(rv);
   delay(100);
 
+  // Initialize magnetometer (AK8963) for MPU9250
+  // Enable I2C passthrough to access magnetometer
+  Wire.beginTransmission(0x68);
+  Wire.write(0x37);  // INT_PIN_CFG register
+  Wire.write(0x02);  // Enable I2C passthrough (bit 1 = BYPASS_EN)
+  rv = Wire.endTransmission(true);
+  SERIAL_OUT.print("IMU Passthrough setup returned: ");
+  SERIAL_OUT.println(rv);
+  delay(10);
+  
+  // Initialize magnetometer (AK8963 at address 0x0C)
+  Wire.beginTransmission(0x0C);
+  Wire.write(0x0A);  // CNTL1 register
+  Wire.write(0x16);  // 16-bit output, continuous mode 2 (100Hz)
+  rv = Wire.endTransmission(true);
+  SERIAL_OUT.print("Magnetometer init returned: ");
+  SERIAL_OUT.println(rv);
+  delay(10);
+  
+  // Verify magnetometer is responding
+  Wire.beginTransmission(0x0C);
+  Wire.write(0x00);  // WIA register (Who I Am)
+  Wire.endTransmission(false);
+  Wire.requestFrom(0x0C, (uint8_t)1, (uint8_t)true);
+  if (Wire.available()) {
+    uint8_t wia = Wire.read();
+    SERIAL_OUT.print("Magnetometer WIA: 0x");
+    SERIAL_OUT.println(wia, HEX);
+    if (wia == 0x48) {
+      SERIAL_OUT.println("Magnetometer (AK8963) detected successfully");
+    } else {
+      SERIAL_OUT.println("Warning: Unexpected magnetometer ID");
+    }
+  }
+
   // Add more IMU config if needed (e.g., setting ranges, DLPF)
 
   SERIAL_OUT.println("--- Setup Complete ---");
