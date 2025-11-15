@@ -49,6 +49,24 @@ def generate_launch_description():
     description='Odometry topic name'
   )
   
+  imu_topic_arg = DeclareLaunchArgument(
+    'imu_topic',
+    default_value='imu/data',
+    description='IMU topic name for improved yaw estimation'
+  )
+  
+  use_imu_arg = DeclareLaunchArgument(
+    'use_imu',
+    default_value='true',
+    description='Whether to use IMU for yaw estimation (true/false)'
+  )
+  
+  imu_yaw_weight_arg = DeclareLaunchArgument(
+    'imu_yaw_weight',
+    default_value='0.9',
+    description='Weight for IMU yaw in fusion (0.0-1.0, higher = more IMU, lower = more odometry)'
+  )
+  
   cmd_vel_topic_arg = DeclareLaunchArgument(
     'cmd_vel_topic',
     default_value='cmd_vel',
@@ -100,6 +118,11 @@ def generate_launch_description():
   collision_threshold = LaunchConfiguration('collision_threshold')
   forward_scan_angle_range = LaunchConfiguration('forward_scan_angle_range')
   
+  # Get IMU parameters
+  imu_topic = LaunchConfiguration('imu_topic')
+  use_imu = LaunchConfiguration('use_imu')
+  imu_yaw_weight = LaunchConfiguration('imu_yaw_weight')
+  
   # Create the reinforcement learning node
   rl_node = Node(
     package='reinforcement_learning',
@@ -114,6 +137,9 @@ def generate_launch_description():
       'angular_speed': angular_speed,
       'scan_topic': scan_topic,
       'odom_topic': odom_topic,
+      'imu_topic': imu_topic,
+      'use_imu': use_imu,
+      'imu_yaw_weight': imu_yaw_weight,
       'cmd_vel_topic': cmd_vel_topic,
       'namespace': namespace,
       'action_rate': action_rate,
@@ -134,6 +160,9 @@ def generate_launch_description():
       angular_speed_arg,
       scan_topic_arg,
       odom_topic_arg,
+      imu_topic_arg,
+      use_imu_arg,
+      imu_yaw_weight_arg,
       cmd_vel_topic_arg,
       namespace_arg,
       action_rate_arg,
@@ -154,6 +183,9 @@ def generate_launch_description():
       angular_speed_arg,
       scan_topic_arg,
       odom_topic_arg,
+      imu_topic_arg,
+      use_imu_arg,
+      imu_yaw_weight_arg,
       cmd_vel_topic_arg,
       namespace_arg,
       action_rate_arg,

@@ -12,6 +12,7 @@
 
 #include <geometry_msgs/msg/twist.h>
 #include <nav_msgs/msg/odometry.h>
+#include <sensor_msgs/msg/imu.h>
 
 // Forward declarations
 class Motion;

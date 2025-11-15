@@ -6,13 +6,17 @@
 #include <rmw/qos_profiles.h>
 #include <cstring>
 #include <time.h>
+#include <math.h>
 
 #if ROS
 rcl_subscription_t subscriber;
 geometry_msgs__msg__Twist msg;
 rcl_publisher_t odom_publisher;
 nav_msgs__msg__Odometry odom_msg;
+rcl_publisher_t imu_publisher;
+sensor_msgs__msg__Imu imu_msg;
 rcl_timer_t odom_timer;
+rcl_timer_t imu_timer;
 rclc_executor_t executor;
 rcl_allocator_t allocator;
 rclc_support_t support;
@@ -193,6 +197,263 @@ void odom_timer_callback(rcl_timer_t *timer, int64_t last_call_time) {
   }
 }
 
+// IMU reading function - reads MPU9250 data (accelerometer, gyroscope, and magnetometer)
+bool readIMU(float* accel_x, float* accel_y, float* accel_z,
+              float* gyro_x, float* gyro_y, float* gyro_z,
+              float* mag_x, float* mag_y, float* mag_z) {
+  const uint8_t MPU9250_ADDR = 0x68;  // MPU9250 main address (same as MPU6050)
+  const uint8_t AK8963_ADDR = 0x0C;  // Magnetometer address (accessed via passthrough)
+  const uint8_t ACCEL_XOUT_H = 0x3B;
+  
+  Wire.beginTransmission(MPU9250_ADDR);
+  Wire.write(ACCEL_XOUT_H);
+  if (Wire.endTransmission(false) != 0) {
+    return false;  // Communication error
+  }
+  
+  // Request 14 bytes: 6 accel, 2 temp, 6 gyro
+  uint8_t bytes_read = Wire.requestFrom(MPU9250_ADDR, (uint8_t)14, (uint8_t)true);
+  if (bytes_read != 14) {
+    return false;  // Not enough data
+  }
+  
+  // Read accelerometer data (signed 16-bit, big-endian)
+  int16_t accel_raw[3];
+  accel_raw[0] = (Wire.read() << 8) | Wire.read();  // X
+  accel_raw[1] = (Wire.read() << 8) | Wire.read();  // Y
+  accel_raw[2] = (Wire.read() << 8) | Wire.read();  // Z
+  
+  // Skip temperature (2 bytes)
+  Wire.read();
+  Wire.read();
+  
+  // Read gyroscope data (signed 16-bit, big-endian)
+  int16_t gyro_raw[3];
+  gyro_raw[0] = (Wire.read() << 8) | Wire.read();  // X
+  gyro_raw[1] = (Wire.read() << 8) | Wire.read();  // Y
+  gyro_raw[2] = (Wire.read() << 8) | Wire.read();  // Z
+  
+  // Convert to physical units
+  // MPU9250 default: ±2g for accel (16384 LSB/g), ±250°/s for gyro (131 LSB/°/s)
+  const float ACCEL_SCALE = 9.80665f / 16384.0f;  // Convert to m/s² (assuming ±2g range)
+  const float GYRO_SCALE = (M_PI / 180.0f) / 131.0f;  // Convert to rad/s (assuming ±250°/s range)
+  
+  *accel_x = accel_raw[0] * ACCEL_SCALE;
+  *accel_y = accel_raw[1] * ACCEL_SCALE;
+  *accel_z = accel_raw[2] * ACCEL_SCALE;
+  
+  *gyro_x = gyro_raw[0] * GYRO_SCALE;
+  *gyro_y = gyro_raw[1] * GYRO_SCALE;
+  *gyro_z = gyro_raw[2] * GYRO_SCALE;
+  
+  // Read magnetometer (AK8963) - accessed via I2C passthrough
+  // Note: Passthrough should be enabled during setup, not here
+  // Check if magnetometer is ready (ST1 register)
+  Wire.beginTransmission(AK8963_ADDR);
+  Wire.write(0x02);  // ST1 register
+  Wire.endTransmission(false);
+  Wire.requestFrom(AK8963_ADDR, (uint8_t)1, (uint8_t)true);
+  uint8_t st1 = Wire.read();
+  
+  if (!(st1 & 0x01)) {
+    // Data not ready, set to zero
+    *mag_x = 0.0f;
+    *mag_y = 0.0f;
+    *mag_z = 0.0f;
+    return true;  // Still return true since accel/gyro succeeded
+  }
+  
+  // Read magnetometer data (7 bytes: 6 data + 1 status)
+  Wire.beginTransmission(AK8963_ADDR);
+  Wire.write(0x03);  // HXL register (start of magnetometer data)
+  Wire.endTransmission(false);
+  bytes_read = Wire.requestFrom(AK8963_ADDR, (uint8_t)7, (uint8_t)true);
+  
+  if (bytes_read != 7) {
+    // Not enough data, set to zero
+    *mag_x = 0.0f;
+    *mag_y = 0.0f;
+    *mag_z = 0.0f;
+    return true;  // Still return true since accel/gyro succeeded
+  }
+  
+  // Read magnetometer data (signed 16-bit, little-endian for AK8963)
+  int16_t mag_raw[3];
+  mag_raw[0] = Wire.read() | (Wire.read() << 8);  // X (little-endian)
+  mag_raw[1] = Wire.read() | (Wire.read() << 8);  // Y
+  mag_raw[2] = Wire.read() | (Wire.read() << 8);  // Z
+  Wire.read();  // Skip ST2 register
+  
+  // Convert to Tesla (μT)
+  // AK8963 default: ±4800μT range, 16-bit (32768 LSB full scale)
+  // Sensitivity: 4912 LSB/μT for ±4800μT range
+  const float MAG_SCALE = 1.0f / 4912.0f;  // Convert to μT, then to Tesla
+  
+  *mag_x = mag_raw[0] * MAG_SCALE * 1e-6f;  // Convert μT to Tesla
+  *mag_y = mag_raw[1] * MAG_SCALE * 1e-6f;
+  *mag_z = mag_raw[2] * MAG_SCALE * 1e-6f;
+  
+  return true;
+}
+
+// Timer callback for publishing IMU data
+void imu_timer_callback(rcl_timer_t *timer, int64_t last_call_time) {
+  (void)timer;
+  (void)last_call_time;
+  
+#if PRINT_MOVES > 1
+  SERIAL_OUT.println("=== IMU TIMER CALLBACK ===");
+#endif
+  
+  if (!global_ros_context) {
+#if PRINT_MOVES > 1
+    SERIAL_OUT.println("ERROR: Missing ROS context");
+#endif
+    return;
+  }
+  
+  // Read IMU data
+  float accel_x, accel_y, accel_z;
+  float gyro_x, gyro_y, gyro_z;
+  float mag_x, mag_y, mag_z;
+  
+  if (!readIMU(&accel_x, &accel_y, &accel_z, &gyro_x, &gyro_y, &gyro_z, &mag_x, &mag_y, &mag_z)) {
+#if PRINT_MOVES > 1
+    SERIAL_OUT.println("ERROR: Failed to read IMU data");
+#endif
+    return;
+  }
+  
+  // Set timestamp - use ROS system time
+  rcl_time_point_value_t now;
+  rcl_ret_t ret = rcl_clock_get_now(&global_ros_context->clock, &now);
+  if (ret == RCL_RET_OK) {
+    imu_msg.header.stamp.sec = now / 1000000000;  // Convert nanoseconds to seconds
+    imu_msg.header.stamp.nanosec = now % 1000000000;  // Get remaining nanoseconds
+  } else {
+    // Fallback to system time if ROS clock fails
+    imu_msg.header.stamp.sec = time(NULL);
+    imu_msg.header.stamp.nanosec = 0;
+  }
+  
+  // Set frame ID
+  const char* frame_id_str = "imu_link";
+  imu_msg.header.frame_id.data = (char*)frame_id_str;
+  imu_msg.header.frame_id.size = strlen(frame_id_str) + 1;  // Include null terminator
+  
+  // Set angular velocity (from gyroscope)
+  imu_msg.angular_velocity.x = gyro_x;
+  imu_msg.angular_velocity.y = gyro_y;
+  imu_msg.angular_velocity.z = gyro_z;
+  
+  // Set linear acceleration (from accelerometer)
+  // Note: This includes gravity. For true linear acceleration, gravity should be subtracted
+  // based on orientation, but for simplicity we'll publish raw accelerometer data
+  imu_msg.linear_acceleration.x = accel_x;
+  imu_msg.linear_acceleration.y = accel_y;
+  imu_msg.linear_acceleration.z = accel_z;
+  
+  // For orientation, use magnetometer for absolute yaw (compass heading)
+  // This provides drift-free heading compared to gyroscope integration
+  static float yaw = 0.0f;
+  static uint32_t last_imu_time = 0;
+  uint32_t current_time = millis();
+  
+  // Calculate yaw from magnetometer (compass heading)
+  // Magnetometer gives us absolute heading in the horizontal plane
+  float mag_yaw = 0.0f;
+  if (mag_x != 0.0f || mag_y != 0.0f) {
+    // Calculate heading from magnetometer (atan2 gives angle in XY plane)
+    // Note: This assumes magnetometer X/Y are in the horizontal plane
+    mag_yaw = atan2(mag_y, mag_x);
+    
+    // If we have a previous yaw from gyro, use complementary filter
+    // to combine smooth gyro updates with absolute magnetometer reference
+    if (last_imu_time > 0) {
+      float dt = (current_time - last_imu_time) / 1000.0f;  // Convert to seconds
+      float gyro_yaw = yaw + gyro_z * dt;  // Integrate gyroscope
+      
+      // Normalize angles to [-pi, pi]
+      while (gyro_yaw > M_PI) gyro_yaw -= 2.0f * M_PI;
+      while (gyro_yaw < -M_PI) gyro_yaw += 2.0f * M_PI;
+      while (mag_yaw > M_PI) mag_yaw -= 2.0f * M_PI;
+      while (mag_yaw < -M_PI) mag_yaw += 2.0f * M_PI;
+      
+      // Complementary filter: 95% gyro (smooth), 5% magnetometer (absolute reference)
+      // This corrects gyro drift while maintaining smooth updates
+      float alpha = 0.95f;  // Gyro weight
+      float diff = mag_yaw - gyro_yaw;
+      // Handle wrap-around
+      if (diff > M_PI) diff -= 2.0f * M_PI;
+      if (diff < -M_PI) diff += 2.0f * M_PI;
+      yaw = gyro_yaw + (1.0f - alpha) * diff;
+    } else {
+      // First reading, use magnetometer directly
+      yaw = mag_yaw;
+    }
+  } else {
+    // No magnetometer data, fall back to gyroscope integration
+    if (last_imu_time > 0) {
+      float dt = (current_time - last_imu_time) / 1000.0f;
+      yaw += gyro_z * dt;
+      while (yaw > M_PI) yaw -= 2.0f * M_PI;
+      while (yaw < -M_PI) yaw += 2.0f * M_PI;
+    }
+  }
+  last_imu_time = current_time;
+  
+  // Convert yaw to quaternion (assuming robot is on flat ground, roll=0, pitch=0)
+  imu_msg.orientation.x = 0.0;
+  imu_msg.orientation.y = 0.0;
+  imu_msg.orientation.z = sin(yaw / 2.0f);
+  imu_msg.orientation.w = cos(yaw / 2.0f);
+  
+  // Set covariance matrices (unknown/not computed for now)
+  // Set to -1 to indicate unknown
+  for (int i = 0; i < 9; i++) {
+    imu_msg.orientation_covariance[i] = -1.0;
+    imu_msg.angular_velocity_covariance[i] = -1.0;
+    imu_msg.linear_acceleration_covariance[i] = -1.0;
+  }
+  
+  // Debug output
+#if PRINT_MOVES > 1
+  SERIAL_OUT.print("IMU: Accel(");
+  SERIAL_OUT.print(accel_x, 3);
+  SERIAL_OUT.print(", ");
+  SERIAL_OUT.print(accel_y, 3);
+  SERIAL_OUT.print(", ");
+  SERIAL_OUT.print(accel_z, 3);
+  SERIAL_OUT.print(") Gyro(");
+  SERIAL_OUT.print(gyro_x * 180.0f / M_PI, 1);
+  SERIAL_OUT.print("°, ");
+  SERIAL_OUT.print(gyro_y * 180.0f / M_PI, 1);
+  SERIAL_OUT.print("°, ");
+  SERIAL_OUT.print(gyro_z * 180.0f / M_PI, 1);
+  SERIAL_OUT.print("°) Mag(");
+  SERIAL_OUT.print(mag_x * 1e6f, 1);  // Convert to μT for display
+  SERIAL_OUT.print(", ");
+  SERIAL_OUT.print(mag_y * 1e6f, 1);
+  SERIAL_OUT.print(", ");
+  SERIAL_OUT.print(mag_z * 1e6f, 1);
+  SERIAL_OUT.print("μT) Yaw=");
+  SERIAL_OUT.print(yaw * 180.0f / M_PI, 1);
+  SERIAL_OUT.println("°");
+#endif
+  
+  // Publish the message
+  rcl_ret_t publish_ret = rcl_publish(&imu_publisher, &imu_msg, NULL);
+  if (publish_ret != RCL_RET_OK) {
+    SERIAL_OUT.print("Failed to publish IMU: ");
+    SERIAL_OUT.print(publish_ret);
+    SERIAL_OUT.println();
+  } else {
+#if PRINT_MOVES > 1
+    SERIAL_OUT.println("IMU published successfully");
+#endif
+  }
+}
+
 // Create ROS entities
 bool create_entities(void *context) {
   allocator = rcl_get_default_allocator();
@@ -225,9 +486,23 @@ bool create_entities(void *context) {
   nav_msgs__msg__Odometry__init(&odom_msg);
   RCCHECK(rclc_timer_init_default(
       &odom_timer, &support, RCL_MS_TO_NS(50), odom_timer_callback));
-  SERIAL_OUT.println("ROS: Timer initialized successfully");
+  SERIAL_OUT.println("ROS: Odometry timer initialized successfully");
   
-  RCCHECK(rclc_executor_init(&executor, &support.context, 2, &allocator));
+  // Get type support for IMU message
+  const rosidl_message_type_support_t * imu_type_support = 
+      ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, Imu);
+  
+  // Initialize IMU publisher
+  RCCHECK(rclc_publisher_init_default(
+      &imu_publisher, &node, imu_type_support, "imu/data"));
+  
+  // Initialize IMU message
+  sensor_msgs__msg__Imu__init(&imu_msg);
+  RCCHECK(rclc_timer_init_default(
+      &imu_timer, &support, RCL_MS_TO_NS(20), imu_timer_callback));  // 50 Hz IMU update rate
+  SERIAL_OUT.println("ROS: IMU timer initialized successfully");
+  
+  RCCHECK(rclc_executor_init(&executor, &support.context, 3, &allocator));  // Increased to 3 for IMU timer
   SERIAL_OUT.println("ROS: Executor initialized successfully");
   
   RCCHECK(rclc_executor_add_subscription_with_context(
@@ -236,7 +511,10 @@ bool create_entities(void *context) {
   SERIAL_OUT.println("ROS: Subscription added to executor");
   
   RCCHECK(rclc_executor_add_timer(&executor, &odom_timer));
-  SERIAL_OUT.println("ROS: Timer added to executor successfully");
+  SERIAL_OUT.println("ROS: Odometry timer added to executor successfully");
+  
+  RCCHECK(rclc_executor_add_timer(&executor, &imu_timer));
+  SERIAL_OUT.println("ROS: IMU timer added to executor successfully");
   
   return true;
 }
@@ -248,7 +526,9 @@ void destroy_entities() {
 
   RCCHECK_VOID(rcl_subscription_fini(&subscriber, &node));
   RCCHECK_VOID(rcl_publisher_fini(&odom_publisher, &node));
+  RCCHECK_VOID(rcl_publisher_fini(&imu_publisher, &node));
   RCCHECK_VOID(rcl_timer_fini(&odom_timer));
+  RCCHECK_VOID(rcl_timer_fini(&imu_timer));
   RCCHECK_VOID(rclc_executor_fini(&executor));
   RCCHECK_VOID(rcl_node_fini(&node));
   RCCHECK_VOID(rclc_support_fini(&support));
@@ -260,6 +540,9 @@ void destroy_entities() {
   
   // Cleanup odometry message
   nav_msgs__msg__Odometry__fini(&odom_msg);
+  
+  // Cleanup IMU message
+  sensor_msgs__msg__Imu__fini(&imu_msg);
 }
 
 // Handle agent connection state machine

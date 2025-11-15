@@ -14,7 +14,7 @@ from rclpy.node import Node
 from rclpy.qos import QoSProfile, ReliabilityPolicy, DurabilityPolicy, HistoryPolicy
 from geometry_msgs.msg import Twist
 from nav_msgs.msg import Odometry
-from sensor_msgs.msg import LaserScan
+from sensor_msgs.msg import LaserScan, Imu
 import math
 import time
 import threading
@@ -43,6 +43,9 @@ class ReinforcementLearningNode(Node):
     self.declare_parameter('angular_speed', 0.5)  # rad/s
     self.declare_parameter('scan_topic', 'scan')
     self.declare_parameter('odom_topic', 'odom')
+    self.declare_parameter('imu_topic', 'imu/data')  # IMU topic for improved yaw
+    self.declare_parameter('use_imu', True)  # Whether to use IMU for yaw estimation
+    self.declare_parameter('imu_yaw_weight', 0.9)  # Weight for IMU yaw in fusion (0.0-1.0)
     self.declare_parameter('cmd_vel_topic', 'cmd_vel')
     self.declare_parameter('namespace', '')
     self.declare_parameter('action_rate', 1.0)  # Actions per second
@@ -63,6 +66,9 @@ class ReinforcementLearningNode(Node):
                           f'linear_speed={self.linear_speed:.3f}m/s, angular_speed={self.angular_speed:.3f}rad/s')
     scan_topic = self.get_parameter('scan_topic').value
     odom_topic = self.get_parameter('odom_topic').value
+    imu_topic = self.get_parameter('imu_topic').value
+    self.use_imu = self.get_parameter('use_imu').value
+    self.imu_yaw_weight = self.get_parameter('imu_yaw_weight').value
     cmd_vel_topic = self.get_parameter('cmd_vel_topic').value
     namespace = self.get_parameter('namespace').value
     self.action_rate = self.get_parameter('action_rate').value
@@ -74,6 +80,7 @@ class ReinforcementLearningNode(Node):
     if namespace:
       scan_topic = f'{namespace}/{scan_topic}'
       odom_topic = f'{namespace}/{odom_topic}'
+      imu_topic = f'{namespace}/{imu_topic}'
       cmd_vel_topic = f'{namespace}/{cmd_vel_topic}'
     
     # Load Q-table model
@@ -123,10 +130,19 @@ class ReinforcementLearningNode(Node):
     self.odom_sub = self.create_subscription(
       Odometry, odom_topic, self.odom_callback, best_effort_qos
     )
+    if self.use_imu:
+      self.imu_sub = self.create_subscription(
+        Imu, imu_topic, self.imu_callback, best_effort_qos
+      )
+      self.get_logger().info(f'Subscribed to IMU: {imu_topic}')
+    else:
+      self.imu_sub = None
     
     # State
     self.current_odom = None
     self.current_scan = None
+    self.current_imu = None
+    self.last_odom_yaw = None  # Store last odometry yaw for fusion
     self.is_executing_action = False
     self.action_lock = threading.Lock()
     self.collision_detected = False  # Track if collision was detected during current action
@@ -145,8 +161,15 @@ class ReinforcementLearningNode(Node):
     self.action_timer = self.create_timer(action_period, self.action_timer_callback)
     
     self.get_logger().info('Reinforcement learning node started')
-    self.get_logger().info(f'Subscribed to: {scan_topic}, {odom_topic}')
+    subscribed_topics = f'{scan_topic}, {odom_topic}'
+    if self.use_imu:
+      subscribed_topics += f', {imu_topic}'
+    self.get_logger().info(f'Subscribed to: {subscribed_topics}')
     self.get_logger().info(f'Publishing to: {cmd_vel_topic}')
+    if self.use_imu:
+      self.get_logger().info(f'IMU fusion enabled: weight={self.imu_yaw_weight:.2f}')
+    else:
+      self.get_logger().info('IMU fusion disabled, using odometry yaw only')
     self.get_logger().info(f'Action rate: {self.action_rate} Hz')
     self.get_logger().info(f'Forward distance: {self.forward_distance:.3f} m ({self.forward_distance*100:.1f} cm), Linear speed: {self.linear_speed:.3f} m/s')
     self.get_logger().info(f'Cell size: {self.cell_size:.3f} m (from model: {model_data.get("cell_size", "N/A")})')
@@ -312,14 +335,19 @@ class ReinforcementLearningNode(Node):
         self.get_logger().info('No odometry data available yet, skipping timer callback')
         return
       
-      # Get current state from odometry
+      # Get current state from odometry (x, y) and IMU (yaw)
       x = self.current_odom.pose.pose.position.x
       y = self.current_odom.pose.pose.position.y
+      
+      # Get yaw from odometry
       q = self.current_odom.pose.pose.orientation
-      yaw = math.atan2(
+      odom_yaw = math.atan2(
         2.0 * (q.w * q.z + q.x * q.y),
         1.0 - 2.0 * (q.y * q.y + q.z * q.z)
       )
+      
+      # Use IMU yaw if available, otherwise use odometry yaw
+      yaw = self.get_fused_yaw(odom_yaw)
       
       state = np.array([x, y, yaw], dtype=float)
       
@@ -329,7 +357,9 @@ class ReinforcementLearningNode(Node):
       # Select action greedily
       action = self.greedy_action(state_disc, action_dim=4)
       
-      self.get_logger().info(f'State: ({x:.3f}, {y:.3f}, {math.degrees(yaw):.1f}°), '
+      # Log yaw source for debugging
+      yaw_source = 'IMU' if (self.use_imu and self.current_imu is not None) else 'odom'
+      self.get_logger().info(f'State: ({x:.3f}, {y:.3f}, {math.degrees(yaw):.1f}° [{yaw_source}]), '
                             f'Discretized: {state_disc}, Action: {action}')
       
       # Mark as executing before releasing lock
@@ -528,6 +558,61 @@ class ReinforcementLearningNode(Node):
   def odom_callback(self, msg: Odometry):
     """Callback for odometry messages"""
     self.current_odom = msg
+  
+  def imu_callback(self, msg: Imu):
+    """Callback for IMU messages"""
+    self.current_imu = msg
+  
+  def get_fused_yaw(self, odom_yaw: float) -> float:
+    """
+    Get fused yaw estimate using IMU and odometry.
+    Uses IMU yaw if available, otherwise falls back to odometry yaw.
+    If both are available, uses weighted fusion.
+    
+    Args:
+      odom_yaw: Yaw from odometry (radians)
+    
+    Returns:
+      Fused yaw estimate (radians, normalized to [-pi, pi])
+    """
+    if not self.use_imu or self.current_imu is None:
+      # No IMU available, use odometry yaw
+      return self._normalize_angle(odom_yaw)
+    
+    # Extract yaw from IMU quaternion
+    q = self.current_imu.orientation
+    imu_yaw = math.atan2(
+      2.0 * (q.w * q.z + q.x * q.y),
+      1.0 - 2.0 * (q.y * q.y + q.z * q.z)
+    )
+    imu_yaw = self._normalize_angle(imu_yaw)
+    
+    # If we have a previous odometry yaw, use it for fusion
+    # Otherwise, use current odometry yaw
+    if self.last_odom_yaw is not None:
+      # Calculate change in odometry yaw
+      odom_delta = self._normalize_angle(odom_yaw - self.last_odom_yaw)
+      
+      # Fuse: IMU provides absolute orientation, odometry provides relative change
+      # Use complementary filter: IMU for high-frequency, odometry for low-frequency
+      # For now, prefer IMU heavily since it's more accurate for orientation
+      fused_yaw = imu_yaw * self.imu_yaw_weight + odom_yaw * (1.0 - self.imu_yaw_weight)
+    else:
+      # First reading, use IMU directly
+      fused_yaw = imu_yaw
+    
+    # Store current odometry yaw for next iteration
+    self.last_odom_yaw = odom_yaw
+    
+    return self._normalize_angle(fused_yaw)
+  
+  def _normalize_angle(self, angle: float) -> float:
+    """Normalize angle to [-pi, pi] range"""
+    while angle > math.pi:
+      angle -= 2.0 * math.pi
+    while angle < -math.pi:
+      angle += 2.0 * math.pi
+    return angle
   
   def destroy_node(self):
     """Cleanup on node destruction"""
