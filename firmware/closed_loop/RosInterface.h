@@ -36,6 +36,8 @@ struct RosContext {
   float initial_mag_y;  // Initial magnetometer Y reading for heading correction
   bool mag_calibrated;  // Flag indicating if magnetometer has been calibrated
   bool imu_yaw_reset_requested;  // Flag to request IMU yaw reset in callback
+  float gyro_z_bias;  // Gyroscope Z-axis bias (rad/s) - measured when stationary
+  bool gyro_bias_calibrated;  // Flag indicating if gyroscope bias has been calibrated
 };
 
 // ROS Agent States
