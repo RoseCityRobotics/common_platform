@@ -247,6 +247,7 @@ class ReinforcementLearningNode(Node):
   
   def action_timer_callback(self):
     """Timer callback to select and execute actions at the specified rate"""
+    self.get_logger().debug('Action timer callback fired')
     current_time = time.time()
     
     # Check if we're still in stop command period
@@ -269,6 +270,7 @@ class ReinforcementLearningNode(Node):
       
       if self.current_odom is None:
         # No odometry data yet, skip
+        self.get_logger().info('No odometry data available yet, skipping timer callback')
         return
       
       # Get current state from odometry
