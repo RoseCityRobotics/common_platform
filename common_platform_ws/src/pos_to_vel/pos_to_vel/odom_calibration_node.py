@@ -122,7 +122,10 @@ class OdomCalibrationNode(Node):
     self.get_logger().info(f'Subscribed to: {scan_topic}, {odom_topic}')
     self.get_logger().info(f'Publishing to: {cmd_vel_topic}')
     self.get_logger().info(f'Reading keyboard from: {self.device_path}')
+    
+    # Print instructions to both stdout and logger
     self.print_instructions()
+    self.log_instructions()
   
   def start_keyboard_input(self):
     """Start keyboard input thread"""
@@ -130,7 +133,7 @@ class OdomCalibrationNode(Node):
     self.keyboard_thread.start()
   
   def print_instructions(self):
-    """Print keyboard control instructions"""
+    """Print keyboard control instructions to stdout"""
     print("\n" + "="*60)
     print("ODOMETRY CALIBRATION CONTROLS")
     print("="*60)
@@ -150,6 +153,27 @@ class OdomCalibrationNode(Node):
     print("  h         - Show this help")
     print("  Ctrl+C    - Exit")
     print("="*60 + "\n")
+  
+  def log_instructions(self):
+    """Log keyboard control instructions to ROS logger"""
+    self.get_logger().info("="*60)
+    self.get_logger().info("ODOMETRY CALIBRATION CONTROLS")
+    self.get_logger().info("="*60)
+    self.get_logger().info("Arrow Keys:")
+    self.get_logger().info("  ↑ (Up)    - Move forward")
+    self.get_logger().info("  ← (Left)  - Turn left 90° then move forward")
+    self.get_logger().info("  → (Right) - Turn right 90° then move forward")
+    self.get_logger().info("  ↓ (Down)  - Turn 180° then move forward")
+    self.get_logger().info("Calibration Adjustments:")
+    self.get_logger().info("  w/s       - Increase/decrease forward distance")
+    self.get_logger().info("  a/d       - Increase/decrease turn angle")
+    self.get_logger().info("  q/e       - Increase/decrease linear speed")
+    self.get_logger().info("  z/x       - Increase/decrease angular speed")
+    self.get_logger().info("Other:")
+    self.get_logger().info("  r         - Reset statistics")
+    self.get_logger().info("  p         - Print current calibration values")
+    self.get_logger().info("  h         - Show this help")
+    self.get_logger().info("="*60)
   
   def keyboard_input_loop(self):
     """Thread for handling keyboard input from evdev device"""
@@ -227,6 +251,7 @@ class OdomCalibrationNode(Node):
                 self.print_calibration_values()
               elif action_type == 'help':
                 self.print_instructions()
+                self.log_instructions()
       except Exception as e:
         if not self._stop_keyboard.is_set():
           self.get_logger().error(f'Error in keyboard input loop: {e}')
