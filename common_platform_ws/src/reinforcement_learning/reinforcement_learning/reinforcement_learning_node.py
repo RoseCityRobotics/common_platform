@@ -167,30 +167,23 @@ class ReinforcementLearningNode(Node):
     Similar to MazeEnv._check_wall_contact() but using scan data.
     
     Args:
-      yaw: Robot orientation in radians. If None, uses current odom yaw.
+      yaw: Robot orientation in radians (unused, kept for API compatibility).
+          Scan is already in robot frame, so yaw is not needed.
     
     Returns:
       True if obstacle detected within collision_threshold, False otherwise.
     """
     if self.current_scan is None:
       # No scan data available, assume no collision
+      self.get_logger().debug('No scan data available for collision check')
       return False
-    
-    # Get robot yaw from odometry if not provided
-    if yaw is None:
-      if self.current_odom is None:
-        return False
-      q = self.current_odom.pose.pose.orientation
-      yaw = math.atan2(
-        2.0 * (q.w * q.z + q.x * q.y),
-        1.0 - 2.0 * (q.y * q.y + q.z * q.z)
-      )
     
     scan = self.current_scan
     ranges = list(scan.ranges)
     
     # Calculate angle for each range reading
     # Scan angles are in the robot frame (typically 0 = forward, positive = counterclockwise)
+    # The scan is already relative to the robot's current orientation, so we don't need to subtract yaw
     forward_clearances = []
     for i, r in enumerate(ranges):
       if r == float('inf') or math.isnan(r) or r < scan.range_min or r > scan.range_max:
@@ -205,20 +198,12 @@ class ReinforcementLearningNode(Node):
       while angle < -math.pi:
         angle += 2 * math.pi
       
-      # Calculate angle relative to robot's current heading (yaw)
-      # The scan is in robot frame, so we need to account for robot orientation
-      angle_rel_forward = angle - yaw
-      # Normalize to [-pi, pi]
-      while angle_rel_forward > math.pi:
-        angle_rel_forward -= 2 * math.pi
-      while angle_rel_forward < -math.pi:
-        angle_rel_forward += 2 * math.pi
-      
       # Check if within forward fan range (similar to environment's -30 to +30 degrees)
-      if abs(angle_rel_forward) <= self.forward_scan_angle_range:
+      # Scan angle 0 is forward in robot frame, so we check if angle is near 0
+      if abs(angle) <= self.forward_scan_angle_range:
         # Calculate forward clearance (projected distance along forward direction)
         # Similar to environment's forward_clearance calculation
-        angle_mag = abs(angle_rel_forward)
+        angle_mag = abs(angle)
         projected_forward = r * math.cos(angle_mag)
         # Account for robot radius (approximate 0.08m, matching ROBOT_R in maze_env)
         robot_radius = 0.08
@@ -228,6 +213,7 @@ class ReinforcementLearningNode(Node):
     
     if not forward_clearances:
       # No valid readings in forward direction, assume no collision
+      self.get_logger().debug('No valid forward scan readings for collision check')
       return False
     
     min_clearance = min(forward_clearances)
@@ -237,6 +223,8 @@ class ReinforcementLearningNode(Node):
     collision = min_clearance <= self.collision_threshold
     if collision:
       self.get_logger().warn(f'Collision detected! Minimum forward clearance: {min_clearance:.3f} m')
+    else:
+      self.get_logger().debug(f'Collision check: min_clearance={min_clearance:.3f} m (threshold={self.collision_threshold:.3f} m)')
     
     return collision
   
@@ -303,18 +291,17 @@ class ReinforcementLearningNode(Node):
         return
       
       # Check for collision before executing action (if action involves forward movement)
-      if self.current_odom is not None:
-        q = self.current_odom.pose.pose.orientation
-        current_yaw = math.atan2(
-          2.0 * (q.w * q.z + q.x * q.y),
-          1.0 - 2.0 * (q.y * q.y + q.z * q.z)
-        )
-        
-        # For actions that involve forward movement, check collision
-        # Actions 0 (FORWARD), 1 (LEFT), 2 (RIGHT), 3 (BACK) all move forward after turning
-        if self.check_collision(current_yaw):
+      # For actions that involve forward movement, check collision
+      # Actions 0 (FORWARD), 1 (LEFT), 2 (RIGHT), 3 (BACK) all move forward after turning
+      # Only check collision if scan data is available
+      if self.current_scan is not None:
+        self.get_logger().debug(f'Checking collision before action {action}')
+        if self.check_collision():
           self.get_logger().warn(f'Collision detected before action {action}, skipping action')
           return
+        self.get_logger().debug(f'No collision detected, proceeding with action {action}')
+      else:
+        self.get_logger().debug(f'No scan data available, skipping collision check for action {action}')
       
       self.is_executing_action = True
       self.collision_detected = False
