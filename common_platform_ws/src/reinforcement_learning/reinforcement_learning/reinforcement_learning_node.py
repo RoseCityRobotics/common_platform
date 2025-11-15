@@ -144,6 +144,8 @@ class ReinforcementLearningNode(Node):
     self.get_logger().info(f'Publishing to: {cmd_vel_topic}')
     self.get_logger().info(f'Action rate: {self.action_rate} Hz')
     self.get_logger().info(f'Forward distance: {self.forward_distance*100:.1f} cm, Linear speed: {self.linear_speed:.3f} m/s')
+    self.get_logger().info(f'Cell size: {self.cell_size:.3f} m (from model: {model_data.get("cell_size", "N/A")})')
+    self.get_logger().info(f'Collision threshold: {self.collision_threshold:.3f} m, Forward scan angle range: {math.degrees(self.forward_scan_angle_range):.1f}°')
   
   def load_model(self, model_path: str) -> dict:
     """Load the trained Q-table model from a pickle file."""
@@ -183,14 +185,32 @@ class ReinforcementLearningNode(Node):
     ranges = list(scan.ranges)
     
     # Calculate angle for each range reading
-    # Scan angles are in the robot frame (typically 0 = forward, positive = counterclockwise)
-    # The scan is already relative to the robot's current orientation, so we don't need to subtract yaw
+    # For RPLidar, the scan coordinate frame depends on mounting
+    # Typically: angle_min to angle_max, with forward at some angle
+    # Common: angle_min = -π, angle_max = π, forward at angle = 0
+    # Or: angle_min = 0, angle_max = 2π, forward at angle = 0
     forward_clearances = []
+    forward_angle_tolerance = self.forward_scan_angle_range  # ±30 degrees default
+    
+    # Find the index corresponding to forward direction (0 radians)
+    # Forward is typically at angle = 0, but we need to find which index that is
+    forward_index = None
+    if scan.angle_min <= 0 <= scan.angle_max:
+      # Forward (0 radians) is within the scan range
+      forward_index = int(round((0.0 - scan.angle_min) / scan.angle_increment))
+      forward_index = max(0, min(forward_index, len(ranges) - 1))
+    elif scan.angle_min < -math.pi and scan.angle_max > math.pi:
+      # Scan wraps around, forward is at the middle
+      forward_index = len(ranges) // 2
+    else:
+      # Assume forward is at angle = 0, find closest index
+      forward_index = int(round((0.0 - scan.angle_min) / scan.angle_increment)) % len(ranges)
+    
     for i, r in enumerate(ranges):
       if r == float('inf') or math.isnan(r) or r < scan.range_min or r > scan.range_max:
         continue
       
-      # Calculate angle for this reading in robot frame
+      # Calculate angle for this reading
       angle = scan.angle_min + i * scan.angle_increment
       
       # Normalize angle to [-pi, pi]
@@ -199,12 +219,19 @@ class ReinforcementLearningNode(Node):
       while angle < -math.pi:
         angle += 2 * math.pi
       
+      # Calculate angle relative to forward (0 radians)
+      angle_rel_forward = angle - 0.0
+      # Normalize to [-pi, pi]
+      while angle_rel_forward > math.pi:
+        angle_rel_forward -= 2 * math.pi
+      while angle_rel_forward < -math.pi:
+        angle_rel_forward += 2 * math.pi
+      
       # Check if within forward fan range (similar to environment's -30 to +30 degrees)
-      # Scan angle 0 is forward in robot frame, so we check if angle is near 0
-      if abs(angle) <= self.forward_scan_angle_range:
+      if abs(angle_rel_forward) <= forward_angle_tolerance:
         # Calculate forward clearance (projected distance along forward direction)
         # Similar to environment's forward_clearance calculation
-        angle_mag = abs(angle)
+        angle_mag = abs(angle_rel_forward)
         projected_forward = r * math.cos(angle_mag)
         # Account for robot radius (approximate 0.08m, matching ROBOT_R in maze_env)
         robot_radius = 0.08
@@ -213,8 +240,8 @@ class ReinforcementLearningNode(Node):
         forward_clearances.append(forward_clearance)
     
     if not forward_clearances:
-      # No valid readings in forward direction, assume no collision
-      self.get_logger().debug('No valid forward scan readings for collision check')
+      # No valid readings in forward direction, log scan info for debugging
+      self.get_logger().warn(f'No valid forward scan readings for collision check! Scan: angle_min={math.degrees(scan.angle_min):.1f}°, angle_max={math.degrees(scan.angle_max):.1f}°, increment={math.degrees(scan.angle_increment):.3f}°, ranges={len(ranges)}')
       return False
     
     min_clearance = min(forward_clearances)
@@ -223,9 +250,9 @@ class ReinforcementLearningNode(Node):
     
     collision = min_clearance <= self.collision_threshold
     if collision:
-      self.get_logger().warn(f'Collision detected! Minimum forward clearance: {min_clearance:.3f} m')
+      self.get_logger().warn(f'Collision detected! Minimum forward clearance: {min_clearance:.3f} m (threshold: {self.collision_threshold:.3f} m), forward_clearances count: {len(forward_clearances)}')
     else:
-      self.get_logger().debug(f'Collision check: min_clearance={min_clearance:.3f} m (threshold={self.collision_threshold:.3f} m)')
+      self.get_logger().debug(f'Collision check: min_clearance={min_clearance:.3f} m (threshold={self.collision_threshold:.3f} m), forward_clearances count: {len(forward_clearances)}')
     
     return collision
   
@@ -237,12 +264,18 @@ class ReinforcementLearningNode(Node):
     """Select the best action greedily from the Q-table (no exploration)."""
     if state_key not in self.q_table:
       # If state not in Q-table, default to action 0 (forward)
-      self.get_logger().debug(f'State {state_key} not in Q-table, using action 0')
+      self.get_logger().warn(f'State {state_key} not in Q-table, using action 0 (forward)')
       return 0
     
     values = self.q_table[state_key]
     max_q = np.max(values)
     best_actions = np.flatnonzero(values == max_q)
+    
+    # Log Q-values for debugging
+    action_names = ['FORWARD', 'LEFT', 'RIGHT', 'BACK']
+    q_values_str = ', '.join([f'{action_names[i]}={values[i]:.3f}' for i in range(4)])
+    self.get_logger().info(f'State {state_key} Q-values: {q_values_str}, max={max_q:.3f}, selected action={int(best_actions[0])} ({action_names[int(best_actions[0])]})')
+    
     # If multiple best actions, pick the first one deterministically
     return int(best_actions[0])
   
