@@ -665,8 +665,8 @@ void setup() {
   Wire.beginTransmission(0x0C);
   Wire.write(0x00);  // WIA register (Who I Am)
   Wire.endTransmission(false);
-  Wire.requestFrom(0x0C, (uint8_t)1, (uint8_t)true);
-  if (Wire.available()) {
+  uint8_t bytes_read = Wire.requestFrom((uint8_t)0x0C, (uint8_t)1, (uint8_t)true);
+  if (bytes_read > 0 && Wire.available()) {
     uint8_t wia = Wire.read();
     SERIAL_OUT.print("Magnetometer WIA: 0x");
     SERIAL_OUT.println(wia, HEX);
