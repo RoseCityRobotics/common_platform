@@ -39,7 +39,7 @@ class OdomCalibrationNode(Node):
     # Parameters
     self.declare_parameter('forward_distance', 0.05)  # 5 cm default
     self.declare_parameter('turn_angle', math.pi / 2.0)  # 90 degrees
-    self.declare_parameter('linear_speed', 0.1)  # m/s
+    self.declare_parameter('linear_speed', 0.3)  # m/s
     self.declare_parameter('angular_speed', 0.5)  # rad/s
     self.declare_parameter('scan_topic', 'scan')
     self.declare_parameter('odom_topic', 'odom')
@@ -94,8 +94,11 @@ class OdomCalibrationNode(Node):
     self.expected_orientation = None
     self.start_position = None
     self.start_orientation = None
+    self.start_scan = None  # Scan before movement
+    self.final_scan = None   # Scan after movement
     self.is_executing_action = False
     self.action_lock = threading.Lock()
+    self.current_action_type = None  # Track which action is being executed
     
     # Calibration adjustments (user can modify these)
     self.forward_distance_adjust = 0.0  # meters
@@ -270,6 +273,7 @@ class OdomCalibrationNode(Node):
       
       self.is_executing_action = True
       self.action_count += 1
+      self.current_action_type = action_type
       
       # Record starting position
       self.start_position = (
@@ -283,6 +287,14 @@ class OdomCalibrationNode(Node):
         2.0 * (q.w * q.z + q.x * q.y),
         1.0 - 2.0 * (q.y * q.y + q.z * q.z)
       )
+      
+      # Store the scan before movement
+      if self.current_scan is not None:
+        self.start_scan = self.current_scan
+        self.get_logger().info('Stored initial scan for correlation analysis')
+      else:
+        self.get_logger().warn('No scan data available at start of action')
+        self.start_scan = None
       
       # Calculate expected final position and orientation
       effective_forward = self.forward_distance + self.forward_distance_adjust
@@ -429,6 +441,14 @@ class OdomCalibrationNode(Node):
       with self.action_lock:
         self.is_executing_action = False
       
+      # Store the final scan for correlation analysis
+      if self.current_scan is not None:
+        self.final_scan = self.current_scan
+        self.get_logger().info('Stored final scan for correlation analysis')
+      else:
+        self.get_logger().warn('No scan data available at end of action')
+        self.final_scan = None
+      
       # Schedule result check after a short delay for odometry to settle
       self.check_results_after = time.time() + 0.5
   
@@ -538,48 +558,185 @@ class OdomCalibrationNode(Node):
     self.get_logger().info(f'Calibration results - Position error: {pos_error*1000:.2f} mm, Orientation error: {math.degrees(orient_error_abs):.3f}°')
   
   def analyze_scan_data(self):
-    """Analyze lidar scan data for calibration insights"""
-    if self.current_scan is None:
+    """Analyze lidar scan data using correlation to find angular error"""
+    if self.start_scan is None or self.final_scan is None:
+      print("SCAN CORRELATION ANALYSIS: Missing start or final scan")
       return
     
-    scan = self.current_scan
-    ranges = scan.ranges
-    
-    # Filter out invalid readings (inf, nan, or out of range)
-    valid_ranges = [r for r in ranges if r != float('inf') and not math.isnan(r) and 
-                    scan.range_min <= r <= scan.range_max]
-    
-    if len(valid_ranges) == 0:
-      print("SCAN ANALYSIS: No valid range readings")
+    if self.current_action_type is None:
+      print("SCAN CORRELATION ANALYSIS: No action type recorded")
       return
     
-    min_range = min(valid_ranges)
-    max_range = max(valid_ranges)
-    avg_range = sum(valid_ranges) / len(valid_ranges)
+    # Get expected angle change based on action type
+    if self.current_action_type == ActionType.FORWARD:
+      expected_angle_change = 0.0
+    elif self.current_action_type == ActionType.LEFT:
+      expected_angle_change = math.pi / 2.0  # 90 degrees
+    elif self.current_action_type == ActionType.RIGHT:
+      expected_angle_change = -math.pi / 2.0  # -90 degrees
+    elif self.current_action_type == ActionType.BACK:
+      expected_angle_change = math.pi  # 180 degrees
+    else:
+      print("SCAN CORRELATION ANALYSIS: Unknown action type")
+      return
     
-    # Find the angle with minimum range (closest obstacle)
-    min_range_idx = ranges.index(min_range)
-    angle_min = scan.angle_min + min_range_idx * scan.angle_increment
+    # Calculate forward movement distance
+    forward_distance = self.forward_distance + self.forward_distance_adjust
     
-    # Find the angle with maximum range (furthest open space)
-    max_range_idx = ranges.index(max_range)
-    angle_max = scan.angle_min + max_range_idx * scan.angle_increment
+    # Perform correlation analysis
+    correlation_result = self.correlate_scans(self.start_scan, self.final_scan, forward_distance)
     
-    print("SCAN ANALYSIS:")
-    print(f"  Valid readings: {len(valid_ranges)}/{len(ranges)}")
-    print(f"  Min range: {min_range:.3f} m at {math.degrees(angle_min):.1f}°")
-    print(f"  Max range: {max_range:.3f} m at {math.degrees(angle_max):.1f}°")
-    print(f"  Average range: {avg_range:.3f} m")
+    if correlation_result is None:
+      print("SCAN CORRELATION ANALYSIS: Correlation failed")
+      return
     
-    # Check if we're close to expected position by looking at scan consistency
-    # If we're in a known location, the scan pattern should be consistent
-    if self.start_position is not None:
-      # Calculate distance from start
-      distance_from_start = math.sqrt(
-        (self.current_odom.pose.pose.position.x - self.start_position[0])**2 +
-        (self.current_odom.pose.pose.position.y - self.start_position[1])**2
-      )
-      print(f"  Distance from start position: {distance_from_start*1000:.2f} mm")
+    best_angle, max_correlation = correlation_result
+    
+    # Calculate angular error
+    angular_error = best_angle - expected_angle_change
+    # Normalize to [-pi, pi]
+    while angular_error > math.pi:
+      angular_error -= 2 * math.pi
+    while angular_error < -math.pi:
+      angular_error += 2 * math.pi
+    
+    print("SCAN CORRELATION ANALYSIS:")
+    print(f"  Expected angle change: {math.degrees(expected_angle_change):.2f}°")
+    print(f"  Best correlation angle: {math.degrees(best_angle):.2f}°")
+    print(f"  Maximum correlation: {max_correlation:.4f}")
+    print(f"  Angular error: {math.degrees(angular_error):.2f}°")
+    print(f"  Forward distance compensated: {forward_distance*1000:.2f} mm")
+  
+  def correlate_scans(self, scan1, scan2, forward_distance):
+    """
+    Correlate two scans to find the rotation angle that best matches them.
+    Accounts for forward translation by subtracting forward_distance from scan2.
+    
+    Returns: (best_angle, max_correlation) or None if correlation fails
+    """
+    # Extract ranges from both scans
+    ranges1 = list(scan1.ranges)
+    ranges2 = list(scan2.ranges)
+    
+    # Check that scans have same structure
+    if (scan1.angle_min != scan2.angle_min or 
+        scan1.angle_max != scan2.angle_max or
+        scan1.angle_increment != scan2.angle_increment or
+        len(ranges1) != len(ranges2)):
+      self.get_logger().warn('Scans have different structure, cannot correlate')
+      return None
+    
+    # Compensate for forward movement in scan2
+    # For each range reading, subtract the forward distance component
+    # The forward component depends on the angle relative to forward direction
+    compensated_ranges2 = []
+    for i, r2 in enumerate(ranges2):
+      if r2 == float('inf') or math.isnan(r2) or r2 < scan2.range_min or r2 > scan2.range_max:
+        compensated_ranges2.append(r2)
+        continue
+      
+      # Calculate angle for this reading
+      angle = scan2.angle_min + i * scan2.angle_increment
+      
+      # Forward component = forward_distance * cos(angle)
+      # This is the distance along the ray direction that we moved forward
+      forward_component = forward_distance * math.cos(angle)
+      
+      # Subtract the forward component from the range
+      # If the result would be negative or invalid, keep original
+      compensated_range = r2 - forward_component
+      if compensated_range < scan2.range_min or compensated_range > scan2.range_max:
+        compensated_range = r2  # Keep original if compensation makes it invalid
+      
+      compensated_ranges2.append(compensated_range)
+    
+    # Normalize ranges to handle inf and nan values
+    # Replace inf with a large value, nan with 0
+    def normalize_range(r, range_max):
+      if r == float('inf'):
+        return range_max * 2.0  # Use a large value for inf
+      if math.isnan(r):
+        return 0.0
+      if r < scan1.range_min or r > scan1.range_max:
+        return 0.0
+      return r
+    
+    norm_ranges1 = [normalize_range(r, scan1.range_max) for r in ranges1]
+    norm_ranges2 = [normalize_range(r, scan2.range_max) for r in compensated_ranges2]
+    
+    # Try different rotation angles and find the one with maximum correlation
+    # Search from -180 to +180 degrees
+    angle_step = scan1.angle_increment  # Use the scan's angular resolution
+    max_angle = math.pi
+    min_angle = -math.pi
+    num_steps = int((max_angle - min_angle) / angle_step)
+    
+    best_angle = 0.0
+    max_correlation = -float('inf')
+    
+    for step in range(num_steps):
+      test_angle = min_angle + step * angle_step
+      
+      # Rotate scan2 by test_angle and correlate with scan1
+      correlation = self.compute_correlation(norm_ranges1, norm_ranges2, test_angle, 
+                                             scan1.angle_min, scan1.angle_increment)
+      
+      if correlation > max_correlation:
+        max_correlation = correlation
+        best_angle = test_angle
+    
+    return (best_angle, max_correlation)
+  
+  def compute_correlation(self, ranges1, ranges2, rotation_angle, angle_min, angle_increment):
+    """
+    Compute correlation between two range arrays with a given rotation.
+    Returns correlation value (higher is better match).
+    """
+    if len(ranges1) != len(ranges2):
+      return -float('inf')
+    
+    # Calculate how many indices to shift (circular shift)
+    angle_step = angle_increment
+    shift_indices = int(round(rotation_angle / angle_step))
+    
+    # Handle wrap-around for circular shift
+    shift_indices = shift_indices % len(ranges2)
+    if shift_indices < 0:
+      shift_indices += len(ranges2)
+    
+    # Shift ranges2 by the rotation (circular shift)
+    shifted_ranges2 = ranges2[shift_indices:] + ranges2[:shift_indices]
+    
+    # Compute normalized cross-correlation
+    # Use Pearson correlation coefficient
+    valid_pairs = []
+    for r1, r2 in zip(ranges1, shifted_ranges2):
+      if r1 > 0 and r2 > 0:  # Both valid (non-zero means valid after normalization)
+        valid_pairs.append((r1, r2))
+    
+    if len(valid_pairs) < 10:  # Need at least some valid pairs
+      return -float('inf')
+    
+    # Compute correlation coefficient (Pearson)
+    sum_r1 = sum(r1 for r1, r2 in valid_pairs)
+    sum_r2 = sum(r2 for r1, r2 in valid_pairs)
+    sum_r1_sq = sum(r1*r1 for r1, r2 in valid_pairs)
+    sum_r2_sq = sum(r2*r2 for r1, r2 in valid_pairs)
+    sum_r1_r2 = sum(r1*r2 for r1, r2 in valid_pairs)
+    
+    n = len(valid_pairs)
+    if n == 0:
+      return -float('inf')
+    
+    # Pearson correlation coefficient
+    numerator = n * sum_r1_r2 - sum_r1 * sum_r2
+    denominator = math.sqrt((n * sum_r1_sq - sum_r1 * sum_r1) * (n * sum_r2_sq - sum_r2 * sum_r2))
+    
+    if denominator == 0:
+      return 0.0
+    
+    correlation = numerator / denominator
+    return correlation
   
   def reset_statistics(self):
     """Reset calibration statistics"""

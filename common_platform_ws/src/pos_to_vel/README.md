@@ -31,7 +31,7 @@ ROS_NAME=robot1 ros2 launch pos_to_vel odom_calibration.launch.py
 ros2 launch pos_to_vel odom_calibration.launch.py \
   forward_distance:=0.05 \
   turn_angle:=1.5708 \
-  linear_speed:=0.1 \
+  linear_speed:=0.3 \
   angular_speed:=0.5 \
   device_path:=/dev/input/event0
 ```
@@ -102,7 +102,7 @@ The device path is typically `/dev/input/event0` for the first USB input device,
 
 - `forward_distance` (default: 0.05 m): Distance to move forward in each action
 - `turn_angle` (default: 1.5708 rad = 90°): Angle to turn for left/right actions
-- `linear_speed` (default: 0.1 m/s): Speed for forward movement
+- `linear_speed` (default: 0.3 m/s): Speed for forward movement
 - `angular_speed` (default: 0.5 rad/s): Speed for turning
 - `scan_topic` (default: 'scan'): LiDAR scan topic name
 - `odom_topic` (default: 'odom'): Odometry topic name
@@ -125,7 +125,7 @@ The device path is typically `/dev/input/event0` for the first USB input device,
 
 - `forward_distance` (default: 0.05 m): Distance to move forward in each action
 - `turn_angle` (default: 1.5708 rad = 90°): Angle to turn for left/right actions
-- `linear_speed` (default: 0.1 m/s): Speed for forward movement
+- `linear_speed` (default: 0.3 m/s): Speed for forward movement
 - `angular_speed` (default: 0.5 rad/s): Speed for turning
 - `scan_topic` (default: 'scan'): LiDAR scan topic name
 - `odom_topic` (default: 'odom'): Odometry topic name
