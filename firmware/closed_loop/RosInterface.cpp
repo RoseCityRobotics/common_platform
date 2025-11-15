@@ -208,13 +208,24 @@ bool readIMU(float* accel_x, float* accel_y, float* accel_z,
   
   Wire.beginTransmission(MPU9250_ADDR);
   Wire.write(ACCEL_XOUT_H);
-  if (Wire.endTransmission(false) != 0) {
+  uint8_t tx_error = Wire.endTransmission(false);
+  if (tx_error != 0) {
+    static int comm_error_count = 0;
+    if (++comm_error_count % 250 == 0) {  // Log every 250 errors (~5 seconds)
+      SERIAL_OUT.print("IMU I2C transmission error: ");
+      SERIAL_OUT.println(tx_error);
+    }
     return false;  // Communication error
   }
   
   // Request 14 bytes: 6 accel, 2 temp, 6 gyro
-  uint8_t bytes_read = Wire.requestFrom(MPU9250_ADDR, (uint8_t)14, (uint8_t)true);
+  uint8_t bytes_read = Wire.requestFrom((uint8_t)MPU9250_ADDR, (uint8_t)14, (uint8_t)true);
   if (bytes_read != 14) {
+    static int read_error_count = 0;
+    if (++read_error_count % 250 == 0) {  // Log every 250 errors
+      SERIAL_OUT.print("IMU read error: expected 14 bytes, got ");
+      SERIAL_OUT.println(bytes_read);
+    }
     return false;  // Not enough data
   }
   
@@ -334,8 +345,25 @@ void imu_timer_callback(rcl_timer_t *timer, int64_t last_call_time) {
   float mag_x, mag_y, mag_z;
   
   if (!readIMU(&accel_x, &accel_y, &accel_z, &gyro_x, &gyro_y, &gyro_z, &mag_x, &mag_y, &mag_z)) {
-    SERIAL_OUT.println("ERROR: Failed to read IMU data - accel/gyro read failed");
+    static int error_count = 0;
+    if (++error_count % 50 == 0) {  // Log every 50 errors (~1 second)
+      SERIAL_OUT.println("ERROR: Failed to read IMU data - accel/gyro read failed");
+    }
     return;
+  }
+  
+  // Log successful read occasionally
+  static int success_count = 0;
+  if (++success_count % 250 == 0) {  // Log every 250 successes (~5 seconds at 50Hz)
+    SERIAL_OUT.print("IMU read success: accel=(");
+    SERIAL_OUT.print(accel_x, 2);
+    SERIAL_OUT.print(",");
+    SERIAL_OUT.print(accel_y, 2);
+    SERIAL_OUT.print(",");
+    SERIAL_OUT.print(accel_z, 2);
+    SERIAL_OUT.print(") gyro=(");
+    SERIAL_OUT.print(gyro_z * 180.0f / M_PI, 1);
+    SERIAL_OUT.println("°/s)");
   }
   
   // Set timestamp - use ROS system time
@@ -458,21 +486,25 @@ void imu_timer_callback(rcl_timer_t *timer, int64_t last_call_time) {
   // Publish the message
   rcl_ret_t publish_ret = rcl_publish(&imu_publisher, &imu_msg, NULL);
   if (publish_ret != RCL_RET_OK) {
-    SERIAL_OUT.print("ERROR: Failed to publish IMU: ");
-    SERIAL_OUT.print(publish_ret);
-    SERIAL_OUT.print(" (");
-    switch(publish_ret) {
-      case RCL_RET_ERROR: SERIAL_OUT.print("RCL_RET_ERROR"); break;
-      case RCL_RET_BAD_ALLOC: SERIAL_OUT.print("RCL_RET_BAD_ALLOC"); break;
-      case RCL_RET_INVALID_ARGUMENT: SERIAL_OUT.print("RCL_RET_INVALID_ARGUMENT"); break;
-      case RCL_RET_PUBLISHER_INVALID: SERIAL_OUT.print("RCL_RET_PUBLISHER_INVALID"); break;
-      default: SERIAL_OUT.print("Unknown error"); break;
+    static int pub_error_count = 0;
+    if (++pub_error_count % 50 == 0) {  // Log every 50 errors
+      SERIAL_OUT.print("ERROR: Failed to publish IMU: ");
+      SERIAL_OUT.print(publish_ret);
+      SERIAL_OUT.print(" (");
+      switch(publish_ret) {
+        case RCL_RET_ERROR: SERIAL_OUT.print("RCL_RET_ERROR"); break;
+        case RCL_RET_BAD_ALLOC: SERIAL_OUT.print("RCL_RET_BAD_ALLOC"); break;
+        case RCL_RET_INVALID_ARGUMENT: SERIAL_OUT.print("RCL_RET_INVALID_ARGUMENT"); break;
+        case RCL_RET_PUBLISHER_INVALID: SERIAL_OUT.print("RCL_RET_PUBLISHER_INVALID"); break;
+        default: SERIAL_OUT.print("Unknown error"); break;
+      }
+      SERIAL_OUT.println(")");
     }
-    SERIAL_OUT.println(")");
   } else {
-#if PRINT_MOVES > 1
-    SERIAL_OUT.println("IMU published successfully");
-#endif
+    static int pub_success_count = 0;
+    if (++pub_success_count % 250 == 0) {  // Log every 250 publishes (~5 seconds)
+      SERIAL_OUT.println("IMU published successfully");
+    }
   }
 }
 
