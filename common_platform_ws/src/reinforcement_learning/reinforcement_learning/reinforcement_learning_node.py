@@ -56,6 +56,11 @@ class ReinforcementLearningNode(Node):
     self.turn_angle = self.get_parameter('turn_angle').value
     self.linear_speed = self.get_parameter('linear_speed').value
     self.angular_speed = self.get_parameter('angular_speed').value
+    
+    # Log parameter values to verify they're correct
+    self.get_logger().info(f'Loaded parameters: forward_distance={self.forward_distance:.3f}m ({self.forward_distance*100:.1f}cm), '
+                          f'turn_angle={math.degrees(self.turn_angle):.1f}°, '
+                          f'linear_speed={self.linear_speed:.3f}m/s, angular_speed={self.angular_speed:.3f}rad/s')
     scan_topic = self.get_parameter('scan_topic').value
     odom_topic = self.get_parameter('odom_topic').value
     cmd_vel_topic = self.get_parameter('cmd_vel_topic').value
@@ -143,7 +148,7 @@ class ReinforcementLearningNode(Node):
     self.get_logger().info(f'Subscribed to: {scan_topic}, {odom_topic}')
     self.get_logger().info(f'Publishing to: {cmd_vel_topic}')
     self.get_logger().info(f'Action rate: {self.action_rate} Hz')
-    self.get_logger().info(f'Forward distance: {self.forward_distance*100:.1f} cm, Linear speed: {self.linear_speed:.3f} m/s')
+    self.get_logger().info(f'Forward distance: {self.forward_distance:.3f} m ({self.forward_distance*100:.1f} cm), Linear speed: {self.linear_speed:.3f} m/s')
     self.get_logger().info(f'Cell size: {self.cell_size:.3f} m (from model: {model_data.get("cell_size", "N/A")})')
     self.get_logger().info(f'Collision threshold: {self.collision_threshold:.3f} m, Forward scan angle range: {math.degrees(self.forward_scan_angle_range):.1f}°')
   
