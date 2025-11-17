@@ -36,17 +36,32 @@ def generate_launch_description():
     description='Use simulation time'
   )
   
+  flip_enabled_arg = DeclareLaunchArgument(
+    'flip_enabled',
+    default_value='false',
+    description='Enable image flipping (for upside-down camera mounting)'
+  )
+  
+  flip_code_arg = DeclareLaunchArgument(
+    'flip_code',
+    default_value='-1',
+    description='Flip code: 0=vertical, 1=horizontal, -1=both axes (180° rotation)'
+  )
+  
   # Get launch configurations
   camera_id = LaunchConfiguration('camera_id')
   width = LaunchConfiguration('width')
   height = LaunchConfiguration('height')
   format = LaunchConfiguration('format')
   use_sim_time = LaunchConfiguration('use_sim_time')
+  flip_enabled = LaunchConfiguration('flip_enabled')
+  flip_code = LaunchConfiguration('flip_code')
   
   # Handle namespace from environment variable
   ns = os.environ.get('ROS_NAMESPACE', '').strip()
   
   # Create regular camera node for libcamera
+  # Camera publishes to intermediate topic, flip node will handle the final output
   camera_node = Node(
     package='camera_ros',
     executable='camera_node',
@@ -66,28 +81,45 @@ def generate_launch_description():
       'encoding': 'rgb8',
       'color_space': 'sRGB',
     }],
+    remappings=[('image_raw', 'camera/image_raw_unflipped')],
     output='screen',
   )
   
+  # Create image flip node
+  # When flip_enabled is false, it will pass through images without flipping
+  flip_node = Node(
+    package='sensors',
+    executable='image_flip_node',
+    name='image_flip',
+    parameters=[{
+      'flip_enabled': flip_enabled,
+      'flip_code': flip_code,
+      'input_topic': 'camera/image_raw_unflipped',
+      'output_topic': 'camera/image_raw',
+      'use_sim_time': use_sim_time,
+    }],
+    output='screen',
+  )
+  
+  nodes_to_launch = [camera_node, flip_node]
+  
   # Handle namespace properly using GroupAction and PushRosNamespace
+  launch_args = [
+    camera_id_arg,
+    width_arg,
+    height_arg,
+    format_arg,
+    use_sim_time_arg,
+    flip_enabled_arg,
+    flip_code_arg,
+  ]
+  
   if ns:
-    return LaunchDescription([
-      camera_id_arg,
-      width_arg,
-      height_arg,
-      format_arg,
-      use_sim_time_arg,
+    return LaunchDescription(launch_args + [
       GroupAction([
         PushRosNamespace(ns),
-        camera_node
+        *nodes_to_launch
       ])
     ])
   else:
-    return LaunchDescription([
-      camera_id_arg,
-      width_arg,
-      height_arg,
-      format_arg,
-      use_sim_time_arg,
-      camera_node
-    ])
+    return LaunchDescription(launch_args + nodes_to_launch)
