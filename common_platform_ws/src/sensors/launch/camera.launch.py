@@ -13,6 +13,7 @@ def generate_launch_nodes(context):
   use_sim_time_str = context.launch_configurations.get('use_sim_time', 'false')
   flip_enabled_str = context.launch_configurations.get('flip_enabled', 'false')
   flip_code_str = context.launch_configurations.get('flip_code', '-1')
+  rate_str = context.launch_configurations.get('rate', '0')
   
   # Convert parameters to proper types
   try:
@@ -42,6 +43,12 @@ def generate_launch_nodes(context):
   # Convert use_sim_time to boolean
   use_sim_time_bool = use_sim_time_str.lower() in ('true', '1', 'yes', 'on')
   
+  # Convert rate to int
+  try:
+    rate = int(rate_str)
+  except (ValueError, TypeError):
+    rate = 0
+  
   # Handle namespace from environment variable
   ns = os.environ.get('ROS_NAMESPACE', '').strip()
   
@@ -65,6 +72,8 @@ def generate_launch_nodes(context):
       # Additional format parameters for camera_ros
       'encoding': 'rgb8',
       'color_space': 'sRGB',
+      # Rate parameter (if supported by camera_ros, 0 = camera native rate)
+      'rate': rate,
     }],
     remappings=[('camera/image_raw', 'camera/image_raw_unflipped')],
     output='screen',
@@ -144,6 +153,12 @@ def generate_launch_description():
     description='Flip code: 0=vertical, 1=horizontal, -1=both axes (180° rotation)'
   )
   
+  rate_arg = DeclareLaunchArgument(
+    'rate',
+    default_value='0',
+    description='Publishing rate in Hz (0 = camera native rate)'
+  )
+  
   return LaunchDescription([
     camera_id_arg,
     width_arg,
@@ -152,5 +167,6 @@ def generate_launch_description():
     use_sim_time_arg,
     flip_enabled_arg,
     flip_code_arg,
+    rate_arg,
     OpaqueFunction(function=generate_launch_nodes)
   ])
