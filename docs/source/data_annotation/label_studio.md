@@ -20,13 +20,6 @@ On the Pi <img src="/_static/img/raspberry-pi.png" alt="Raspberry Pi" width="16"
 mkdir -p "/home/rcr/teleop_data/images"
 ```
 
-### Move images you want to label into that folder
-On the Pi <img src="/_static/img/raspberry-pi.png" alt="Raspberry Pi" width="16">
-```bash
-# Replace session_YYYY-MM-DD_HH-MM-SS with your actual session folder name
-mv /home/rcr/teleop_data/session_*/*.jpg /home/rcr/teleop_data/images/
-```
-
 ## Label Studio
 
 We have preloaded a software tool called [Label Studio](https://labelstud.io/) onto the Raspberry Pi for data annotation. You can use it by launching a webserver on the Pi and then use a web browser on your development machine to access the Label Studio UI. There you can create bounding-box/classification labels (e.g., purple whiffle, green whiffle), using the image files directly on your Pi with local storage.
@@ -100,7 +93,8 @@ On your development computer 🖥️
 **Add Source storage (images to label):**
 Project → Settings → **Cloud Storage** → **Add Source Storage** → **Local files**
 - **Storage Title** Anything you want here (required)
-- **Absolute Local path:** `/home/rcr/teleop_data/images`
+- **Absolute Local path:** `/home/rcr/teleop_data/session_YYYY-MM-DD_HH-MM-SS/images`
+>  Replace session_YYYY-MM-DD_HH-MM-SS with the actual session folder name you want to import
 - (Optional) **File mask/regex:** `.*\.(jpg|jpeg|png)$`
 - **Test Connection**
 - **Next**
