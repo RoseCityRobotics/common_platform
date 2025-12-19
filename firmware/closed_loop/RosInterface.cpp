@@ -9,6 +9,9 @@
 #include <time.h>
 #include <math.h>
 
+// Single definition of the shared IMU address
+const uint8_t MPU9250_ADDR = 0x68;
+
 #if ROS
 rcl_subscription_t subscriber;
 geometry_msgs__msg__Twist msg;
@@ -289,7 +292,6 @@ void odom_timer_callback(rcl_timer_t *timer, int64_t last_call_time) {
 bool readIMU(float* accel_x, float* accel_y, float* accel_z,
               float* gyro_x, float* gyro_y, float* gyro_z,
               float* mag_x, float* mag_y, float* mag_z) {
-  const uint8_t MPU9250_ADDR = 0x68;  // MPU9250 main address (same as MPU6050)
   const uint8_t AK8963_ADDR = 0x0C;  // Magnetometer address (accessed via passthrough)
   const uint8_t ACCEL_XOUT_H = 0x3B;
   
@@ -740,7 +742,7 @@ bool create_entities(void *context) {
 
   RCCHECK(rclc_support_init(&support, 0, NULL, &allocator));
   RCCHECK(
-      rclc_node_init_default(&node, "micro_ros_arduino_node", "rcr005", &support));
+      rclc_node_init_default(&node, "micro_ros_arduino_node", ROS_NAME, &support));
   RCCHECK(rclc_subscription_init_default(
       &subscriber, &node,
       ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist), "cmd_vel"));

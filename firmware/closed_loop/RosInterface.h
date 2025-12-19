@@ -2,6 +2,7 @@
 #define ROS_INTERFACE_H
 #include "setup.h"
 #include <Arduino.h>
+extern const uint8_t MPU9250_ADDR;  // IMU I2C address (0x68 or 0x69 depending on AD0)
 #if ROS
 #include <micro_ros_arduino.h>
 #include <rcl/error_handling.h>

@@ -73,6 +73,9 @@ const int LED_PIN = 13;
 #include <Wire.h>
 // #include <math.h>
 
+// IMU address shared across modules (defined in RosInterface.cpp)
+extern const uint8_t MPU9250_ADDR;
+
 #if ROS
 #include "RosInterface.h"
 #endif  // ROS
@@ -88,6 +91,9 @@ TuningManager* tuningManager = nullptr;
 
 // Encoder streaming state
 bool encoderStreaming = false;
+
+// I2C bus speed (reduce if IMU NACKs). Teensy supports setClock().
+static const uint32_t I2C_CLOCK_HZ = 100000;  // 100 kHz for robustness
 
 #if ROS
 // ROS context instance
@@ -163,6 +169,366 @@ void rightEncoderInterrupt() {
 // Differential PID only needed for non-ROS heading control during F commands
 PidControl differential;
 #endif
+
+// --- IMU Diagnostic Function ---
+/**
+ * @brief Comprehensive IMU diagnostic to identify I2C communication issues
+ * This function performs multiple tests to diagnose why the IMU isn't responding
+ */
+void diagnoseIMU() {
+  const uint8_t AK8963_ADDR = 0x0C;
+  const uint8_t WHO_AM_I_REG = 0x75;
+  const uint8_t PWR_MGMT_1_REG = 0x6B;
+  const uint8_t INT_PIN_CFG_REG = 0x37;
+  
+  SERIAL_OUT.println("=== IMU Diagnostic ===");
+  SERIAL_OUT.println("Teensy 4.0 detected - using Wire (pins 18=SDA, 19=SCL)");
+  // Ensure diagnostics use the same reduced I2C clock
+  Wire.setClock(I2C_CLOCK_HZ);
+  
+  // Test 1: I2C Bus Scan - Check Wire (primary I2C bus)
+  SERIAL_OUT.println("\n1. Scanning Wire bus (pins 18=SDA, 19=SCL) for devices...");
+  int devicesFound = 0;
+  for (uint8_t addr = 1; addr < 127; addr++) {
+    Wire.beginTransmission(addr);
+    uint8_t error = Wire.endTransmission();
+    if (error == 0) {
+      SERIAL_OUT.print("  Device found at address 0x");
+      if (addr < 16) SERIAL_OUT.print("0");
+      SERIAL_OUT.println(addr, HEX);
+      devicesFound++;
+    }
+  }
+  
+  // Also check Wire1 bus (Teensy 4.0 has multiple I2C buses)
+  #if defined(__IMXRT1062__)  // Teensy 4.0/4.1
+  SERIAL_OUT.println("\n1b. Scanning Wire1 bus (pins 17=SDA, 16=SCL) for devices...");
+  Wire1.begin();
+    Wire1.setClock(I2C_CLOCK_HZ);
+  int devicesFoundWire1 = 0;
+  for (uint8_t addr = 1; addr < 127; addr++) {
+    Wire1.beginTransmission(addr);
+    uint8_t error = Wire1.endTransmission();
+    if (error == 0) {
+      SERIAL_OUT.print("  Device found on Wire1 at address 0x");
+      if (addr < 16) SERIAL_OUT.print("0");
+      SERIAL_OUT.println(addr, HEX);
+      devicesFoundWire1++;
+    }
+  }
+  if (devicesFoundWire1 > 0) {
+    SERIAL_OUT.println("  WARNING: Devices found on Wire1, but code uses Wire!");
+    SERIAL_OUT.println("  You may need to change code to use Wire1 instead of Wire");
+  }
+  devicesFound += devicesFoundWire1;
+  #endif
+  if (devicesFound == 0) {
+    SERIAL_OUT.println("  ERROR: No I2C devices found! Check wiring and power.");
+    
+    // Check I2C pin states (for Teensy, default I2C pins are typically 18/19)
+    // Note: We can't directly read which pins Wire library is using, but we can check common ones
+    SERIAL_OUT.println("\n  I2C Pin State Check:");
+    SERIAL_OUT.println("  (Note: Default I2C pins for Teensy 4.x are typically SDA=18, SCL=19)");
+    SERIAL_OUT.println("  (For Teensy 3.x: SDA=18, SCL=19)");
+    
+    // Try to check if pins are floating (should be HIGH with pull-ups, LOW if shorted)
+    // We'll check common I2C pins
+    const int common_sda_pins[] = {18, 17, 16, 0};
+    const int common_scl_pins[] = {19, 16, 17, 1};
+    
+    SERIAL_OUT.println("  Checking common SDA pins:");
+    for (int i = 0; i < 4; i++) {
+      pinMode(common_sda_pins[i], INPUT);
+      delayMicroseconds(10);
+      int state = digitalRead(common_sda_pins[i]);
+      SERIAL_OUT.print("    Pin ");
+      SERIAL_OUT.print(common_sda_pins[i]);
+      SERIAL_OUT.print(": ");
+      SERIAL_OUT.println(state == HIGH ? "HIGH (OK - pull-up present)" : "LOW (ERROR - shorted or no pull-up)");
+    }
+    
+    SERIAL_OUT.println("  Checking common SCL pins:");
+    for (int i = 0; i < 4; i++) {
+      pinMode(common_scl_pins[i], INPUT);
+      delayMicroseconds(10);
+      int state = digitalRead(common_scl_pins[i]);
+      SERIAL_OUT.print("    Pin ");
+      SERIAL_OUT.print(common_scl_pins[i]);
+      SERIAL_OUT.print(": ");
+      SERIAL_OUT.println(state == HIGH ? "HIGH (OK - pull-up present)" : "LOW (ERROR - shorted or no pull-up)");
+    }
+    
+    SERIAL_OUT.println("\n  ANALYSIS:");
+    SERIAL_OUT.println("  ✓ I2C pins 18 (SDA) and 19 (SCL) have pull-ups (reading HIGH)");
+    SERIAL_OUT.println("  ✗ No I2C devices responding on the bus");
+    SERIAL_OUT.println("  → Most likely: IMU not powered OR not connected to pins 18/19");
+    
+    SERIAL_OUT.println("\n  TROUBLESHOOTING STEPS (in priority order):");
+    SERIAL_OUT.println("\n  [CRITICAL] 1. VERIFY IMU POWER:");
+    SERIAL_OUT.println("     With multimeter, measure at IMU module:");
+    SERIAL_OUT.println("     - VCC pin to GND: Should read ~3.3V (NOT 0V, NOT 5V)");
+    SERIAL_OUT.println("     - If 0V: IMU not powered - check power supply connection");
+    SERIAL_OUT.println("     - If 5V: Wrong voltage - IMU may be damaged (needs 3.3V)");
+    SERIAL_OUT.println("     - If ~3.3V: Power is OK, continue to step 2");
+    
+    SERIAL_OUT.println("\n  [CRITICAL] 2. VERIFY I2C CONNECTIONS:");
+    SERIAL_OUT.println("     With power OFF, check continuity with multimeter:");
+    SERIAL_OUT.println("     - IMU SDA pin → Teensy pin 18: Should beep (connected)");
+    SERIAL_OUT.println("     - IMU SCL pin → Teensy pin 19: Should beep (connected)");
+    SERIAL_OUT.println("     - IMU GND pin → Teensy GND: Should beep (connected)");
+    SERIAL_OUT.println("     - If no beep: Wire broken or not connected");
+    
+    SERIAL_OUT.println("\n  3. CHECK FOR SHORTS (power OFF):");
+    SERIAL_OUT.println("     Measure resistance with multimeter:");
+    SERIAL_OUT.println("     - SDA to GND: Should be ~4.7kΩ (pull-up), NOT 0Ω");
+    SERIAL_OUT.println("     - SCL to GND: Should be ~4.7kΩ (pull-up), NOT 0Ω");
+    SERIAL_OUT.println("     - SDA to SCL: Should be open/infinite, NOT shorted");
+    SERIAL_OUT.println("     - If 0Ω: Short circuit present");
+    
+    SERIAL_OUT.println("\n  4. VERIFY IMU IS PRESENT:");
+    SERIAL_OUT.println("     - Is the IMU module physically installed?");
+    SERIAL_OUT.println("     - Check for broken solder joints on PCB");
+    SERIAL_OUT.println("     - If using breakout board, verify all connections");
+    
+    SERIAL_OUT.println("\n  5. TEST IMU ON DIFFERENT BUS:");
+    SERIAL_OUT.println("     If IMU is on Wire1 (pins 17/16), you'll need to modify code");
+    SERIAL_OUT.println("     to use Wire1 instead of Wire");
+    
+    SERIAL_OUT.println("\n  QUICK TEST:");
+    SERIAL_OUT.println("  Try disconnecting and reconnecting IMU power while robot is running.");
+    SERIAL_OUT.println("  If diagnostic suddenly finds device, it was a power/connection issue.");
+    
+    return;
+  }
+  SERIAL_OUT.print("  Found ");
+  SERIAL_OUT.print(devicesFound);
+  SERIAL_OUT.println(" device(s) on I2C bus");
+  
+  // Test 2: Check if IMU responds at expected address
+  SERIAL_OUT.println("\n2. Testing IMU at address 0x68...");
+  Wire.beginTransmission(MPU9250_ADDR);
+  uint8_t error = Wire.endTransmission();
+  if (error != 0) {
+    SERIAL_OUT.print("  ERROR: IMU not responding at 0x68 (error code: ");
+    SERIAL_OUT.print(error);
+    SERIAL_OUT.println(")");
+    SERIAL_OUT.println("  Error codes: 0=OK, 1=data too long, 2=NACK on address, 3=NACK on data, 4=other");
+    SERIAL_OUT.println("  Possible causes:");
+    SERIAL_OUT.println("    - Wrong I2C address (check AD0 pin - 0x68 if LOW, 0x69 if HIGH)");
+    SERIAL_OUT.println("    - Device not powered or in sleep mode");
+    SERIAL_OUT.println("    - I2C bus issue");
+    return;
+  }
+  SERIAL_OUT.println("  OK: IMU responds at address 0x68");
+  
+  // Test 3: Read WHO_AM_I register
+  SERIAL_OUT.println("\n3. Reading WHO_AM_I register (0x75)...");
+  Wire.beginTransmission(MPU9250_ADDR);
+  Wire.write(WHO_AM_I_REG);
+  error = Wire.endTransmission(false);
+  if (error != 0) {
+    SERIAL_OUT.print("  ERROR: Failed to write register address (error: ");
+    SERIAL_OUT.print(error);
+    SERIAL_OUT.println(")");
+    return;
+  }
+  
+  uint8_t bytes_read = Wire.requestFrom((uint8_t)MPU9250_ADDR, (uint8_t)1, (uint8_t)true);
+  if (bytes_read != 1) {
+    SERIAL_OUT.print("  ERROR: Failed to read WHO_AM_I (got ");
+    SERIAL_OUT.print(bytes_read);
+    SERIAL_OUT.println(" bytes)");
+    return;
+  }
+  
+  uint8_t whoami = Wire.read();
+  SERIAL_OUT.print("  WHO_AM_I value: 0x");
+  SERIAL_OUT.println(whoami, HEX);
+  
+  if (whoami == 0x71) {
+    SERIAL_OUT.println("  OK: MPU9250 detected (correct ID)");
+  } else if (whoami == 0x68) {
+    SERIAL_OUT.println("  WARNING: MPU6050 detected (not MPU9250)");
+    SERIAL_OUT.println("  This firmware expects MPU9250 with magnetometer");
+  } else {
+    SERIAL_OUT.print("  ERROR: Unexpected device ID (expected 0x71 for MPU9250, got 0x");
+    SERIAL_OUT.print(whoami, HEX);
+    SERIAL_OUT.println(")");
+    SERIAL_OUT.println("  Possible causes:");
+    SERIAL_OUT.println("    - Wrong device connected");
+    SERIAL_OUT.println("    - Device malfunction");
+    return;
+  }
+  
+  // Test 4: Check Power Management Register
+  SERIAL_OUT.println("\n4. Checking Power Management Register (0x6B)...");
+  Wire.beginTransmission(MPU9250_ADDR);
+  Wire.write(PWR_MGMT_1_REG);
+  error = Wire.endTransmission(false);
+  if (error != 0) {
+    SERIAL_OUT.print("  ERROR: Failed to read PWR_MGMT_1 (error: ");
+    SERIAL_OUT.print(error);
+    SERIAL_OUT.println(")");
+    return;
+  }
+  
+  bytes_read = Wire.requestFrom((uint8_t)MPU9250_ADDR, (uint8_t)1, (uint8_t)true);
+  if (bytes_read != 1) {
+    SERIAL_OUT.println("  ERROR: Failed to read PWR_MGMT_1");
+    return;
+  }
+  
+  uint8_t pwr_mgmt = Wire.read();
+  SERIAL_OUT.print("  PWR_MGMT_1 value: 0x");
+  SERIAL_OUT.println(pwr_mgmt, HEX);
+  
+  if (pwr_mgmt & 0x40) {
+    SERIAL_OUT.println("  WARNING: Device is in sleep mode (bit 6 set)");
+    SERIAL_OUT.println("  Attempting to wake device...");
+    Wire.beginTransmission(MPU9250_ADDR);
+    Wire.write(PWR_MGMT_1_REG);
+    Wire.write(0x00);  // Clear sleep bit
+    error = Wire.endTransmission(true);
+    if (error == 0) {
+      SERIAL_OUT.println("  OK: Device woken up");
+      delay(100);  // Wait for device to stabilize
+    } else {
+      SERIAL_OUT.print("  ERROR: Failed to wake device (error: ");
+      SERIAL_OUT.print(error);
+      SERIAL_OUT.println(")");
+    }
+  } else {
+    SERIAL_OUT.println("  OK: Device is awake");
+  }
+  
+  if (pwr_mgmt & 0x80) {
+    SERIAL_OUT.println("  WARNING: Device reset bit is set (may be resetting)");
+  }
+  
+  // Test 5: Test reading accelerometer/gyro data register
+  SERIAL_OUT.println("\n5. Testing accelerometer/gyro data read...");
+  Wire.beginTransmission(MPU9250_ADDR);
+  Wire.write(0x3B);  // ACCEL_XOUT_H
+  error = Wire.endTransmission(false);
+  if (error != 0) {
+    SERIAL_OUT.print("  ERROR: Failed to set register pointer (error: ");
+    SERIAL_OUT.print(error);
+    SERIAL_OUT.println(")");
+    return;
+  }
+  
+  bytes_read = Wire.requestFrom((uint8_t)MPU9250_ADDR, (uint8_t)14, (uint8_t)true);
+  if (bytes_read != 14) {
+    SERIAL_OUT.print("  ERROR: Failed to read 14 bytes (got ");
+    SERIAL_OUT.print(bytes_read);
+    SERIAL_OUT.println(" bytes)");
+    SERIAL_OUT.println("  This is the same error occurring during normal operation");
+    return;
+  }
+  
+  // Read and display raw values
+  int16_t accel_x = (Wire.read() << 8) | Wire.read();
+  int16_t accel_y = (Wire.read() << 8) | Wire.read();
+  int16_t accel_z = (Wire.read() << 8) | Wire.read();
+  Wire.read(); Wire.read();  // Skip temperature
+  int16_t gyro_x = (Wire.read() << 8) | Wire.read();
+  int16_t gyro_y = (Wire.read() << 8) | Wire.read();
+  int16_t gyro_z = (Wire.read() << 8) | Wire.read();
+  
+  SERIAL_OUT.println("  OK: Successfully read sensor data");
+  SERIAL_OUT.print("  Accel (raw): X=");
+  SERIAL_OUT.print(accel_x);
+  SERIAL_OUT.print(" Y=");
+  SERIAL_OUT.print(accel_y);
+  SERIAL_OUT.print(" Z=");
+  SERIAL_OUT.println(accel_z);
+  SERIAL_OUT.print("  Gyro (raw): X=");
+  SERIAL_OUT.print(gyro_x);
+  SERIAL_OUT.print(" Y=");
+  SERIAL_OUT.print(gyro_y);
+  SERIAL_OUT.print(" Z=");
+  SERIAL_OUT.println(gyro_z);
+  
+  // Test 6: Check I2C passthrough configuration
+  SERIAL_OUT.println("\n6. Checking I2C passthrough configuration...");
+  Wire.beginTransmission(MPU9250_ADDR);
+  Wire.write(INT_PIN_CFG_REG);
+  error = Wire.endTransmission(false);
+  if (error != 0) {
+    SERIAL_OUT.print("  ERROR: Failed to read INT_PIN_CFG (error: ");
+    SERIAL_OUT.print(error);
+    SERIAL_OUT.println(")");
+    return;
+  }
+  
+  bytes_read = Wire.requestFrom((uint8_t)MPU9250_ADDR, (uint8_t)1, (uint8_t)true);
+  if (bytes_read != 1) {
+    SERIAL_OUT.println("  ERROR: Failed to read INT_PIN_CFG");
+    return;
+  }
+  
+  uint8_t int_pin_cfg = Wire.read();
+  SERIAL_OUT.print("  INT_PIN_CFG value: 0x");
+  SERIAL_OUT.println(int_pin_cfg, HEX);
+  
+  if (int_pin_cfg & 0x02) {
+    SERIAL_OUT.println("  OK: I2C passthrough enabled (bit 1 set)");
+  } else {
+    SERIAL_OUT.println("  WARNING: I2C passthrough NOT enabled");
+    SERIAL_OUT.println("  Magnetometer access will fail");
+    SERIAL_OUT.println("  Attempting to enable passthrough...");
+    Wire.beginTransmission(MPU9250_ADDR);
+    Wire.write(INT_PIN_CFG_REG);
+    Wire.write(0x02);  // Enable passthrough
+    error = Wire.endTransmission(true);
+    if (error == 0) {
+      SERIAL_OUT.println("  OK: Passthrough enabled");
+      delay(10);
+    } else {
+      SERIAL_OUT.print("  ERROR: Failed to enable passthrough (error: ");
+      SERIAL_OUT.print(error);
+      SERIAL_OUT.println(")");
+    }
+  }
+  
+  // Test 7: Test magnetometer access
+  SERIAL_OUT.println("\n7. Testing magnetometer (AK8963) access...");
+  Wire.beginTransmission(AK8963_ADDR);
+  Wire.write(0x00);  // WIA register
+  error = Wire.endTransmission(false);
+  if (error != 0) {
+    SERIAL_OUT.print("  ERROR: Magnetometer not responding (error: ");
+    SERIAL_OUT.print(error);
+    SERIAL_OUT.println(")");
+    SERIAL_OUT.println("  Possible causes:");
+    SERIAL_OUT.println("    - I2C passthrough not enabled");
+    SERIAL_OUT.println("    - Magnetometer not initialized");
+    SERIAL_OUT.println("    - Device doesn't have magnetometer (MPU6050 instead of MPU9250)");
+    return;
+  }
+  
+  bytes_read = Wire.requestFrom((uint8_t)AK8963_ADDR, (uint8_t)1, (uint8_t)true);
+  if (bytes_read != 1) {
+    SERIAL_OUT.println("  ERROR: Failed to read magnetometer WIA");
+    return;
+  }
+  
+  uint8_t mag_wia = Wire.read();
+  SERIAL_OUT.print("  Magnetometer WIA: 0x");
+  SERIAL_OUT.println(mag_wia, HEX);
+  
+  if (mag_wia == 0x48) {
+    SERIAL_OUT.println("  OK: AK8963 magnetometer detected");
+  } else {
+    SERIAL_OUT.print("  WARNING: Unexpected magnetometer ID (expected 0x48, got 0x");
+    SERIAL_OUT.print(mag_wia, HEX);
+    SERIAL_OUT.println(")");
+  }
+  
+  SERIAL_OUT.println("\n=== Diagnostic Complete ===");
+  SERIAL_OUT.println("If all tests passed, the IMU should work correctly.");
+  SERIAL_OUT.println("If errors persist, check hardware connections and power supply.");
+}
 
 // --- Command Parsing ---
 /**
@@ -477,10 +843,16 @@ case 'J':  // Toggle encoder streaming
       commandProcessed = true;
       break;
 
+    case 'K':  // IMU diagnostic (K for "check")
+      diagnoseIMU();
+      commandProcessed = true;
+      break;
+
     case 'H':  // Help - show all commands
       SERIAL_OUT.println("=== Available Commands ===");
       SERIAL_OUT.println("M - Toggle motor drive on/off");
       SERIAL_OUT.println("X - Reset all state");
+      SERIAL_OUT.println("K - Run IMU diagnostic");
 #if ROS
       SERIAL_OUT.println("R - Reset odometry with magnetometer calibration");
 #endif
@@ -644,7 +1016,7 @@ void setup() {
   SERIAL_OUT.println("Initializing I2C and IMU...");
   Wire.begin();
   SERIAL_OUT.println("I2C begun");
-  Wire.beginTransmission(0x68);  // MPU6050 default address
+  Wire.beginTransmission(MPU9250_ADDR);  // MPU9250 default address
   Wire.write(0x6B);              // PWR_MGMT_1 register
   Wire.write(0x80);              // Reset device
   auto rv = Wire.endTransmission(true);
@@ -652,7 +1024,7 @@ void setup() {
   SERIAL_OUT.println(rv);
   delay(100);  // Wait for reset
 
-  Wire.beginTransmission(0x68);
+  Wire.beginTransmission(MPU9250_ADDR);
   Wire.write(0x6B);  // PWR_MGMT_1 register
   Wire.write(0x00);  // Wake up device
   rv = Wire.endTransmission(true);
@@ -662,7 +1034,7 @@ void setup() {
 
   // Initialize magnetometer (AK8963) for MPU9250
   // Enable I2C passthrough to access magnetometer
-  Wire.beginTransmission(0x68);
+  Wire.beginTransmission(MPU9250_ADDR);
   Wire.write(0x37);  // INT_PIN_CFG register
   Wire.write(0x02);  // Enable I2C passthrough (bit 1 = BYPASS_EN)
   rv = Wire.endTransmission(true);
